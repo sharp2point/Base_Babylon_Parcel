@@ -1,0 +1,30 @@
+{
+  "name": "babylon_parcel_template",
+  "version": "1.0.0",
+  "description": "",
+  "source": "index.html",
+  "type": "module",
+  "scripts": {
+    "dev": "parcel",
+    "build": "parcel build"
+  },
+  "staticFiles": {
+    "staticPath": "public",
+    "staticOutPath": "public",
+    "watcherGlob": "**"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel": "^2.10.3",
+    "parcel-reporter-static-files-copy": "^1.5.3",
+    "typescript": "^5.3.2"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^6.31.0",
+    "@babylonjs/havok": "^1.3.0",
+    "@babylonjs/inspector": "^6.31.0",
+    "@babylonjs/loaders": "^6.31.0"
+  }
+}
