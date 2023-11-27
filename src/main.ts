@@ -6,10 +6,11 @@ const canvas: HTMLCanvasElement = document.querySelector('#app');
 const engine = new Engine(canvas, true);
 const gravity = new Vector3(0, -9.81, 0);
 const gameRoot = new GameRoot(canvas, engine, gravity);
+let scene: Scene = null;
 
 gameRoot.initPhysics().then(() => {
     const physics = gameRoot.physics;
-    const scene = gameRoot.addScene();
+    scene = gameRoot.addScene();
 
     gameRoot.addCamera().addLight().addEventHandlers();
     gameRoot.loadModel("public/models/", "Ball.glb").then(() => {
@@ -31,5 +32,13 @@ gameRoot.initPhysics().then(() => {
         scene.render();
     });
 });
-
+window.addEventListener("keydown", (ev) => {
+    if (ev.shiftKey && ev.ctrlKey && ev.altKey && ev.key === 'i') {
+        if (scene.debugLayer.isVisible()) {
+            scene.debugLayer.hide();
+        } else {
+            scene.debugLayer.show();
+        }
+    }
+});
 window.addEventListener('resize', () => engine.resize());
