@@ -7,7 +7,7 @@ import {
     Color3, Color4, Texture, ActionManager,
     ExecuteCodeAction, PhysicsBody, PhysicsMotionType,
     PhysicsShapeConvexHull, PhysicsShapeBox, Quaternion,
-    PhysicsShapeSphere, Vector2, EasingFunction, DistanceConstraint, BallAndSocketConstraint,
+    PhysicsShapeSphere, Vector2, EasingFunction, DistanceConstraint, BallAndSocketConstraint, Tools,
 
 } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
@@ -15,6 +15,7 @@ import HavokPhysics from "@babylonjs/havok";
 import { createGround, createStar, createStarBox } from "./game_objects";
 import { randomInt } from "./utility";
 import { SizeBox, StarId, FlySide } from "./game_in_types";
+import { instateMesh, loadModel } from "./loaderGlbFiles";
 
 
 export class GameRoot {
@@ -130,21 +131,32 @@ export class GameRoot {
             new_star.parent = starBox;
         }
 
+        const container = await loadModel("public/models/", "bat.glb", this.scene);
+        const bat = instateMesh("Bat", container as AssetContainer);
+        bat.position = new Vector3(0, 2, 0);
+
         const camera = this.scene.activeCamera as FreeCamera;
 
         //------ Rendering -----------------//
         this.scene.onBeforeRenderObservable.add(() => {
             if (inputMap["w"]) {
+                bat.position.y += 0.1
                 camera.position.y += 0.1;
             }
             if (inputMap["s"]) {
+                bat.position.y -= 0.1
                 camera.position.y -= 0.1;
             }
             if (inputMap["a"]) {
+                
+                bat.rotation.z = 0.2
+                bat.position.x -= 0.1
                 camera.position.x -= 0.1;
             }
 
             if (inputMap["d"]) {
+                bat.rotation.z = -0.2
+                bat.position.x += 0.1
                 camera.position.x += 0.1;
             }
         });
