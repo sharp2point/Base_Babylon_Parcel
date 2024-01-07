@@ -2,28 +2,23 @@ import { Scene, HavokPlugin, Vector3, Engine, Mesh } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 import { Inspector } from "@babylonjs/inspector";
 import { sceneOne } from "./scenes/scene_one";
-
+//---------------- VARIABLES ----------------->
 globalThis.gameCanvas = document.querySelector('#app');
 globalThis.gameEngine = new Engine(globalThis.gameCanvas, true);
 globalThis.gameGravity = new Vector3(0, -9.81, 0);
 globalThis.HVK = null;
-const SCENES = {
-    one: sceneOne(),
-}
 globalThis.gameWorkScene = null;
 globalThis.renderLock = false;
-
 //-----------------------------------------------------------------//
 async function initPhysics() {
     const havokInstance = await HavokPhysics();
     globalThis.HVK = new HavokPlugin(true, havokInstance);
 }
-
-initPhysics().then(() => { 
-    globalThis.gameWorkScene = SCENES.one;
+initPhysics().then(() => {    
+    const scene = sceneOne(globalThis.gameGravity, globalThis.HVK);
     globalThis.gameEngine.runRenderLoop(() => {
         if (!globalThis.renderLock) {
-            globalThis.gameWorkScene.render();
+            scene.render();
         }
     });
 });
