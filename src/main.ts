@@ -1,37 +1,41 @@
-import { Scene, HavokPlugin, Vector3, Engine, Mesh } from "@babylonjs/core"
-import inspector, { Inspector } from "@babylonjs/inspector"
-import { GameRoot } from "./game_root";
+import { Scene, HavokPlugin, Vector3, Engine, Mesh } from "@babylonjs/core";
+import HavokPhysics from "@babylonjs/havok";
+import { Inspector } from "@babylonjs/inspector";
+import { sceneOne } from "./scenes/scene_one";
 
-const canvas: HTMLCanvasElement = document.querySelector('#app');
-const engine = new Engine(canvas, true);
-const gravity = new Vector3(0, -9.81, 0);
-const gameRoot = new GameRoot(canvas, engine, gravity);
+globalThis.gameCanvas = document.querySelector('#app');
+globalThis.gameEngine = new Engine(globalThis.gameCanvas, true);
+globalThis.gameGravity = new Vector3(0, -9.81, 0);
+globalThis.HVK = null;
+const SCENES = {
+    one: sceneOne(),
+}
+globalThis.gameWorkScene = null;
+globalThis.renderLock = false;
 
-let scene: Scene = null;
+//-----------------------------------------------------------------//
+async function initPhysics() {
+    const havokInstance = await HavokPhysics();
+    globalThis.HVK = new HavokPlugin(true, havokInstance);
+}
 
-gameRoot.initPhysics().then(() => {
-
-    const physics = gameRoot.physics;
-    scene = gameRoot.addScene();
-
-    gameRoot.addCamera()
-        .addLight()
-        .createGameEnvironment();
-
-
-    engine.runRenderLoop(() => {
-        scene.render();
+initPhysics().then(() => { 
+    globalThis.gameWorkScene = SCENES.one;
+    globalThis.gameEngine.runRenderLoop(() => {
+        if (!globalThis.renderLock) {
+            globalThis.gameWorkScene.render();
+        }
     });
 });
 //Inspector Show/HIde event by Key[i]
 window.addEventListener("keydown", (ev) => {
-    if (ev.key === 'i') {
+    if (ev.key === 'i' && ev.altKey) {
         if (Inspector.IsVisible) {
             Inspector.Hide();
         } else {
-            Inspector.Show(scene, { embedMode: true, });
+            Inspector.Show(globalThis.gameWorkScene, { embedMode: true, });
         }
     }
 });
 // Resize Event 
-window.addEventListener('resize', () => engine.resize());
+window.addEventListener('resize', () => globalThis.gameEngine.resize());
