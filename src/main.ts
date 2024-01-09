@@ -15,10 +15,10 @@ async function initPhysics() {
     globalThis.HVK = new HavokPlugin(true, havokInstance);
 }
 initPhysics().then(() => {    
-    const scene = sceneOne(globalThis.gameGravity, globalThis.HVK);
+    globalThis.gameWorkScene = sceneOne(globalThis.gameGravity, globalThis.HVK);
     globalThis.gameEngine.runRenderLoop(() => {
         if (!globalThis.renderLock) {
-            scene.render();
+            globalThis.gameWorkScene.render();
         }
     });
 });
