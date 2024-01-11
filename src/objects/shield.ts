@@ -1,4 +1,4 @@
-import { Color3, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Quaternion, Scene, StandardMaterial, Tools, TransformNode, Vector3 } from "@babylonjs/core";
+import { Color3, Mesh, MeshBuilder, Observable, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Quaternion, Scene, ShadowGenerator, StandardMaterial, Tools, TransformNode, Vector3 } from "@babylonjs/core";
 
 
 export function shildComposition(scene: Scene) {
@@ -6,20 +6,23 @@ export function shildComposition(scene: Scene) {
     const shield_physics = physicsShield(scene, shield);
     const shield_control_plane = controlShieldPlane(scene, shield);
 
-    shield.position = new Vector3(0, 0.3, -5);
+    shield.position = new Vector3(0, 0.3, -7);
+    shield["position$"] = new Observable();
     return [shield, shield_physics, shield_control_plane];
 }
 function physicsShield(scene: Scene, parent: TransformNode) {
     const shield = MeshBuilder.CreateBox("shield", { width: 3, height: 0.6, depth: 0.25, wrap: true, updatable: true }, scene);
     shield.parent = parent;
+    shield.receiveShadows = true;
     const shield_mt = new StandardMaterial(`shield-mt`, scene);
     shield_mt.diffuseColor = new Color3(0.1, 0.09, 0.2);
     shield_mt.alpha = 0.5;
+    shield_mt.maxSimultaneousLights = 10;
     shield.material = shield_mt;
     const physics = new PhysicsBody(shield, PhysicsMotionType.ANIMATED, false, scene);
-    physics.setMassProperties({ mass: 1000, inertia: new Vector3(1, 1, 1), inertiaOrientation: new Quaternion(0, 0, 0, 1) });
+    physics.setMassProperties({ mass: 100 });
     const shape = new PhysicsShapeConvexHull(shield, scene);
-    shape.material = { restitution: 1, friction: 0.1, staticFriction: 0.1 }
+    shape.material = { restitution: 0.5, friction: 1, staticFriction: 1 }
     physics.shape = shape;
     physics.setCollisionCallbackEnabled(true);
     physics.setCollisionEndedCallbackEnabled(true);
@@ -36,4 +39,17 @@ function controlShieldPlane(scene: Scene, parent: TransformNode) {
     plane_mt.alpha = 0.2;
     control_plane.material = plane_mt;
     return control_plane;
+}
+export function addShadowToShield(generator: ShadowGenerator, scene: Scene) {
+    generator.addShadowCaster(scene.getMeshByName('shield'), false);
+}
+export function addPosition$(actionFn: any, scene: Scene) {
+    const shield = scene.getTransformNodeByName("shield-transform-node") as Mesh;
+    shield["position$"].add(() => {
+        actionFn();
+    });
+}
+export function onPosition$(scene:Scene) {
+    const shield = scene.getTransformNodeByName("shield-transform-node") as Mesh;
+    shield["position$"].notifyObservers()
 }
