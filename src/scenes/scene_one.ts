@@ -1,26 +1,66 @@
-import { Color3, DirectionalLight, EventState, HavokPlugin, HemisphericLight, IPointerEvent, Mesh, MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, PickingInfo, PointerEventTypes, PointerInfo, Scene, StandardMaterial, Texture, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
-import * as gmType from '../game_types/types';
-import { Shield } from "@/objects/shield";
+import { GameState } from "@/game_state/game_state";
+import { ballComposition } from "@/objects/ball";
+import { shildComposition } from "@/objects/shield";
+import { clampToBoxShieldPosition } from "@/utils/utility";
+import {
+    Color3, Color4, DirectionalLight, EventState, HavokPlugin,
+    HemisphericLight, IBasePhysicsCollisionEvent, IPointerEvent, Mesh,
+    MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull,
+    PhysicsViewer,
+    PickingInfo, PointerEventTypes, PointerInfo, Quaternion, Scene, ShadowGenerator,
+    StandardMaterial, Texture, Tools, TransformNode, UniversalCamera, Vector3
+} from "@babylonjs/core";
 
-const sceneState = {
-    gameSize: {
-        width: 20, height: 40, depth: 0
-    },
-    isShieldTap: false,
-    ballInitSpeed: 12,
-    dragBox: {
-        up: -7,
-        down: -19,
-        left: -6.5,
-        rigth: 6.5
-    }
-}
 
 export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
+    const scene = initScene(gravity, physicsEngine);
+    const camera = addCamera(scene);
+    const [hemiLight, dirLight, shadowGen] = [...addLights(scene)];
+    const world_node = createWorld(scene);
+    const [shield, shield_physics, shield_control_plane] = shildComposition(scene);
+    const ball = ballComposition(scene);
+    //------------------------------------------------------->
+    scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        pointerDownHandler(pickInfo, scene);
+    };
+    scene.onPointerUp = pointerUpHandler;
+    scene.onPointerMove = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        pointerMoveHandler(pickInfo, shield, scene);
+    }
+    scene.onBeforeRenderObservable.add(() => {
+        //(globalThis.HVK as HavokPlugin).setPhysicsBodyTransformation(shield_physics.getPhysicsBody(), shield)
+        (globalThis.HVK as HavokPlugin).setTargetTransform(shield_physics.getPhysicsBody(), shield.position, Quaternion.Identity())
+    });
+    (globalThis.HVK as HavokPlugin).onCollisionObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
+
+        if (eventData.collidedAgainst.transformNode.name === "shield" || eventData.collider.transformNode.name === "shield") {
+            console.log("Collider: ", eventData.collider.transformNode.name);
+            console.log("Against: ", eventData.collidedAgainst.transformNode.name);
+        }
+
+    });
+    (globalThis.HVK as HavokPlugin).onCollisionEndedObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
+
+    });
+    //----------------- DEBUG -------------->
+    debugPhysicsInfo(scene);
+    return scene;
+}
+//--------------------------------->
+function initScene(gravity: Vector3, physicsEngine: HavokPlugin) {
     const scene = new Scene(globalThis.gameEngine);
-    scene.enablePhysics(gravity, physicsEngine)
-    const camera = new UniversalCamera("main-scene-camera", new Vector3(0, 8, -30), scene);
+    scene.enablePhysics(gravity, physicsEngine);
+    scene.clearColor = new Color4(0.05, 0.04, 0.06, 1)
+
+    return scene;
+}
+function addCamera(scene: Scene) {
+    const camera = new UniversalCamera("main-scene-camera", new Vector3(0, 5, -10), scene);
+    camera.fov = Tools.ToRadians(80);
     camera.target = Vector3.Zero();
+    return camera;
+}
+function addLights(scene: Scene) {
     const hemiLight = new HemisphericLight("main-scene-hemilight", new Vector3(0, -1, 0), scene);
     hemiLight.diffuse = new Color3(1, 1, 0.3);
     hemiLight.intensity = 0.7;
@@ -30,138 +70,83 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     dirLight.diffuse = new Color3(1, 1, 1);
     dirLight.intensity = 1;
 
-    createPhysicsEnv(scene);
-    const shield = new Shield(new Vector3(0, 0, -10), scene);
-    createUpLine(scene);
-    //----------------- EVENTS --------------------------
-    scene.onPointerDown = () => mouseDownHandler(shield, scene);
-    scene.onPointerUp = () => mouseUpHandler();
-    scene.onPointerMove = () => mouseMoveHandler(shield, scene);
+    const shadowGen = new ShadowGenerator(1024, dirLight);
 
-    return scene;
-}
-//----------------------------------------------------------->
-function createPhysicsEnv(scene: Scene) {
-    const borderPosY = -0.4;
-    const groundObj = createGround(sceneState.gameSize, scene);
-    groundObj.addPhysics();
-    createBorder("left-border", { size: { width: 1, height: 1, depth: sceneState.gameSize.height }, position: { x: -sceneState.gameSize.width / 2, y: borderPosY, z: 0 } }, scene);
-    createBorder("right-border", { size: { width: 1, height: 1, depth: sceneState.gameSize.height }, position: { x: sceneState.gameSize.width / 2, y: borderPosY, z: 0 } }, scene);
-    createBorder("up-border", { size: { width: sceneState.gameSize.width + 1, height: 1, depth: 1 }, position: { x: 0, y: borderPosY, z: sceneState.gameSize.height / 2 } }, scene);
-    createPhysicsBorder("left-physics-border", { size: { width: 0.1, height: 5, depth: sceneState.gameSize.height }, position: { x: -sceneState.gameSize.width / 2, y: borderPosY, z: 0 } }, scene).addPhysics();
-    createPhysicsBorder("right-physics-border", { size: { width: 0.1, height: 5, depth: sceneState.gameSize.height }, position: { x: sceneState.gameSize.width / 2, y: borderPosY, z: 0 } }, scene).addPhysics();
-    createPhysicsBorder("up-physics-border", { size: { width: sceneState.gameSize.width + 0.05, height: 5, depth: 0.1 }, position: { x: 0, y: borderPosY, z: sceneState.gameSize.height / 2 } }, scene).addPhysics();
-}
-function createGround(size: gmType.gmSize, scene: Scene) {
-    const mesh = MeshBuilder.CreateGround('ground', { width: size.width, height: size.height }, scene);
-    const material = new StandardMaterial(`${mesh.name}-material`, scene);
-    material.diffuseColor = new Color3(0.22, 0.17, 0.2);
-    mesh.material = material;
-    return {
-        mesh: mesh,
-        setParent: (parent: TransformNode) => {
-            mesh.parent = parent;
-        },
-        addPhysics: () => {
-            const physics = new PhysicsBody(mesh, PhysicsMotionType.STATIC, false, scene);
-            const shape = new PhysicsShapeConvexHull(mesh, scene);
-            shape.material = { restitution: 0, friction: 0 };
-            physics.shape = shape;
-        }
-    };
-}
-function createBorder(name: string, options: { size: gmType.gmSize, position: gmType.gmPosition }, scene: Scene) {
-    const mesh = MeshBuilder.CreateBox(name, { width: options.size.width, height: options.size.height, depth: options.size.depth });
-    mesh.position = new Vector3(options.position.x, options.position.y, options.position.z);
-    const material = new StandardMaterial(`${mesh.name}-material`, scene);
-    material.diffuseColor = new Color3(0.3, 0.3, 0.4);
-    mesh.material = material;
-    return {
-        mesh: mesh,
-        setParent: (parent: TransformNode) => {
-            mesh.parent = parent;
-        },
-        addPhysics: () => {
-            const physics = new PhysicsBody(mesh, PhysicsMotionType.STATIC, false, scene);
-            const shape = new PhysicsShapeConvexHull(mesh, scene);
-            physics.shape = shape;
-        }
-    };
-}
-function createPhysicsBorder(name: string, options: { size: gmType.gmSize, position: gmType.gmPosition }, scene: Scene) {
-    const mesh = MeshBuilder.CreateBox(name, { width: options.size.width, height: options.size.height, depth: options.size.depth });
-    mesh.position = new Vector3(options.position.x, options.position.y, options.position.z);
-    const material = new StandardMaterial(`${mesh.name}-material`, scene);
-    material.diffuseColor = new Color3(0.1, 0.1, 0.1);
-    material.alpha = 0.1;
-    mesh.material = material;
 
-    return {
-        mesh: mesh,
-        setParent: (parent: TransformNode) => {
-            mesh.parent = parent;
-        },
-        addPhysics: () => {
-            const physics = new PhysicsBody(mesh, PhysicsMotionType.STATIC, false, scene);
-            const shape = new PhysicsShapeConvexHull(mesh, scene);
-            physics.shape = shape;
-        }
-    };
+    return [hemiLight, dirLight, shadowGen];
 }
-function createUpLine(scene: Scene) {
-    const y = 0.05;
-    const up_line = MeshBuilder.CreateLines("up-line", {
-        points: [
-            new Vector3(sceneState.dragBox.left - 3, y, sceneState.dragBox.up),
-            new Vector3(sceneState.dragBox.rigth + 3, y, sceneState.dragBox.up)]
-    }, scene);
-    const down_line = MeshBuilder.CreateLines("down-line", {
-        points: [
-            new Vector3(sceneState.dragBox.left - 3, y, sceneState.dragBox.down),
-            new Vector3(sceneState.dragBox.rigth + 3, y, sceneState.dragBox.down)]
-    }, scene);
+function createWorld(scene: Scene) {
+    const world_node = new TransformNode("world-transform-node", scene);
+    const ground = MeshBuilder.CreateGround("ground", { width: 12, height: 20, updatable: true }, scene);
+    const ground_mt = new StandardMaterial(`${ground.name}-mt`, scene);
+    ground_mt.diffuseColor = new Color3(0.21, 0.19, 0.21);
+    ground.material = ground_mt;
+    ground.parent = world_node;
+    const phy_g = new PhysicsBody(ground, PhysicsMotionType.STATIC, false, scene);
+    const shape_g = new PhysicsShapeConvexHull(ground, scene);
+    phy_g.shape = shape_g;
 
+    const left_wall = MeshBuilder.CreateBox("left-wall", { width: 0.1, height: 2, depth: 20, updatable: true }, scene);
+    left_wall.position = new Vector3(-5.9, 1, 0);
+    const wall_mt = new StandardMaterial(`wall-mt`, scene);
+    wall_mt.diffuseColor = new Color3(0.3, 0.25, 0.35);
+    wall_mt.alpha = 0.05;
+    left_wall.material = wall_mt;
+    left_wall.parent = world_node;
+    const phy_lw = new PhysicsBody(left_wall, PhysicsMotionType.STATIC, false, scene);
+    const shape_lw = new PhysicsShapeConvexHull(left_wall, scene);
+    phy_lw.shape = shape_lw;
+
+    const right_wall = left_wall.clone("right-wall", world_node, true, false);
+    right_wall.position = new Vector3(5.9, 1, 0);
+    const phy_rw = new PhysicsBody(right_wall, PhysicsMotionType.STATIC, false, scene);
+    const shape_rw = new PhysicsShapeConvexHull(right_wall, scene);
+    phy_rw.shape = shape_rw;
+
+    const up_wall = MeshBuilder.CreateBox("up-wall", { width: 12, height: 2, depth: 0.1, updatable: true }, scene);
+    up_wall.position = new Vector3(0, 1, 10);
+    up_wall.material = wall_mt;
+    up_wall.parent = world_node;
+    const phy_uw = new PhysicsBody(up_wall, PhysicsMotionType.STATIC, false, scene);
+    const shape_uw = new PhysicsShapeConvexHull(up_wall, scene);
+    phy_uw.shape = shape_uw;
+
+    return world_node;
 }
-//----------------------------------------------------------------->
-function mouseDownHandler(shield: Shield, scene: Scene) {
+//---------------------------------->
+function pointerDownHandler(pickInfo: PickingInfo, scene: Scene) {
     const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
-    if (pic.pickedMesh && pic.pickedMesh.name === shield.name && !sceneState.isShieldTap) {
-        sceneState.isShieldTap = true;
-        shield.position = new Vector3(pic.pickedPoint.x, shield.position.y, pic.pickedPoint.z);
-    } else {
-
+    if (pic.pickedMesh.name === "shield-control-plane") {
+        GameState.isDragShield = true;
     }
 }
-function mouseUpHandler() {
-    if (sceneState.isShieldTap) {
-        sceneState.isShieldTap = false;
-        // const physics = ball.getPhysicsBody();
-        // if (ball && physics.getMotionType() === PhysicsMotionType.ANIMATED) {
-        //     physics.setMotionType(PhysicsMotionType.DYNAMIC);
-        //     physics.applyForce(sceneState.ballInitSpeed, new Vector3(0, 0, 0));
-        //     physics.setCollisionCallbackEnabled(true);
-        //     physics.setCollisionEndedCallbackEnabled(true);
-        // }
+function pointerUpHandler(evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
+    if (GameState.isDragShield) {
+        GameState.isDragShield = false;
     }
 }
-function mouseMoveHandler(shield: Shield, scene: Scene) {
-    if (sceneState.isShieldTap) {
+function pointerMoveHandler(pickInfo: PickingInfo, shield: TransformNode, scene: Scene) {
+    if (GameState.isDragShield) {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
-        const position = Vector3.Clamp(pic.pickedPoint,
-            new Vector3(sceneState.dragBox.left, shield.position.y, sceneState.dragBox.down),
-            new Vector3(sceneState.dragBox.rigth, shield.position.y, sceneState.dragBox.up));
-            shield.position = position;
+        if (pic.pickedMesh.name === "shield-control-plane") {
 
-        // shield_box.position = new Vector3(result.pickedPoint.x, shield_box.position.y, result.pickedPoint.z)
-        // const physics = ball.getPhysicsBody();
-        // const pivot_mesh = shield_box.getChildMeshes()[0];
-        // if (ball && physics.getMotionType() === PhysicsMotionType.ANIMATED) {
-        //     ball.position = shield_box.position.add(pivot_mesh.position).clone();
-        //     physics.setAngularVelocity(Vector3.Zero());
-        //     physics.setLinearVelocity(Vector3.Zero());
-        //     globalThis.HVK.setPhysicsBodyTransformation(physics, pivot_mesh)
-        // }
+        }
+        clampToBoxShieldPosition(pic.pickedPoint, shield, pic.pickedPoint);
 
     }
 }
-//----------------------------------------------------------------->
+//--------------------------->
+function debugPhysicsInfo(scene: Scene) {
+    const pv = new PhysicsViewer();
+    const ball = scene.getMeshByName("ball");
+    const shield = scene.getMeshByName("shield");
+    pv.showBody(ball.physicsBody);
+    pv.showBody(shield.physicsBody);
+    // for (const m of scene.rootNodes) {
+    //     if (m instanceof Mesh) {
+    //         if (m.physicsBody) {
+    //             const dm = pv.showBody(m.physicsBody);
+    //         }
+    //     }
+    // }
+}
