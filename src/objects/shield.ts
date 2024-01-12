@@ -1,7 +1,8 @@
+import { GameState } from "@/game_state/game_state";
 import { Color3, Mesh, MeshBuilder, Observable, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Quaternion, Scene, ShadowGenerator, StandardMaterial, Tools, TransformNode, Vector3 } from "@babylonjs/core";
 
 
-export function shildComposition(scene: Scene) {
+export function shildComposition(scene: Scene): [TransformNode, Mesh, Mesh] {
     const shield = new TransformNode("shield-transform-node", scene);
     const shield_physics = physicsShield(scene, shield);
     const shield_control_plane = controlShieldPlane(scene, shield);
@@ -24,6 +25,7 @@ function physicsShield(scene: Scene, parent: TransformNode) {
     const shape = new PhysicsShapeConvexHull(shield, scene);
     shape.material = { restitution: 0.5, friction: 1, staticFriction: 1 }
     physics.shape = shape;
+    //physics.disablePreStep = false;
     physics.setCollisionCallbackEnabled(true);
     physics.setCollisionEndedCallbackEnabled(true);
     return shield;
@@ -43,13 +45,12 @@ function controlShieldPlane(scene: Scene, parent: TransformNode) {
 export function addShadowToShield(generator: ShadowGenerator, scene: Scene) {
     generator.addShadowCaster(scene.getMeshByName('shield'), false);
 }
-export function addPosition$(actionFn: any, scene: Scene) {
-    const shield = scene.getTransformNodeByName("shield-transform-node") as Mesh;
-    shield["position$"].add(() => {
+//----------OBSERVABLES----------------->
+export function addPosition$(actionFn: any) {
+    GameState.gameObjects.shield["position$"].add(() => {
         actionFn();
     });
 }
-export function onPosition$(scene:Scene) {
-    const shield = scene.getTransformNodeByName("shield-transform-node") as Mesh;
-    shield["position$"].notifyObservers()
+export function onPosition$() {
+    GameState.gameObjects.shield["position$"].notifyObservers()
 }

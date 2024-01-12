@@ -1,7 +1,7 @@
 import { GameState } from "@/game_state/game_state";
-import { ballComposition } from "@/objects/ball";
-import { shildComposition } from "@/objects/shield";
-import { clampToBoxShieldPosition } from "@/utils/utility";
+import { addRun$, addShadowToBall, ballComposition, onRun$ } from "@/objects/ball";
+import { addPosition$, addShadowToShield, onPosition$, shildComposition } from "@/objects/shield";
+import { clampToBoxShieldPosition, debugPhysicsInfo } from "@/utils/utility";
 import {
     Color3, Color4, DirectionalLight, EventState, HavokPlugin,
     HemisphericLight, IBasePhysicsCollisionEvent, IPointerEvent, Mesh,
@@ -18,32 +18,30 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     const [hemiLight, dirLight, shadowGen] = [...addLights(scene)];
     const world_node = createWorld(scene);
     const [shield, shield_physics, shield_control_plane] = shildComposition(scene);
-    const ball = ballComposition(scene);
-    //------------------------------------------------------->
-    scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
-        pointerDownHandler(pickInfo, scene);
-    };
-    scene.onPointerUp = pointerUpHandler;
-    scene.onPointerMove = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
-        pointerMoveHandler(pickInfo, shield, scene);
-    }
-    scene.onBeforeRenderObservable.add(() => {
-        //(globalThis.HVK as HavokPlugin).setPhysicsBodyTransformation(shield_physics.getPhysicsBody(), shield)
-        (globalThis.HVK as HavokPlugin).setTargetTransform(shield_physics.getPhysicsBody(), shield.position, Quaternion.Identity())
-    });
+    GameState.gameObjects.scene = scene;
+    GameState.gameObjects.shield = shield;
+    GameState.gameObjects.ball = ballComposition(scene);
+    addShadowsToObjects(shadowGen, scene);
+    //--------- OBSERVER -------->
+    addRun$();
+    addPosition$(() => { });
+    //----------- EVENTS -------->
+    addSceneEvents(GameState.gameObjects.ball, shield, shield_physics, scene);
+
     (globalThis.HVK as HavokPlugin).onCollisionObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
 
         if (eventData.collidedAgainst.transformNode.name === "shield" || eventData.collider.transformNode.name === "shield") {
-            console.log("Collider: ", eventData.collider.transformNode.name);
-            console.log("Against: ", eventData.collidedAgainst.transformNode.name);
+            // console.log("Collider: ", eventData.collider.transformNode.name);
+            // console.log("Against: ", eventData.collidedAgainst.transformNode.name);
         }
 
     });
     (globalThis.HVK as HavokPlugin).onCollisionEndedObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
-
+        const ball_physics = GameState.gameObjects.ball.getPhysicsBody() as PhysicsBody;
+        ball_physics.applyForce(ball_physics.getLinearVelocity().clone().normalize().multiply(new Vector3(20, 0, 20)), GameState.gameObjects.ball.getAbsolutePosition())
     });
     //----------------- DEBUG -------------->
-    debugPhysicsInfo(scene);
+    //debugPhysicsInfo(scene);
     return scene;
 }
 //--------------------------------->
@@ -60,30 +58,38 @@ function addCamera(scene: Scene) {
     camera.target = Vector3.Zero();
     return camera;
 }
-function addLights(scene: Scene) {
-    const hemiLight = new HemisphericLight("main-scene-hemilight", new Vector3(0, -1, 0), scene);
+function addLights(scene: Scene): [HemisphericLight, DirectionalLight, ShadowGenerator] {
+    const hemiLight = new HemisphericLight("main-scene-hemilight", new Vector3(0, 1, 0), scene);
     hemiLight.diffuse = new Color3(1, 1, 0.3);
     hemiLight.intensity = 0.7;
 
-    const dirLight = new DirectionalLight("main-scene-dirlight", new Vector3(0, -1, 0), scene);
-    dirLight.position = new Vector3(0, 10, -10);
+    const dirLight = new DirectionalLight("main-scene-dirlight", new Vector3(0, -1, -1), scene);
+    dirLight.position = new Vector3(0, 20, 20);
     dirLight.diffuse = new Color3(1, 1, 1);
-    dirLight.intensity = 1;
+    dirLight.specular = new Color3(0.25, 0.25, 0.2);
+    dirLight.intensity = 0.7;
 
     const shadowGen = new ShadowGenerator(1024, dirLight);
+    shadowGen.usePoissonSampling = true;
+    shadowGen.useExponentialShadowMap = true;
+    shadowGen.useBlurExponentialShadowMap = true;
 
-
-    return [hemiLight, dirLight, shadowGen];
+    return [
+        hemiLight, dirLight, shadowGen
+    ];
 }
 function createWorld(scene: Scene) {
     const world_node = new TransformNode("world-transform-node", scene);
     const ground = MeshBuilder.CreateGround("ground", { width: 12, height: 20, updatable: true }, scene);
+    ground.receiveShadows = true;
     const ground_mt = new StandardMaterial(`${ground.name}-mt`, scene);
     ground_mt.diffuseColor = new Color3(0.21, 0.19, 0.21);
+    ground_mt.maxSimultaneousLights = 10;
     ground.material = ground_mt;
     ground.parent = world_node;
     const phy_g = new PhysicsBody(ground, PhysicsMotionType.STATIC, false, scene);
     const shape_g = new PhysicsShapeConvexHull(ground, scene);
+    shape_g.material = { restitution: 0, friction: 0.05 }
     phy_g.shape = shape_g;
 
     const left_wall = MeshBuilder.CreateBox("left-wall", { width: 0.1, height: 2, depth: 20, updatable: true }, scene);
@@ -95,12 +101,14 @@ function createWorld(scene: Scene) {
     left_wall.parent = world_node;
     const phy_lw = new PhysicsBody(left_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_lw = new PhysicsShapeConvexHull(left_wall, scene);
+    shape_lw.material = { restitution: 1, friction: 0.05 }
     phy_lw.shape = shape_lw;
 
     const right_wall = left_wall.clone("right-wall", world_node, true, false);
     right_wall.position = new Vector3(5.9, 1, 0);
     const phy_rw = new PhysicsBody(right_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_rw = new PhysicsShapeConvexHull(right_wall, scene);
+    shape_rw.material = { restitution: 1, friction: 0.05 }
     phy_rw.shape = shape_rw;
 
     const up_wall = MeshBuilder.CreateBox("up-wall", { width: 12, height: 2, depth: 0.1, updatable: true }, scene);
@@ -109,44 +117,53 @@ function createWorld(scene: Scene) {
     up_wall.parent = world_node;
     const phy_uw = new PhysicsBody(up_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_uw = new PhysicsShapeConvexHull(up_wall, scene);
+    shape_uw.material = { restitution: 1, friction: 0.05 }
     phy_uw.shape = shape_uw;
 
     return world_node;
 }
+function addShadowsToObjects(generator: ShadowGenerator, scene: Scene) {
+    addShadowToBall(generator, scene);
+    addShadowToShield(generator, scene);
+}
 //---------------------------------->
+function addSceneEvents(ball: Mesh, shield: TransformNode, shield_physics: Mesh, scene: Scene) {
+    scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        pointerDownHandler(pickInfo, scene);
+    };
+    scene.onPointerUp = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        pointerUpHandler(scene);
+    }
+    scene.onPointerMove = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        pointerMoveHandler(pickInfo, shield, scene);
+    }
+    scene.onBeforeRenderObservable.add(() => {
+        ballJoinShield();
+        (globalThis.HVK as HavokPlugin).setTargetTransform(shield_physics.getPhysicsBody(), shield.position, Quaternion.Identity())
+    });
+}
 function pointerDownHandler(pickInfo: PickingInfo, scene: Scene) {
     const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
     if (pic.pickedMesh.name === "shield-control-plane") {
         GameState.isDragShield = true;
     }
 }
-function pointerUpHandler(evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) {
+function pointerUpHandler(scene: Scene) {
     if (GameState.isDragShield) {
         GameState.isDragShield = false;
+        onRun$()
     }
 }
 function pointerMoveHandler(pickInfo: PickingInfo, shield: TransformNode, scene: Scene) {
     if (GameState.isDragShield) {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
-        if (pic.pickedMesh.name === "shield-control-plane") {
-
-        }
+        onPosition$();
         clampToBoxShieldPosition(pic.pickedPoint, shield, pic.pickedPoint);
-
     }
 }
 //--------------------------->
-function debugPhysicsInfo(scene: Scene) {
-    const pv = new PhysicsViewer();
-    const ball = scene.getMeshByName("ball");
-    const shield = scene.getMeshByName("shield");
-    pv.showBody(ball.physicsBody);
-    pv.showBody(shield.physicsBody);
-    // for (const m of scene.rootNodes) {
-    //     if (m instanceof Mesh) {
-    //         if (m.physicsBody) {
-    //             const dm = pv.showBody(m.physicsBody);
-    //         }
-    //     }
-    // }
+function ballJoinShield() {
+    if (!GameState.isBallStart) {
+        GameState.gameObjects.ball.getPhysicsBody().setTargetTransform(GameState.gameObjects.shield.position.clone().add(new Vector3(0, 0, 0.5)), Quaternion.Identity())
+    }
 }
