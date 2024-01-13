@@ -7,8 +7,8 @@ export function randomInt(min: number, max: number) {
 export function clampToBoxShieldPosition(position: Vector3, shield: TransformNode, deltaPic: Vector3) {
     try {
         const new_position = Vector3.Clamp(position,
-            new Vector3(GameState.dragBox.left, shield.position.y, GameState.dragBox.down),
-            new Vector3(GameState.dragBox.rigth, shield.position.y, GameState.dragBox.up));
+            new Vector3(GameState.state.dragBox.left, shield.position.y, GameState.state.dragBox.down),
+            new Vector3(GameState.state.dragBox.rigth, shield.position.y, GameState.state.dragBox.up));
         const old_position = shield.position;
         shield.position = Vector3.Lerp(old_position, new_position, 0.2);
     } catch (err) {

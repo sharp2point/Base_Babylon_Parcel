@@ -17,16 +17,19 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     const camera = addCamera(scene);
     const [hemiLight, dirLight, shadowGen] = [...addLights(scene)];
     const world_node = createWorld(scene);
+    dragBoxLines();
+
     const [shield, shield_physics, shield_control_plane] = shildComposition(scene);
-    GameState.gameObjects.scene = scene;
-    GameState.gameObjects.shield = shield;
-    GameState.gameObjects.ball = ballComposition(scene);
+    GameState.state.gameObjects.scene = scene;
+    GameState.state.gameObjects.shield = shield;
+    GameState.state.gameObjects.ball = ballComposition(scene);
+    GameState.state.gameObjects.shadow = shadowGen;
     addShadowsToObjects(shadowGen, scene);
     //--------- OBSERVER -------->
     addRun$();
     addPosition$(() => { });
     //----------- EVENTS -------->
-    addSceneEvents(GameState.gameObjects.ball, shield, shield_physics, scene);
+    addSceneEvents(GameState.state.gameObjects.ball, shield, shield_physics, scene);
 
     (globalThis.HVK as HavokPlugin).onCollisionObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
 
@@ -37,11 +40,13 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
 
     });
     (globalThis.HVK as HavokPlugin).onCollisionEndedObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
-        const ball_physics = GameState.gameObjects.ball.getPhysicsBody() as PhysicsBody;
-        ball_physics.applyForce(ball_physics.getLinearVelocity().clone().normalize().multiply(new Vector3(20, 0, 20)), GameState.gameObjects.ball.getAbsolutePosition())
+        const ball_physics = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody;
+        ball_physics.applyForce(ball_physics.getLinearVelocity().clone().normalize().multiply(new Vector3(20, 0, 20)),
+            GameState.state.gameObjects.ball.getAbsolutePosition())
     });
     //----------------- DEBUG -------------->
     //debugPhysicsInfo(scene);
+    GameState.state.createMap(1);
     return scene;
 }
 //--------------------------------->
@@ -81,7 +86,10 @@ function addLights(scene: Scene): [HemisphericLight, DirectionalLight, ShadowGen
 }
 function createWorld(scene: Scene) {
     const world_node = new TransformNode("world-transform-node", scene);
-    const ground = MeshBuilder.CreateGround("ground", { width: 12, height: 20, updatable: true }, scene);
+    const ground = MeshBuilder.CreateGround("ground", {
+        width: GameState.state.sizes.gameBox.width,
+        height: GameState.state.sizes.gameBox.height, updatable: true
+    }, scene);
     ground.receiveShadows = true;
     const ground_mt = new StandardMaterial(`${ground.name}-mt`, scene);
     ground_mt.diffuseColor = new Color3(0.21, 0.19, 0.21);
@@ -91,49 +99,69 @@ function createWorld(scene: Scene) {
     const phy_g = new PhysicsBody(ground, PhysicsMotionType.STATIC, false, scene);
     const shape_g = new PhysicsShapeConvexHull(ground, scene);
     shape_g.material = {
-        restitution: GameState.physicsMaterial.ground.restitution,
-        friction: GameState.physicsMaterial.ground.friction
+        restitution: GameState.state.physicsMaterial.ground.restitution,
+        friction: GameState.state.physicsMaterial.ground.friction
     }
     phy_g.shape = shape_g;
     //---------- WALLS ------------->
-    const left_wall = MeshBuilder.CreateBox("left-wall", { width: 0.1, height: 2, depth: 20, updatable: true }, scene);
-    left_wall.position = new Vector3(-5.9, 1, 0);
+    const left_wall = MeshBuilder.CreateBox("left-wall", {
+        width: 0.1, height: 2,
+        depth: GameState.state.sizes.gameBox.height, updatable: true
+    }, scene);
+    left_wall.position = new Vector3(-GameState.state.sizes.gameBox.width / 2, 1, 0);
     const wall_mt = new StandardMaterial(`wall-mt`, scene);
     wall_mt.diffuseColor = new Color3(0.3, 0.25, 0.35);
-    wall_mt.alpha = 0.05;
+    wall_mt.alpha = 0.5;
     left_wall.material = wall_mt;
     left_wall.parent = world_node;
     const phy_lw = new PhysicsBody(left_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_lw = new PhysicsShapeConvexHull(left_wall, scene);
     shape_lw.material = {
-        restitution: GameState.physicsMaterial.wall.restitution,
-        friction: GameState.physicsMaterial.wall.friction
+        restitution: GameState.state.physicsMaterial.wall.restitution,
+        friction: GameState.state.physicsMaterial.wall.friction
     }
     phy_lw.shape = shape_lw;
 
     const right_wall = left_wall.clone("right-wall", world_node, true, false);
-    right_wall.position = new Vector3(5.9, 1, 0);
+    right_wall.position = new Vector3(GameState.state.sizes.gameBox.width / 2, 1, 0);
     const phy_rw = new PhysicsBody(right_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_rw = new PhysicsShapeConvexHull(right_wall, scene);
     shape_rw.material = {
-        restitution: GameState.physicsMaterial.wall.restitution,
-        friction: GameState.physicsMaterial.wall.friction
+        restitution: GameState.state.physicsMaterial.wall.restitution,
+        friction: GameState.state.physicsMaterial.wall.friction
     }
     phy_rw.shape = shape_rw;
 
-    const up_wall = MeshBuilder.CreateBox("up-wall", { width: 12, height: 2, depth: 0.1, updatable: true }, scene);
-    up_wall.position = new Vector3(0, 1, 10);
+    const up_wall = MeshBuilder.CreateBox("up-wall", {
+        width: GameState.state.sizes.gameBox.width,
+        height: 2, depth: 0.1, updatable: true
+    }, scene);
+    up_wall.position = new Vector3(0, 1, GameState.state.sizes.gameBox.height / 2);
     up_wall.material = wall_mt;
     up_wall.parent = world_node;
     const phy_uw = new PhysicsBody(up_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_uw = new PhysicsShapeConvexHull(up_wall, scene);
     shape_uw.material = {
-        restitution: GameState.physicsMaterial.wall.restitution,
-        friction: GameState.physicsMaterial.wall.friction
+        restitution: GameState.state.physicsMaterial.wall.restitution,
+        friction: GameState.state.physicsMaterial.wall.friction
     }
     phy_uw.shape = shape_uw;
 
     return world_node;
+}
+function dragBoxLines() {
+    const upline = MeshBuilder.CreateLines("up-line", {
+        points: [new Vector3(GameState.state.dragBox.left, 0.1, GameState.state.dragBox.up),
+        new Vector3(0, 0.1, GameState.state.dragBox.up),
+        new Vector3(GameState.state.dragBox.rigth, 0.1, GameState.state.dragBox.up)],
+        colors: [new Color4(0.3, 0.5, 0.5, 1), new Color4(0.9, 0.5, 0.5, 1), new Color4(0.3, 0.5, 0.5, 1)]
+    }, GameState.state.gameObjects.scene);
+    const downline = MeshBuilder.CreateLines("down-line", {
+        points: [new Vector3(GameState.state.dragBox.left, 0.1, GameState.state.dragBox.down),
+        new Vector3(0, 0.1, GameState.state.dragBox.down),
+        new Vector3(GameState.state.dragBox.rigth, 0.1, GameState.state.dragBox.down)],
+        colors: [new Color4(0.3, 0.5, 0.5, 1), new Color4(0.9, 0.5, 0.5, 1), new Color4(0.3, 0.5, 0.5, 1)]
+    }, GameState.state.gameObjects.scene)
 }
 function addShadowsToObjects(generator: ShadowGenerator, scene: Scene) {
     addShadowToBall(generator, scene);
@@ -158,17 +186,17 @@ function addSceneEvents(ball: Mesh, shield: TransformNode, shield_physics: Mesh,
 function pointerDownHandler(pickInfo: PickingInfo, scene: Scene) {
     const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
     if (pic.pickedMesh.name === "shield-control-plane") {
-        GameState.isDragShield = true;
+        GameState.state.isDragShield = true;
     }
 }
 function pointerUpHandler(scene: Scene) {
-    if (GameState.isDragShield) {
-        GameState.isDragShield = false;
+    if (GameState.state.isDragShield) {
+        GameState.state.isDragShield = false;
         onRun$()
     }
 }
 function pointerMoveHandler(pickInfo: PickingInfo, shield: TransformNode, scene: Scene) {
-    if (GameState.isDragShield) {
+    if (GameState.state.isDragShield) {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
         onPosition$();
         clampToBoxShieldPosition(pic.pickedPoint, shield, pic.pickedPoint);
@@ -176,7 +204,7 @@ function pointerMoveHandler(pickInfo: PickingInfo, shield: TransformNode, scene:
 }
 //--------------------------->
 function ballJoinShield() {
-    if (!GameState.isBallStart) {
-        GameState.gameObjects.ball.getPhysicsBody().setTargetTransform(GameState.gameObjects.shield.position.clone().add(new Vector3(0, 0, 0.5)), Quaternion.Identity())
+    if (!GameState.state.isBallStart) {
+        GameState.state.gameObjects.ball.getPhysicsBody().setTargetTransform(GameState.state.gameObjects.shield.position.clone().add(new Vector3(0, 0, 0.5)), Quaternion.Identity())
     }
 }

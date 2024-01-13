@@ -21,11 +21,11 @@ function physicsShield(scene: Scene, parent: TransformNode) {
     shield_mt.maxSimultaneousLights = 10;
     shield.material = shield_mt;
     const physics = new PhysicsBody(shield, PhysicsMotionType.ANIMATED, false, scene);
-    physics.setMassProperties({ mass: GameState.physicsMaterial.shield.mass });
+    physics.setMassProperties({ mass: GameState.state.physicsMaterial.shield.mass });
     const shape = new PhysicsShapeConvexHull(shield, scene);
     shape.material = {
-        restitution: GameState.physicsMaterial.shield.restitution,
-        friction: GameState.physicsMaterial.shield.friction
+        restitution: GameState.state.physicsMaterial.shield.restitution,
+        friction: GameState.state.physicsMaterial.shield.friction
     }
     physics.shape = shape;
     //physics.disablePreStep = false;
@@ -50,10 +50,10 @@ export function addShadowToShield(generator: ShadowGenerator, scene: Scene) {
 }
 //----------OBSERVABLES----------------->
 export function addPosition$(actionFn: any) {
-    GameState.gameObjects.shield["position$"].add(() => {
+    GameState.state.gameObjects.shield["position$"].add(() => {
         actionFn();
     });
 }
 export function onPosition$() {
-    GameState.gameObjects.shield["position$"].notifyObservers()
+    GameState.state.gameObjects.shield["position$"].notifyObservers()
 }
