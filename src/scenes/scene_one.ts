@@ -59,7 +59,7 @@ function initScene(gravity: Vector3, physicsEngine: HavokPlugin) {
     return scene;
 }
 function addCamera(scene: Scene) {
-    const camera = new UniversalCamera("main-scene-camera", new Vector3(0, 5, -10), scene);
+    const camera = new UniversalCamera("main-scene-camera", new Vector3(0, 10, -10), scene);
     camera.fov = Tools.ToRadians(80);
     camera.target = Vector3.Zero();
     return camera;

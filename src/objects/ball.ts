@@ -1,20 +1,7 @@
 import { GameState } from "@/game_state/game_state";
-import { Color3, HavokPlugin, Material, Mesh, MeshBuilder, Observable, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Quaternion, Scene, ShadowGenerator, StandardMaterial, Vector3 } from "@babylonjs/core";
+import { Color3, HavokPlugin, Light, Material, Mesh, MeshBuilder, Observable, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Quaternion, Scene, ShadowGenerator, SpotLight, StandardMaterial, Tools, Vector3 } from "@babylonjs/core";
 
-export function ballComposition(scene: Scene): Mesh {
-    const ball = physicsBall(scene);
-    ball["run$"] = new Observable();
-    ball.onBeforeRenderObservable.add(() => {
-        if (GameState.state.isBallStart) {
-            clearBallVelocityY(ball.getPhysicsBody());
-            velocityControl();
-            if (ball.position.z < (GameState.state.dragBox.down + 1)) {
-                GameState.state.changeGameState(GameState.state.signals.GAME_OTHER_BALL);
-            }
-        }
-    });
-    return ball;
-}
+
 function physicsBall(scene: Scene): Mesh {
     const ball = MeshBuilder.CreateSphere("ball", { diameter: GameState.state.sizes.ball, segments: 32, updatable: false }, scene);
     ball.position = new Vector3(0, 0.2, -3);
@@ -39,9 +26,6 @@ function physicsBall(scene: Scene): Mesh {
 function clearBallVelocityY(ball_physics: PhysicsBody) {
     ball_physics.setLinearVelocity(ball_physics.getLinearVelocity().clone().multiply(new Vector3(1, 0, 1)))
 }
-export function addShadowToBall(generator: ShadowGenerator, scene: Scene) {
-    generator.addShadowCaster(scene.getMeshByName('ball'), false);
-}
 function ballPhysicsActivate() {
     const physics = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody
     physics.setMotionType(PhysicsMotionType.DYNAMIC)
@@ -56,6 +40,35 @@ function velocityControl() {
         phy.setLinearVelocity(phy.getLinearVelocity().multiply(new Vector3(1, 0, 1)));
     }
 }
+
+export function ballComposition(scene: Scene): Mesh {
+    const ball = physicsBall(scene);
+    const ballSpot = new SpotLight("ball-spot", ball.position.clone().add(new Vector3(0, 1.5, 0)),
+        new Vector3(0, -1, 0), Tools.ToRadians(50), 5, GameState.state.gameObjects.scene);
+    ballSpot.diffuse = new Color3(0.5, 0.5, 0.5);
+    ballSpot.specular = new Color3(0.9, 0.8, 0.8);
+    ballSpot.intensity = 1.5;
+    ballSpot.falloffType = Light.FALLOFF_PHYSICAL;
+    ballSpot.shadowEnabled = true;
+
+    ball["run$"] = new Observable();
+    ball.onBeforeRenderObservable.add(() => {
+        ballSpot.position = ball.absolutePosition.clone().add(new Vector3(0, 1.5, 0));
+        if (GameState.state.isBallStart) {
+
+            clearBallVelocityY(ball.getPhysicsBody());
+            velocityControl();
+            if (ball.position.z < (GameState.state.dragBox.down + 1)) {
+                GameState.state.changeGameState(GameState.state.signals.GAME_OTHER_BALL);
+            }
+        }
+    });
+    return ball;
+}
+export function addShadowToBall(generator: ShadowGenerator, scene: Scene) {
+    generator.addShadowCaster(scene.getMeshByName('ball'), false);
+}
+
 //------------OBSERVABLES--------------------------->
 export function addRun$() {
     GameState.state.gameObjects.ball["run$"].addOnce(() => {
