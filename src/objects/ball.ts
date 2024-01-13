@@ -6,7 +6,8 @@ export function ballComposition(scene: Scene): Mesh {
     ball["run$"] = new Observable();
     ball.onBeforeRenderObservable.add(() => {
         if (GameState.isBallStart) {
-            //clearBallVelocityY(ball.getPhysicsBody())
+            clearBallVelocityY(ball.getPhysicsBody());
+            velocityControl();
         }
     });
     return ball;
@@ -20,9 +21,12 @@ function physicsBall(scene: Scene): Mesh {
     mt.maxSimultaneousLights = 10;
     ball.material = mt;
     const physics = new PhysicsBody(ball, PhysicsMotionType.ANIMATED, false, scene);
-    physics.setMassProperties({ mass: 10 })
+    physics.setMassProperties({ mass: GameState.physicsMaterial.ball.mass })
     const shape = new PhysicsShapeConvexHull(ball, scene);
-    shape.material = { restitution: 0.5, friction: 0.1, staticFriction: 0 }
+    shape.material = {
+        restitution: GameState.physicsMaterial.ball.restitution,
+        friction: GameState.physicsMaterial.ball.friction
+    }
     physics.shape = shape;
     physics.setCollisionCallbackEnabled(true);
     physics.setCollisionEndedCallbackEnabled(true);
@@ -39,13 +43,22 @@ function ballPhysicsActivate() {
     physics.setMotionType(PhysicsMotionType.DYNAMIC)
     physics.applyImpulse(new Vector3(0, 0, 100), GameState.gameObjects.ball.getAbsolutePosition());
 }
+function velocityControl() {
+    const phy = GameState.gameObjects.ball.getPhysicsBody() as PhysicsBody;
+    const length = phy.getLinearVelocity().length();
+    if (length < 10) {
+        phy.applyImpulse((phy.getLinearVelocity().multiply(new Vector3(1.1, 0, 1.1))), GameState.gameObjects.ball.getAbsolutePosition());
+    } else if (length > 30) {
+        phy.setLinearVelocity(phy.getLinearVelocity().multiply(new Vector3(1, 0, 1)));        
+    }
+}
 //------------OBSERVABLES--------------------------->
 export function addRun$() {
     GameState.gameObjects.ball["run$"].addOnce(() => {
         GameState.isBallStart = true;
         setTimeout(() => {
             ballPhysicsActivate();
-        }, 300);
+        }, 100);
     })
 }
 export function onRun$() {

@@ -21,9 +21,12 @@ function physicsShield(scene: Scene, parent: TransformNode) {
     shield_mt.maxSimultaneousLights = 10;
     shield.material = shield_mt;
     const physics = new PhysicsBody(shield, PhysicsMotionType.ANIMATED, false, scene);
-    physics.setMassProperties({ mass: 100 });
+    physics.setMassProperties({ mass: GameState.physicsMaterial.shield.mass });
     const shape = new PhysicsShapeConvexHull(shield, scene);
-    shape.material = { restitution: 0.5, friction: 1, staticFriction: 1 }
+    shape.material = {
+        restitution: GameState.physicsMaterial.shield.restitution,
+        friction: GameState.physicsMaterial.shield.friction
+    }
     physics.shape = shape;
     //physics.disablePreStep = false;
     physics.setCollisionCallbackEnabled(true);

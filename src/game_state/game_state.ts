@@ -11,5 +11,11 @@ export const GameState = {
         ball: null,
         shield: null,
         scene: null,
+    },
+    physicsMaterial: {
+        ball: { mass: 10, restitution: 0.5, friction: 0.01 },
+        shield: { mass: 100, restitution: 0.5, friction: 0.1 },
+        ground: { mass: 1000, restitution: 0.0, friction: 0.0 },
+        wall: { mass: 1000, restitution: 0.5, friction: 0.0 },        
     }
 }

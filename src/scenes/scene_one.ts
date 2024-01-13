@@ -48,7 +48,8 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
 function initScene(gravity: Vector3, physicsEngine: HavokPlugin) {
     const scene = new Scene(globalThis.gameEngine);
     scene.enablePhysics(gravity, physicsEngine);
-    scene.clearColor = new Color4(0.05, 0.04, 0.06, 1)
+    scene.clearColor = new Color4(0.05, 0.04, 0.06, 1);
+    scene.ambientColor = new Color3(1, 0.1, 1);
 
     return scene;
 }
@@ -60,14 +61,14 @@ function addCamera(scene: Scene) {
 }
 function addLights(scene: Scene): [HemisphericLight, DirectionalLight, ShadowGenerator] {
     const hemiLight = new HemisphericLight("main-scene-hemilight", new Vector3(0, 1, 0), scene);
-    hemiLight.diffuse = new Color3(1, 1, 0.3);
+    hemiLight.diffuse = new Color3(1, 1, 1);
     hemiLight.intensity = 0.7;
 
     const dirLight = new DirectionalLight("main-scene-dirlight", new Vector3(0, -1, -1), scene);
-    dirLight.position = new Vector3(0, 20, 20);
+    dirLight.position = new Vector3(0, 20, -20);
     dirLight.diffuse = new Color3(1, 1, 1);
     dirLight.specular = new Color3(0.25, 0.25, 0.2);
-    dirLight.intensity = 0.7;
+    dirLight.intensity = 0.9;
 
     const shadowGen = new ShadowGenerator(1024, dirLight);
     shadowGen.usePoissonSampling = true;
@@ -89,9 +90,12 @@ function createWorld(scene: Scene) {
     ground.parent = world_node;
     const phy_g = new PhysicsBody(ground, PhysicsMotionType.STATIC, false, scene);
     const shape_g = new PhysicsShapeConvexHull(ground, scene);
-    shape_g.material = { restitution: 0, friction: 0.05 }
+    shape_g.material = {
+        restitution: GameState.physicsMaterial.ground.restitution,
+        friction: GameState.physicsMaterial.ground.friction
+    }
     phy_g.shape = shape_g;
-
+    //---------- WALLS ------------->
     const left_wall = MeshBuilder.CreateBox("left-wall", { width: 0.1, height: 2, depth: 20, updatable: true }, scene);
     left_wall.position = new Vector3(-5.9, 1, 0);
     const wall_mt = new StandardMaterial(`wall-mt`, scene);
@@ -101,14 +105,20 @@ function createWorld(scene: Scene) {
     left_wall.parent = world_node;
     const phy_lw = new PhysicsBody(left_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_lw = new PhysicsShapeConvexHull(left_wall, scene);
-    shape_lw.material = { restitution: 1, friction: 0.05 }
+    shape_lw.material = {
+        restitution: GameState.physicsMaterial.wall.restitution,
+        friction: GameState.physicsMaterial.wall.friction
+    }
     phy_lw.shape = shape_lw;
 
     const right_wall = left_wall.clone("right-wall", world_node, true, false);
     right_wall.position = new Vector3(5.9, 1, 0);
     const phy_rw = new PhysicsBody(right_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_rw = new PhysicsShapeConvexHull(right_wall, scene);
-    shape_rw.material = { restitution: 1, friction: 0.05 }
+    shape_rw.material = {
+        restitution: GameState.physicsMaterial.wall.restitution,
+        friction: GameState.physicsMaterial.wall.friction
+    }
     phy_rw.shape = shape_rw;
 
     const up_wall = MeshBuilder.CreateBox("up-wall", { width: 12, height: 2, depth: 0.1, updatable: true }, scene);
@@ -117,7 +127,10 @@ function createWorld(scene: Scene) {
     up_wall.parent = world_node;
     const phy_uw = new PhysicsBody(up_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_uw = new PhysicsShapeConvexHull(up_wall, scene);
-    shape_uw.material = { restitution: 1, friction: 0.05 }
+    shape_uw.material = {
+        restitution: GameState.physicsMaterial.wall.restitution,
+        friction: GameState.physicsMaterial.wall.friction
+    }
     phy_uw.shape = shape_uw;
 
     return world_node;
