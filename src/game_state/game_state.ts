@@ -1,5 +1,5 @@
 import { addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
-import { TransformNode, Vector3 } from "@babylonjs/core";
+import { AssetContainer, PhysicsHelper, TransformNode, Vector3 } from "@babylonjs/core";
 
 export const GameState = function _GameState() {
 }
@@ -18,13 +18,14 @@ GameState.state = {
         shield: null,
         scene: null,
         shadow: null,
+        physicsHelper: null,
     },
     physicsMaterial: {
         ball: { mass: 10, restitution: 0.5, friction: 0.01 },
         shield: { mass: 100, restitution: 0.5, friction: 0.1 },
         ground: { mass: 1000, restitution: 0.0, friction: 1 },
         wall: { mass: 1000, restitution: 0.5, friction: 0.0 },
-        enemy: { mass: 100, restitution: 0.5, friction: 1 }
+        enemy: { mass: 10000, restitution: 0.5, friction: 1 }
     },
     sizes: {
         gameBox: { width: 17, height: 25 },
@@ -38,7 +39,12 @@ GameState.state = {
         GAME_PAUSE: 102,
         GAME_OTHER_BALL: 400,
     },
+    assets: {
+        containers3D: new Map<string, AssetContainer>()
+    },
     //--------------------------------------------------------->
+    scene: () => GameState.state.gameObjects.scene,
+    physicsHelper: () => GameState.state.gameObjects.physicsHelper,
     changeGameState: (state: number) => {
         GameState.state.gameState = state;
         console.log("Gane state Change")
@@ -58,7 +64,7 @@ GameState.state = {
             for (let j = 0; j < map_1[i].length; j++) {
                 switch (map_1[i][j]) {
                     case 1: {
-                        enemy(`enemy-${j + 9 * i}`,
+                        enemy(`enemy-bloc-${j + 9 * i}`,
                             new Vector3(j * gap, GameState.state.sizes.enemy, i * gap).
                                 add(new Vector3(-GameState.state.sizes.gameBox.width / 4, 0, 4)),
                             enemy_node);

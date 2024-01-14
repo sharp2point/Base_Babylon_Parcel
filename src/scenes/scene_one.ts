@@ -1,13 +1,15 @@
 import { GameState } from "@/game_state/game_state";
 import { addRun$, addShadowToBall, ballComposition, onRun$ } from "@/objects/ball";
+import { enemyCollideReaction } from "@/objects/enemy/enemy";
 import { addPosition$, addShadowToShield, onPosition$, shildComposition } from "@/objects/shield";
 import { clampToBoxShieldPosition, debugPhysicsInfo } from "@/utils/utility";
 import {
     Color3, Color4, DirectionalLight, EventState, HavokPlugin,
     HemisphericLight, IBasePhysicsCollisionEvent, IPointerEvent, Mesh,
-    MeshBuilder, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull,
+    MeshBuilder, PhysicsBody, PhysicsHelper, PhysicsMotionType, PhysicsShapeConvexHull,
     PhysicsViewer,
     PickingInfo, PointerEventTypes, PointerInfo, Quaternion, Scene, ShadowGenerator,
+    SpotLight,
     StandardMaterial, Texture, Tools, TransformNode, UniversalCamera, Vector3
 } from "@babylonjs/core";
 
@@ -15,7 +17,7 @@ import {
 export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     const scene = initScene(gravity, physicsEngine);
     const camera = addCamera(scene);
-    const [hemiLight, dirLight, shadowGen] = [...addLights(scene)];
+    const [hemiLight, dirLight, shadowGenArray] = [...addLights(scene)];
     const world_node = createWorld(scene);
     dragBoxLines();
 
@@ -23,8 +25,9 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     GameState.state.gameObjects.scene = scene;
     GameState.state.gameObjects.shield = shield;
     GameState.state.gameObjects.ball = ballComposition(scene);
-    GameState.state.gameObjects.shadow = shadowGen;
-    addShadowsToObjects(shadowGen, scene);
+    GameState.state.gameObjects.shadow = shadowGenArray;
+    GameState.state.gameObjects.physicsHelper = new PhysicsHelper(scene);
+    addShadowsToObjects(shadowGenArray, scene);
     //--------- OBSERVER -------->
     addRun$();
     addPosition$(() => { });
@@ -32,10 +35,13 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     addSceneEvents(GameState.state.gameObjects.ball, shield, shield_physics, scene);
 
     (globalThis.HVK as HavokPlugin).onCollisionObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
-
-        if (eventData.collidedAgainst.transformNode.name === "shield" || eventData.collider.transformNode.name === "shield") {
+        const collider = eventData.collider.transformNode;
+        const agCollider = eventData.collidedAgainst.transformNode;
+        if (agCollider.name === "shield" || collider.name === "shield") {
             // console.log("Collider: ", eventData.collider.transformNode.name);
             // console.log("Against: ", eventData.collidedAgainst.transformNode.name);
+        } else if (agCollider.name.includes("enemy-bloc")) {
+            enemyCollideReaction(agCollider as Mesh);
         }
 
     });
@@ -64,24 +70,47 @@ function addCamera(scene: Scene) {
     camera.target = Vector3.Zero();
     return camera;
 }
-function addLights(scene: Scene): [HemisphericLight, DirectionalLight, ShadowGenerator] {
+function addLights(scene: Scene): [HemisphericLight, DirectionalLight, Array<ShadowGenerator>] {
     const hemiLight = new HemisphericLight("main-scene-hemilight", new Vector3(0, 1, 0), scene);
     hemiLight.diffuse = new Color3(1, 1, 1);
-    hemiLight.intensity = 0.7;
+    hemiLight.intensity = 0.2;
 
     const dirLight = new DirectionalLight("main-scene-dirlight", new Vector3(0, -1, -1), scene);
     dirLight.position = new Vector3(0, 20, -20);
     dirLight.diffuse = new Color3(1, 1, 1);
     dirLight.specular = new Color3(0.25, 0.25, 0.2);
-    dirLight.intensity = 0.9;
+    dirLight.intensity = 0.2;
+
+    const leftSpot = new SpotLight("left-scene-spot",
+        new Vector3(-10, 5, 16),
+        new Vector3(0.5, -0.5, -0.5), Tools.ToRadians(50), 10, scene);
+    leftSpot.diffuse = new Color3(0.9, 0.8, 0.7);
+    leftSpot.specular = new Color3(0.3, 0.2, 0.3);
+    leftSpot.intensity = 0.7;
+    leftSpot.shadowEnabled = true;
+
+    const rightSpot = new SpotLight("right-scene-spot",
+        new Vector3(10, 5, 16),
+        new Vector3(-0.5, -0.5, -0.5), Tools.ToRadians(50), 10, scene);
+    rightSpot.diffuse = new Color3(0.9, 0.8, 0.7);
+    rightSpot.specular = new Color3(0.3, 0.2, 0.3);
+    rightSpot.intensity = 0.7;
+    rightSpot.shadowEnabled = true;
 
     const shadowGen = new ShadowGenerator(1024, dirLight);
     shadowGen.usePoissonSampling = true;
     shadowGen.useExponentialShadowMap = true;
     shadowGen.useBlurExponentialShadowMap = true;
-
+    const shadowGenLSpot = new ShadowGenerator(1024, leftSpot);
+    shadowGenLSpot.usePoissonSampling = true;
+    shadowGenLSpot.useExponentialShadowMap = true;
+    shadowGenLSpot.useBlurExponentialShadowMap = true;
+    const shadowGenRSpot = new ShadowGenerator(1024, rightSpot);
+    shadowGenRSpot.usePoissonSampling = true;
+    shadowGenRSpot.useExponentialShadowMap = true;
+    shadowGenRSpot.useBlurExponentialShadowMap = true;
     return [
-        hemiLight, dirLight, shadowGen
+        hemiLight, dirLight, [shadowGen, shadowGenLSpot, shadowGenRSpot]
     ];
 }
 function createWorld(scene: Scene) {
@@ -163,9 +192,9 @@ function dragBoxLines() {
         colors: [new Color4(0.3, 0.5, 0.5, 1), new Color4(0.9, 0.5, 0.5, 1), new Color4(0.3, 0.5, 0.5, 1)]
     }, GameState.state.gameObjects.scene)
 }
-function addShadowsToObjects(generator: ShadowGenerator, scene: Scene) {
-    addShadowToBall(generator, scene);
-    addShadowToShield(generator, scene);
+function addShadowsToObjects(generators: Array<ShadowGenerator>, scene: Scene) {
+    addShadowToBall(generators, scene);
+    addShadowToShield(generators, scene);
 }
 //---------------------------------->
 function addSceneEvents(ball: Mesh, shield: TransformNode, shield_physics: Mesh, scene: Scene) {
@@ -185,7 +214,7 @@ function addSceneEvents(ball: Mesh, shield: TransformNode, shield_physics: Mesh,
 }
 function pointerDownHandler(pickInfo: PickingInfo, scene: Scene) {
     const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
-    if (pic.pickedMesh.name === "shield-control-plane") {
+    if (pic.pickedMesh && pic.pickedMesh.name === "shield-control-plane") {
         GameState.state.isDragShield = true;
     }
 }

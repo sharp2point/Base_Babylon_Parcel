@@ -45,8 +45,10 @@ function controlShieldPlane(scene: Scene, parent: TransformNode) {
     control_plane.material = plane_mt;
     return control_plane;
 }
-export function addShadowToShield(generator: ShadowGenerator, scene: Scene) {
-    generator.addShadowCaster(scene.getMeshByName('shield'), false);
+export function addShadowToShield(generators: Array<ShadowGenerator>, scene: Scene) {
+    generators.forEach(generator => {
+         generator.addShadowCaster(scene.getMeshByName('shield'), false);
+    });   
 }
 //----------OBSERVABLES----------------->
 export function addPosition$(actionFn: any) {

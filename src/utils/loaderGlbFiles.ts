@@ -1,3 +1,4 @@
+import { GameState } from "@/game_state/game_state";
 import { Vector3, Mesh, SceneLoader, Scene, InstantiatedEntries, AssetContainer } from "@babylonjs/core";
 import "@babylonjs/loaders";
 
@@ -28,5 +29,13 @@ function instateMesh(nameMesh: string, assetContainer: AssetContainer) {
   const mesh = mergeMeshes(instanceModel);
   return mesh;
 }
-
+//---------------------------------------------------------------------->
+export function load3DModels() {
+  loadDamageEnemyModel();
+}
+function loadDamageEnemyModel() {
+  loadModel(`public/models/`, `damage.glb`, GameState.state.gameObjects.scene).then((container) => {
+    GameState.state.assets.containers3D.set("enemy_damage", container as AssetContainer);
+  })
+}
 export { loadToAssetContainer, mergeMeshes, loadModel, instateMesh };
