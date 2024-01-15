@@ -1,5 +1,5 @@
 import { GameState } from "@/game_state/game_state";
-import { PhysicsViewer, Scene, TransformNode, Vector3 } from "@babylonjs/core";
+import { Mesh, PhysicsViewer, Scene, TransformNode, Vector3 } from "@babylonjs/core";
 
 export function randomInt(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -14,6 +14,15 @@ export function clampToBoxShieldPosition(position: Vector3, shield: TransformNod
     } catch (err) {
         console.error("CLAMP ERROR")
     }
+}
+export function gameObjectDispose(enemy: Mesh) {
+    enemy.isVisible = false;
+    const physics = enemy.getPhysicsBody();
+    if (physics) {
+        physics.shape.dispose();
+        physics.dispose();
+    }
+    enemy.dispose();
 }
 export function debugPhysicsInfo(scene: Scene) {
     const pv = new PhysicsViewer();

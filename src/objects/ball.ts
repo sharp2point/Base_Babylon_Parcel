@@ -1,7 +1,28 @@
 import { GameState } from "@/game_state/game_state";
 import { Color3, HavokPlugin, Light, Material, Mesh, MeshBuilder, Observable, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, PointLight, Quaternion, Scene, ShadowGenerator, SpotLight, StandardMaterial, Tools, TrailMesh, Vector3 } from "@babylonjs/core";
 
+export function ballComposition(scene: Scene): Mesh {
+    const ball = physicsBall(scene);
+    const spot = ballSpot(ball, scene);
+    const ptLight = ballPointLight(ball, scene);
+    ptLight.parent = ball;
 
+    ball["run$"] = new Observable();
+
+    ball.onBeforeRenderObservable.add(() => {
+        spot.position = ball.absolutePosition.clone().add(new Vector3(0, 1.5, 0));
+        if (GameState.state.isBallStart) {
+
+            clearBallVelocityY(ball.getPhysicsBody());
+            velocityControl();
+            if (ball.position.z < -9) {
+                console.log("(ball.ts)", "Game other log")
+                GameState.changeGameState(GameState.state.signals.GAME_OTHER_BALL);
+            }
+        }
+    });
+    return ball;
+}
 function physicsBall(scene: Scene): Mesh {
     const ball = MeshBuilder.CreateSphere("ball", { diameter: GameState.state.sizes.ball, segments: 32, updatable: false }, scene);
     ball.position = new Vector3(0, 0.2, -3);
@@ -30,14 +51,22 @@ function clearBallVelocityY(ball_physics: PhysicsBody) {
 function ballPhysicsActivate() {
     const physics = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody
     physics.setMotionType(PhysicsMotionType.DYNAMIC)
-    physics.applyImpulse(new Vector3(0, 0, 100), GameState.state.gameObjects.ball.getAbsolutePosition());
+    //physics.applyImpulse(new Vector3(0, 0, 100), GameState.state.gameObjects.ball.getAbsolutePosition());
+    physics.applyForce(new Vector3(0, 0, 5000), GameState.state.gameObjects.ball.getAbsolutePosition());
+}
+export function resetBall() {
+    const physics = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody;
+    physics.setLinearVelocity(Vector3.Zero());
+    physics.setMotionType(PhysicsMotionType.ANIMATED);
+    physics.setTargetTransform(Vector3.Zero().add(new Vector3(0, 0.25, 0)), Quaternion.Identity());
+    addRun$();
 }
 function velocityControl() {
     const phy = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody;
     const length = phy.getLinearVelocity().length();
     if (length < 10) {
-        phy.applyImpulse((phy.getLinearVelocity().multiply(new Vector3(1.1, 0, 1.1))), GameState.state.gameObjects.ball.getAbsolutePosition());
-    } else if (length > 30) {
+        phy.applyImpulse((phy.getLinearVelocity().multiply(new Vector3(2, 0, 2))), GameState.state.gameObjects.ball.getAbsolutePosition());
+    } else if (length > 90) {
         phy.setLinearVelocity(phy.getLinearVelocity().multiply(new Vector3(1, 0, 1)));
     }
 }
@@ -59,26 +88,6 @@ function ballPointLight(ball: Mesh, scene: Scene) {
     return pointLight;
 }
 
-export function ballComposition(scene: Scene): Mesh {
-    const ball = physicsBall(scene);
-    const spot = ballSpot(ball, scene);
-    const ptLight = ballPointLight(ball, scene);
-    ptLight.parent = ball;
-
-    ball["run$"] = new Observable();
-    ball.onBeforeRenderObservable.add(() => {
-        spot.position = ball.absolutePosition.clone().add(new Vector3(0, 1.5, 0));
-        if (GameState.state.isBallStart) {
-
-            clearBallVelocityY(ball.getPhysicsBody());
-            velocityControl();
-            if (ball.position.z < (GameState.state.dragBox.down + 1)) {
-                GameState.state.changeGameState(GameState.state.signals.GAME_OTHER_BALL);
-            }
-        }
-    });
-    return ball;
-}
 export function addShadowToBall(generators: Array<ShadowGenerator>, scene: Scene) {
     generators.forEach(generator => {
         generator.addShadowCaster(scene.getMeshByName('ball'), false);

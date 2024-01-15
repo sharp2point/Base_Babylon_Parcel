@@ -23,6 +23,8 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
 
     const [shield, shield_physics, shield_control_plane] = shildComposition(scene);
     GameState.state.gameObjects.scene = scene;
+    GameState.state.gameObjects.camera = camera;
+    GameState.state.gameObjects.damageNodes = new Array<TransformNode>();
     GameState.state.gameObjects.shield = shield;
     GameState.state.gameObjects.ball = ballComposition(scene);
     GameState.state.gameObjects.shadow = shadowGenArray;
@@ -38,21 +40,25 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
         const collider = eventData.collider.transformNode;
         const agCollider = eventData.collidedAgainst.transformNode;
         if (agCollider.name === "shield" || collider.name === "shield") {
-            // console.log("Collider: ", eventData.collider.transformNode.name);
-            // console.log("Against: ", eventData.collidedAgainst.transformNode.name);
+
         } else if (agCollider.name.includes("enemy-bloc")) {
             enemyCollideReaction(agCollider as Mesh);
+            if (GameState.isAllEnemiesDie()) {
+                GameState.changeGameState(GameState.state.signals.LEVEL_WIN);
+            }
         }
-
     });
-    (globalThis.HVK as HavokPlugin).onCollisionEndedObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
-        const ball_physics = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody;
-        ball_physics.applyForce(ball_physics.getLinearVelocity().clone().normalize().multiply(new Vector3(20, 0, 20)),
-            GameState.state.gameObjects.ball.getAbsolutePosition())
+    (globalThis.HVK as HavokPlugin).onCollisionObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
+        const collider = eventData.collider.transformNode;
+        const agCollider = eventData.collidedAgainst.transformNode;
+        if (agCollider.name === "ball" || collider.name === "ball") {
+            const physics = GameState.ball().getPhysicsBody();
+            physics.applyForce(physics.getLinearVelocity().normalize().scale(10), GameState.ball().getAbsolutePosition());
+        }
     });
     //----------------- DEBUG -------------->
     //debugPhysicsInfo(scene);
-    GameState.state.createMap(1);
+
     return scene;
 }
 //--------------------------------->
