@@ -54,7 +54,8 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
             const physics = GameState.ball().getPhysicsBody();
             if (agCollider.name.includes("enemy-bloc")) {
                 enemyCollideReaction(agCollider as Mesh);
-                newPoints("10", agCollider.position)
+                newPoints("10", agCollider.position);
+                GameState.calculatePoints(agCollider as Mesh);
                 if (GameState.isAllEnemiesDie()) {
                     GameState.changeGameState(GameState.state.signals.LEVEL_WIN);
                 }

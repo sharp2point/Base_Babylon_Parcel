@@ -1,6 +1,6 @@
 import { Scene, HavokPlugin, Vector3, Engine, Mesh, MeshBuilder, TransformNode } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
-import { Inspector } from "@babylonjs/inspector";
+// import { Inspector } from "@babylonjs/inspector";
 import { sceneOne } from "./scenes/scene_one";
 import { load3DModels } from "./utils/loaderGlbFiles";
 import { GameState } from "./game_state/game_state";
@@ -18,11 +18,11 @@ globalThis.screenAspect = null;
 //Inspector Show/HIde event by Key[i]
 window.addEventListener("keydown", (ev) => {
     if (ev.key === 'i' && ev.altKey) {
-        if (Inspector.IsVisible) {
-            Inspector.Hide();
-        } else {
-            Inspector.Show(globalThis.gameWorkScene, { embedMode: true, });
-        }
+        // if (Inspector.IsVisible) {
+        //     Inspector.Hide();
+        // } else {
+        //     Inspector.Show(globalThis.gameWorkScene, { embedMode: true, });
+        // }
     }
 });
 // Resize Event 

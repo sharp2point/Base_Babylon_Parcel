@@ -4,11 +4,14 @@ import { Color3, Color4, HighlightLayer, Mesh, MeshBuilder, PhysicsBody, Physics
 
 export function enemy(name: string, position: Vector3, parent: TransformNode) {
     const enemy = physicsEnemy(name, { size: GameState.state.sizes.enemy, position: position }, parent);
+    enemy["meta"] = {
+        level: 1,
+        points: 10
+    }
     return enemy;
 }
 function physicsEnemy(name: string, options: { size: number, position: Vector3 }, parent: TransformNode) {
-    const enemy = MeshBuilder.CreateBox(name, { size: options.size, updatable: true }, GameState.scene());
-
+    const enemy = MeshBuilder.CreateBox(name, { size: options.size, updatable: true }, GameState.scene());    
     enemy.position = options.position;
     enemy.parent = parent;
     const material = new StandardMaterial("enemy-material", GameState.scene());
