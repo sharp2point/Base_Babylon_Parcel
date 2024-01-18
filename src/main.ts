@@ -57,9 +57,16 @@ window.addEventListener('load', () => {
     initPhysics().then(() => {
         GameState.menuCreate();
         const scene = sceneOne(globalThis.gameGravity, globalThis.HVK);
-        GameState.createMap(1);
-        GameState.signalReaction(); // MENU_OPEN: 10
+        //------------------------------------------------------------->
+        const img = new Image(256, 256);
+        img.src = "public/sprites/points10.png";
+        img.onload = () => {
+            GameState.sprites().set("points10", img);
+        }
+        //-------------------------------------------------------------->
         load3DModels();
+        GameState.signalReaction(); // MENU_OPEN: 10
+
 
         globalThis.gameEngine.runRenderLoop(() => {
             if (!globalThis.renderLock) {

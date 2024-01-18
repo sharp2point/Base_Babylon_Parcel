@@ -10,7 +10,7 @@ GameState.state = {
     gameState: 10,
     isDragShield: false,
     isBallStart: false,
-    level: 4,
+    level: 5,
     dragBox: {
         up: -3,
         down: -10.5,
@@ -27,13 +27,14 @@ GameState.state = {
         enemyNodes: null,
         damageNodes: null,
         camera: null,
+        points: null,
     },
     physicsMaterial: {
-        ball: { mass: 10, restitution: 1, friction: 0.01 },
+        ball: { mass: 10, restitution: 1, friction: 0.0 },
         shield: { mass: 100, restitution: 0.5, friction: 0.1 },
         ground: { mass: 1000, restitution: 0.0, friction: 1 },
         wall: { mass: 1000, restitution: 0.5, friction: 0.0 },
-        enemy: { mass: 10000, restitution: 1, friction: 1 }
+        enemy: { mass: 1000, restitution: 1, friction: 1 }
     },
     sizes: {
         gameBox: { width: 17, height: 25 },
@@ -50,6 +51,7 @@ GameState.state = {
         GAME_OTHER_TIME: 420,
     },
     assets: {
+        sprites: new Map<string,HTMLImageElement>(),
         containers3D: new Map<string, AssetContainer>()
     },
 };
@@ -61,6 +63,8 @@ GameState.enemyNodes = (): TransformNode => GameState.state.gameObjects.enemyNod
 GameState.damageNodes = (): Array<TransformNode> => GameState.state.gameObjects.damageNodes;
 GameState.gameState = (): number => GameState.state.gameState;
 GameState.ball = (): Mesh => GameState.state.gameObjects.ball;
+GameState.points = (): Mesh => GameState.state.gameObjects.points;
+GameState.sprites = (): Map<string, HTMLImageElement> => GameState.state.assets.sprites;
 //----------------------------------------------------------------------->
 
 GameState.changeGameState = (state: number) => {
@@ -101,20 +105,26 @@ GameState.createMap = (level: number) => {
             [0, 1, 0, 1, 0, 1, 0, 1, 0],
         ],
         5: [
-            [0, 1, 0, 1, 0, 1, 0, 1, 0],
-            [1, 0, 1, 0, 1, 0, 1, 0, 1],
-            [0, 1, 0, 1, 0, 1, 0, 1, 0],
-            [1, 0, 1, 0, 1, 0, 0, 0, 1],
-            [0, 1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+            [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+            [1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+            [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1],
+            [0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1],
+            [0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
+
         ],
     };
+    const deltaX = maps[level][0].length / 2
+    console.log("-->", level, ":", deltaX)
     for (let i = 0; i < maps[level].length; i++) {
         for (let j = 0; j < maps[level][i].length; j++) {
             switch (maps[level][i][j]) {
                 case 1: {
                     enemy(`enemy-bloc-${j + 9 * i}`,
                         new Vector3(j * gap, GameState.state.sizes.enemy, i * gap).
-                            add(new Vector3(-GameState.state.sizes.gameBox.width / 4, 0, 4)),
+                            add(new Vector3(-(deltaX), 0, 4)),
                         GameState.state.gameObjects.enemyNodes);
                     addShadowToEnemy(GameState.state.gameObjects.shadow, `enemy-${j + 9 * i}`)
                     break;
@@ -188,13 +198,17 @@ GameState.menuCreate = () => {
     })
 }
 GameState.disposeEnemies = () => {
-    GameState.damageNodes().forEach(tn => {
-        tn.getChildren().forEach(obj => {
+    if (GameState.damageNodes().length > 0) {
+        GameState.damageNodes().forEach(tn => {
+            tn.getChildren().forEach(obj => {
+                gameObjectDispose(obj as Mesh);
+            })
+        })
+    }
+    if (GameState.enemyNodes()?.getChildren() && GameState.enemyNodes().getChildren().length > 0) {
+        GameState.enemyNodes().getChildren().forEach(obj => {
             gameObjectDispose(obj as Mesh);
         })
-    })
-    GameState.enemyNodes().getChildren().forEach(obj => {
-        gameObjectDispose(obj as Mesh);
-    })
+    }
 }
 

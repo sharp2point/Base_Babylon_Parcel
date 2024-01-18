@@ -15,8 +15,7 @@ export function ballComposition(scene: Scene): Mesh {
 
             clearBallVelocityY(ball.getPhysicsBody());
             velocityControl();
-            if (ball.position.z < -9) {
-                console.log("(ball.ts)", "Game other log")
+            if (ball.position.z < -11) {
                 GameState.changeGameState(GameState.state.signals.GAME_OTHER_BALL);
             }
         }
@@ -51,7 +50,7 @@ function clearBallVelocityY(ball_physics: PhysicsBody) {
 function ballPhysicsActivate() {
     const physics = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody
     physics.setMotionType(PhysicsMotionType.DYNAMIC)
-    physics.applyForce(new Vector3(0, 0, 7000), GameState.state.gameObjects.ball.getAbsolutePosition());
+    physics.applyForce(new Vector3(0, 0, 5000), GameState.state.gameObjects.ball.getAbsolutePosition());
 }
 export function resetBall() {
     const physics = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody;
@@ -63,9 +62,9 @@ export function resetBall() {
 function velocityControl() {
     const phy = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody;
     const length = phy.getLinearVelocity().length();
-    if (length < 10) {
-        phy.applyImpulse((phy.getLinearVelocity().multiply(new Vector3(2, 0, 2))), GameState.state.gameObjects.ball.getAbsolutePosition());
-    } else if (length > 90) {
+    if (length < 15) {
+        phy.applyImpulse((phy.getLinearVelocity().multiply(new Vector3(1.5, 0, 1.5))), GameState.state.gameObjects.ball.getAbsolutePosition());
+    } else if (length > 80) {
         phy.setLinearVelocity(phy.getLinearVelocity().multiply(new Vector3(1, 0, 1)));
     }
 }
