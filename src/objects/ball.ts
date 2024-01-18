@@ -51,8 +51,7 @@ function clearBallVelocityY(ball_physics: PhysicsBody) {
 function ballPhysicsActivate() {
     const physics = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody
     physics.setMotionType(PhysicsMotionType.DYNAMIC)
-    //physics.applyImpulse(new Vector3(0, 0, 100), GameState.state.gameObjects.ball.getAbsolutePosition());
-    physics.applyForce(new Vector3(0, 0, 5000), GameState.state.gameObjects.ball.getAbsolutePosition());
+    physics.applyForce(new Vector3(0, 0, 7000), GameState.state.gameObjects.ball.getAbsolutePosition());
 }
 export function resetBall() {
     const physics = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody;

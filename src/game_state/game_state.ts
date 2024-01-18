@@ -10,13 +10,15 @@ GameState.state = {
     gameState: 10,
     isDragShield: false,
     isBallStart: false,
+    level: 4,
     dragBox: {
         up: -3,
-        down: -7.5,
+        down: -10.5,
         left: -7,
         rigth: 7
     },
     gameObjects: {
+        worldNode: null,
         ball: null,
         shield: null,
         scene: null,
@@ -27,11 +29,11 @@ GameState.state = {
         camera: null,
     },
     physicsMaterial: {
-        ball: { mass: 10, restitution: 0.5, friction: 0.01 },
+        ball: { mass: 10, restitution: 1, friction: 0.01 },
         shield: { mass: 100, restitution: 0.5, friction: 0.1 },
         ground: { mass: 1000, restitution: 0.0, friction: 1 },
         wall: { mass: 1000, restitution: 0.5, friction: 0.0 },
-        enemy: { mass: 10000, restitution: 0.5, friction: 1 }
+        enemy: { mass: 10000, restitution: 1, friction: 1 }
     },
     sizes: {
         gameBox: { width: 17, height: 25 },
@@ -69,16 +71,46 @@ GameState.createMap = (level: number) => {
     GameState.state.gameObjects.enemyNodes = new TransformNode("enemies-node", GameState.state.gameObjects.scene);
 
     const gap = GameState.state.sizes.enemy;
-    const map_1 = [
-        [0, 1, 0, 1, 0, 1, 0, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 1, 0, 1, 0, 1, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 1, 0, 1, 0, 1, 0, 1, 0],
-    ];
-    for (let i = 0; i < map_1.length; i++) {
-        for (let j = 0; j < map_1[i].length; j++) {
-            switch (map_1[i][j]) {
+    const maps = {
+        1: [
+            [0, 0, 1, 0, 0, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ],
+        2: [
+            [0, 1, 0, 0, 0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 0, 0, 1, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0, 0],
+        ],
+        3: [
+            [0, 1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 1, 0, 1, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 1, 0, 1, 0, 1, 0, 0],
+        ],
+        4: [
+            [0, 1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 1, 0, 1, 0, 1, 0],
+        ],
+        5: [
+            [0, 1, 0, 1, 0, 1, 0, 1, 0],
+            [1, 0, 1, 0, 1, 0, 1, 0, 1],
+            [0, 1, 0, 1, 0, 1, 0, 1, 0],
+            [1, 0, 1, 0, 1, 0, 0, 0, 1],
+            [0, 1, 0, 1, 0, 1, 0, 1, 0],
+        ],
+    };
+    for (let i = 0; i < maps[level].length; i++) {
+        for (let j = 0; j < maps[level][i].length; j++) {
+            switch (maps[level][i][j]) {
                 case 1: {
                     enemy(`enemy-bloc-${j + 9 * i}`,
                         new Vector3(j * gap, GameState.state.sizes.enemy, i * gap).
@@ -113,6 +145,9 @@ GameState.signalReaction = () => {
         }
         case GameState.state.signals.LEVEL_WIN: {
             console.log("LEVEL_WIN")
+            GameState.state.level < 5 ?
+                GameState.state.level += 1 :
+                GameState.state.level = 1;
             GameState.resetScene();
             GameState.menuOpen();
             break;
@@ -133,7 +168,7 @@ GameState.resetScene = () => {
     GameState.state.isBallStart = false;
     resetBall();
     GameState.disposeEnemies();
-    GameState.createMap(1);
+    GameState.createMap(GameState.state.level);
 }
 //----------------------------------------------->
 GameState.isAllEnemiesDie = () => {
