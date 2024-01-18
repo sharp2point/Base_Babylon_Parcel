@@ -5,8 +5,8 @@
   "source": "index.html",
   "type": "module",
   "scripts": {
-    "dev": "parcel",
-    "build": "parcel build"
+    "dev": "parcel ",
+    "build:prod": "parcel build --no-source-maps --no-cache --public-url public/"
   },
   "staticFiles": {
     "staticPath": "public",
