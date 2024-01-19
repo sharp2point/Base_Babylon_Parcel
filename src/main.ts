@@ -62,7 +62,6 @@ window.addEventListener('load', () => {
     initPhysics().then(() => {
         GameState.menuCreate();
         const scene = sceneOne(globalThis.gameGravity, globalThis.HVK);
-        console.log("AP: ", globalThis.screenAspect);
         GameState.cameraSettings();
         //------------------------------------------------------------->
         const img = new Image(256, 256);

@@ -225,7 +225,7 @@ function addShadowsToObjects(generators: Array<ShadowGenerator>, scene: Scene) {
 //---------------------------------->
 function addSceneEvents(ball: Mesh, shield: TransformNode, shield_physics: Mesh, scene: Scene) {
     scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
-        pointerDownHandler(pickInfo, scene);
+        pointerDownHandler(pickInfo, shield, scene);
     };
     scene.onPointerUp = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
         pointerUpHandler(scene);
@@ -238,11 +238,10 @@ function addSceneEvents(ball: Mesh, shield: TransformNode, shield_physics: Mesh,
         (globalThis.HVK as HavokPlugin).setTargetTransform(shield_physics.getPhysicsBody(), shield.position, Quaternion.Identity())
     });
 }
-function pointerDownHandler(pickInfo: PickingInfo, scene: Scene) {
+function pointerDownHandler(pickInfo: PickingInfo, shield: TransformNode, scene: Scene) {
     const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
-    if (pic.pickedMesh && pic.pickedMesh.name === "shield-control-plane") {
-        GameState.state.isDragShield = true;
-    }
+    clampToBoxShieldPosition(pic.pickedPoint, shield, 1);
+    GameState.state.isDragShield = true;
 }
 function pointerUpHandler(scene: Scene) {
     if (GameState.state.isDragShield) {
@@ -253,8 +252,7 @@ function pointerUpHandler(scene: Scene) {
 function pointerMoveHandler(pickInfo: PickingInfo, shield: TransformNode, scene: Scene) {
     if (GameState.state.isDragShield) {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
-        onPosition$();
-        clampToBoxShieldPosition(pic.pickedPoint, shield, pic.pickedPoint);
+        clampToBoxShieldPosition(pic.pickedPoint, shield, 1);
     }
 }
 //--------------------------->
