@@ -20,6 +20,7 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     const camera = addCamera(scene);
     const [hemiLight, dirLight, shadowGenArray] = [...addLights(scene)];
 
+    GameState.state.gameObjects.globalTransformNode = new TransformNode("global-transform-node", scene);
     GameState.state.gameObjects.worldNode = createWorld(scene);
     const [shield, shield_physics, shield_control_plane] = shildComposition(scene);
     GameState.state.gameObjects.scene = scene;
@@ -32,6 +33,8 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     GameState.state.gameObjects.points = initPoints(scene);
     dragBoxLines();
     addShadowsToObjects(shadowGenArray, scene);
+
+    (GameState.state.gameObjects.worldNode as TransformNode).scaling = new Vector3(2, 2, 2);
     //--------- OBSERVER -------->
     addRun$();
     addPosition$(() => { });
@@ -79,23 +82,9 @@ function initScene(gravity: Vector3, physicsEngine: HavokPlugin) {
 }
 function addCamera(scene: Scene) {
     const camera = new UniversalCamera("main-scene-camera", new Vector3(0, 0, 0), scene);
-    if (globalThis.screenAspect >= 1.3) {
-        camera.position = new Vector3(0, 17, -10);
-        camera.fov = Tools.ToRadians(80);
-        camera.target = Vector3.Zero();
-    } else if (globalThis.screenAspect <= 0.57 && globalThis.screenAspect > 0.50) {
-        camera.position = new Vector3(0, 20, -4);
-        camera.fov = Tools.ToRadians(85);
-        camera.target = new Vector3(0, 4, 3);
-    } else if (globalThis.screenAspect <= 0.50 && globalThis.screenAspect > 0.40) {
-        camera.position = new Vector3(0, 23, -3);
-        camera.fov = Tools.ToRadians(95);
-        camera.target = new Vector3(0, 5, 5);
-    } else {
-        camera.position = new Vector3(0, 17, -5);
-        camera.fov = Tools.ToRadians(130 - ((80 / 1.3) * globalThis.screenAspect));
-        camera.target = new Vector3(0, 0, 0);
-    }
+    camera.position = new Vector3(0, 10, -15);
+    camera.fov = Tools.ToRadians(75);
+    camera.target = Vector3.Zero();
     return camera;
 }
 function addLights(scene: Scene): [HemisphericLight, DirectionalLight, Array<ShadowGenerator>] {
@@ -110,7 +99,7 @@ function addLights(scene: Scene): [HemisphericLight, DirectionalLight, Array<Sha
     dirLight.intensity = 0.2;
 
     const leftSpot = new SpotLight("left-scene-spot",
-        new Vector3(-10, 5, 16),
+        new Vector3(-GameState.gameBox().width / 2 - 2, 6, GameState.gameBox().height / 2 + 2),
         new Vector3(0.5, -0.5, -0.5), Tools.ToRadians(50), 10, scene);
     leftSpot.diffuse = new Color3(0.9, 0.8, 0.7);
     leftSpot.specular = new Color3(0.3, 0.2, 0.3);
@@ -118,7 +107,7 @@ function addLights(scene: Scene): [HemisphericLight, DirectionalLight, Array<Sha
     leftSpot.shadowEnabled = true;
 
     const rightSpot = new SpotLight("right-scene-spot",
-        new Vector3(10, 5, 16),
+        new Vector3(GameState.gameBox().width / 2 + 2, 6, GameState.gameBox().height / 2 + 2),
         new Vector3(-0.5, -0.5, -0.5), Tools.ToRadians(50), 10, scene);
     rightSpot.diffuse = new Color3(0.9, 0.8, 0.7);
     rightSpot.specular = new Color3(0.3, 0.2, 0.3);
@@ -144,8 +133,8 @@ function addLights(scene: Scene): [HemisphericLight, DirectionalLight, Array<Sha
 function createWorld(scene: Scene) {
     const world_node = new TransformNode("world-transform-node", scene);
     const ground = MeshBuilder.CreateGround("ground", {
-        width: GameState.state.sizes.gameBox.width,
-        height: GameState.state.sizes.gameBox.height, updatable: true
+        width: GameState.gameBox().width,
+        height: GameState.gameBox().height, updatable: true
     }, scene);
     ground.receiveShadows = true;
     const ground_mt = new StandardMaterial(`${ground.name}-mt`, scene);
@@ -156,22 +145,22 @@ function createWorld(scene: Scene) {
     //---------- WALLS ------------->
     const left_wall = MeshBuilder.CreateBox("left-wall", {
         width: 0.1, height: 2,
-        depth: GameState.state.sizes.gameBox.height, updatable: true
+        depth: GameState.gameBox().height, updatable: true
     }, scene);
-    left_wall.position = new Vector3(-GameState.state.sizes.gameBox.width / 2, 1, 0);
+    left_wall.position = new Vector3(-GameState.gameBox().width / 2, 1, 0);
     const wall_mt = new StandardMaterial(`wall-mt`, scene);
     wall_mt.diffuseColor = new Color3(0.3, 0.25, 0.35);
     wall_mt.alpha = 0.5;
     left_wall.material = wall_mt;
 
     const right_wall = left_wall.clone("right-wall", world_node, true, false);
-    right_wall.position = new Vector3(GameState.state.sizes.gameBox.width / 2, 1, 0);
+    right_wall.position = new Vector3(GameState.gameBox().width / 2, 1, 0);
 
     const up_wall = MeshBuilder.CreateBox("up-wall", {
-        width: GameState.state.sizes.gameBox.width,
+        width: GameState.gameBox().width,
         height: 2, depth: 0.1, updatable: true
     }, scene);
-    up_wall.position = new Vector3(0, 1, GameState.state.sizes.gameBox.height / 2);
+    up_wall.position = new Vector3(0, 1, GameState.gameBox().height / 2);
     up_wall.material = wall_mt;
 
     ground.parent = world_node;
@@ -179,15 +168,6 @@ function createWorld(scene: Scene) {
     right_wall.parent = world_node;
     up_wall.parent = world_node;
 
-    if (globalThis.screenAspect >= 1.3) {
-        world_node.position.x -= 0.2;
-    } else if (globalThis.screenAspect <= 0.57 && globalThis.screenAspect > 0.50) {
-        world_node.position.x += 0.15;
-    } else if (globalThis.screenAspect <= 0.50 && globalThis.screenAspect > 0.40) {
-        world_node.position.x += 0.15;
-    } else {
-        world_node.position.x -= 0.2;
-    }
     world_node.position.x -= 0.2;
     //--------------------------------------------->
     const phy_g = new PhysicsBody(ground, PhysicsMotionType.STATIC, false, scene);

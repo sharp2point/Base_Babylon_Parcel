@@ -1,7 +1,7 @@
 import { resetBall } from "@/objects/ball";
 import { addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
 import { gameObjectDispose } from "@/utils/utility";
-import { AssetContainer, Camera, ITimerData, Mesh, PhysicsBody, PhysicsHelper, Scene, TransformNode, Vector3 } from "@babylonjs/core";
+import { AssetContainer, Camera, ITimerData, Mesh, PhysicsBody, PhysicsHelper, Scene, Tools, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
 import Timer from "timer.js";
 
 export const GameState = function _GameState() {
@@ -10,16 +10,17 @@ GameState.state = {
     gameState: 10,
     isDragShield: false,
     isBallStart: false,
-    level: 1,
+    level: 5,
     levelTimeHandler: null,
     levelTime: 0,
     dragBox: {
-        up: -3,
-        down: -10.5,
-        left: -7,
-        rigth: 7
+        up: -5,
+        down: -10.0,
+        left: -8.5,
+        rigth: 8.5
     },
     gameObjects: {
+        globalTransformNode: null,
         worldNode: null,
         ball: null,
         shield: null,
@@ -39,9 +40,9 @@ GameState.state = {
         enemy: { mass: 1000, restitution: 1, friction: 1 }
     },
     sizes: {
-        gameBox: { width: 17, height: 25 },
+        gameBox: { width: 18, height: 40 },
         enemy: 1,
-        ball: 0.4
+        ball: 0.6
     },
     signals: {
         MENU_OPEN: 10,
@@ -60,7 +61,9 @@ GameState.state = {
 };
 //---- ACCSESSORS---------------------------->
 GameState.scene = (): Scene => GameState.state.gameObjects.scene;
+GameState.GTN = (): TransformNode => GameState.state.gameObjects.globalTransformNode;
 GameState.camera = (): Camera => GameState.state.gameObjects.camera;
+GameState.gameBox = () => GameState.state.sizes.gameBox;
 GameState.physicsHelper = (): PhysicsHelper => GameState.state.gameObjects.physicsHelper;
 GameState.enemyNodes = (): TransformNode => GameState.state.gameObjects.enemyNodes;
 GameState.damageNodes = (): Array<TransformNode> => GameState.state.gameObjects.damageNodes;
@@ -127,7 +130,7 @@ GameState.createMap = (level: number) => {
                 case 1: {
                     const emesh = enemy(`enemy-bloc-${j + 9 * i}`,
                         new Vector3(j * gap, GameState.state.sizes.enemy, i * gap).
-                            add(new Vector3(-(deltaX), 0, 4)),
+                            add(new Vector3(-(deltaX), 0, GameState.gameBox().height / 2 - 10)),
                         GameState.state.gameObjects.enemyNodes);
                     addShadowToEnemy(GameState.state.gameObjects.shadow, `enemy-${j + 9 * i}`);
                     break;
@@ -250,5 +253,46 @@ GameState.initLevelTime = () => {
 GameState.clearLevelTime = () => {
     const points_menu = document.querySelector(".level-menu-timer");
     points_menu.innerHTML = `0`;
+}
+GameState.cameraSettings = () => {
+    console.log("AP: ", globalThis.screenAspect);
+    const camera = GameState.camera() as UniversalCamera;
+    if (globalThis.screenAspect >= 0.40 && globalThis.screenAspect < 0.45) {        
+        camera.position = new Vector3(0, 15.5, -4);
+        camera.target = new Vector3(0, -1, 3);
+        camera.fov = camera.fov = Tools.ToRadians(120);
+    } else if (globalThis.screenAspect >= 0.45 && globalThis.screenAspect < 0.5) {
+        camera.position = new Vector3(0, 14, -4);
+        camera.target = new Vector3(0, 0, 0);
+        camera.fov = camera.fov = Tools.ToRadians(117);
+    } else if (globalThis.screenAspect >= 0.5 && globalThis.screenAspect < 0.55) {
+        camera.position = new Vector3(0, 13, -4);
+        camera.target = new Vector3(0, 0, 0);
+        camera.fov = camera.fov = Tools.ToRadians(115);
+    } else if (globalThis.screenAspect >= 0.55 && globalThis.screenAspect < 0.6) {
+        camera.position = new Vector3(0, 13, -4);
+        camera.target = new Vector3(0, 0, 0);
+        camera.fov = camera.fov = Tools.ToRadians(115);
+    } else if (globalThis.screenAspect >= 0.6 && globalThis.screenAspect < 0.65) {
+        camera.position = new Vector3(0, 13, -4);
+        camera.target = new Vector3(0, 0, 0);
+        camera.fov = camera.fov = Tools.ToRadians(115);
+    } else if (globalThis.screenAspect >= 0.65 && globalThis.screenAspect < 0.7) {
+        camera.position = new Vector3(0, 11.5, -4);
+        camera.target = new Vector3(0, 0, 0);
+        camera.fov = camera.fov = Tools.ToRadians(115);
+    } else if (globalThis.screenAspect >= 0.7 && globalThis.screenAspect < 0.75) {
+        camera.position = new Vector3(0, 11, -4);
+        camera.target = new Vector3(0, 0, 0);
+        camera.fov = camera.fov = Tools.ToRadians(115);
+    } else if (globalThis.screenAspect >= 0.75 && globalThis.screenAspect < 1) {
+        camera.position = new Vector3(0, 11, -4);
+        camera.target = new Vector3(0, 0, 0);
+        camera.fov = Tools.ToRadians(115);
+    } else if (globalThis.screenAspect >= 1) {
+        camera.position = new Vector3(0, 15, -10);        
+        camera.target = Vector3.Zero();
+        camera.fov = Tools.ToRadians(80);
+    }
 }
 

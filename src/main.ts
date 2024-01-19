@@ -1,4 +1,4 @@
-import { Scene, HavokPlugin, Vector3, Engine, Mesh, MeshBuilder, TransformNode } from "@babylonjs/core";
+import { Scene, HavokPlugin, Vector3, Engine, Mesh, MeshBuilder, TransformNode, UniversalCamera } from "@babylonjs/core";
 import HavokPhysics from "@babylonjs/havok";
 // import { Inspector } from "@babylonjs/inspector";
 import { sceneOne } from "./scenes/scene_one";
@@ -15,6 +15,7 @@ globalThis.renderLock = false;
 globalThis.screenOrient = "portret"
 globalThis.screenAspect = null;
 
+// (globalThis.gameEngine as Engine).switchFullscreen(true);
 //Inspector Show/HIde event by Key[i]
 window.addEventListener("keydown", (ev) => {
     if (ev.key === 'i' && ev.altKey) {
@@ -36,7 +37,11 @@ window.addEventListener('resize', () => {
     screen.orientation.type.includes("portrait") ?
         globalThis.screenOrient = "portrait" :
         globalThis.screenOrient = "landscape";
-    console.log("Size: w", 160 - ((80 / 1.3) * globalThis.screenAspect))
+    console.clear();
+    console.log("AP: ", globalThis.screenAspect);
+    if (GameState.camera()) {
+        GameState.cameraSettings();
+    }
 });
 
 window.addEventListener('load', () => {
@@ -44,7 +49,7 @@ window.addEventListener('load', () => {
     const height = window.innerHeight;
     const aspect = width / height;
     globalThis.screenAspect = aspect;
-    console.log("AP: ", globalThis.screenAspect)
+    
     screen.orientation.type.includes("portrait") ?
         globalThis.screenOrient = "portrait" :
         globalThis.screenOrient = "landscape";
@@ -57,6 +62,8 @@ window.addEventListener('load', () => {
     initPhysics().then(() => {
         GameState.menuCreate();
         const scene = sceneOne(globalThis.gameGravity, globalThis.HVK);
+        console.log("AP: ", globalThis.screenAspect);
+        GameState.cameraSettings();
         //------------------------------------------------------------->
         const img = new Image(256, 256);
         img.src = "public/sprites/points10.png";

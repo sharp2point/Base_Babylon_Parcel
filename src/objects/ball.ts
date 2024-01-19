@@ -15,7 +15,7 @@ export function ballComposition(scene: Scene): Mesh {
 
             clearBallVelocityY(ball.getPhysicsBody());
             velocityControl();
-            if (ball.position.z < -11) {
+            if (ball.position.z < GameState.state.dragBox.down) {
                 GameState.changeGameState(GameState.state.signals.GAME_OTHER_BALL);
             }
         }
