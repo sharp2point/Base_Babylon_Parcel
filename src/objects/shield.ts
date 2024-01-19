@@ -1,5 +1,5 @@
 import { GameState } from "@/game_state/game_state";
-import { Color3, Mesh, MeshBuilder, Observable, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Quaternion, Scene, ShadowGenerator, StandardMaterial, Tools, TransformNode, Vector3 } from "@babylonjs/core";
+import { Color3, HighlightLayer, Mesh, MeshBuilder, Observable, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Quaternion, Scene, ShadowGenerator, StandardMaterial, Tools, TransformNode, Vector3 } from "@babylonjs/core";
 
 
 export function shildComposition(scene: Scene): [TransformNode, Mesh, Mesh] {
@@ -20,6 +20,7 @@ function physicsShield(scene: Scene, parent: TransformNode) {
     shield_mt.alpha = 0.5;
     shield_mt.maxSimultaneousLights = 10;
     shield.material = shield_mt;
+    addHighlight(shield);
     const physics = new PhysicsBody(shield, PhysicsMotionType.ANIMATED, false, scene);
     physics.setMassProperties({ mass: GameState.state.physicsMaterial.shield.mass });
     const shape = new PhysicsShapeConvexHull(shield, scene);
@@ -32,6 +33,14 @@ function physicsShield(scene: Scene, parent: TransformNode) {
     physics.setCollisionCallbackEnabled(true);
     physics.setCollisionEndedCallbackEnabled(true);
     return shield;
+}
+function addHighlight(mesh: Mesh) {
+    const hl = new HighlightLayer("shield-hl", GameState.scene());
+    //hl.outerGlow = true;
+    hl.blurHorizontalSize = 0.01;
+    hl.blurVerticalSize = 0.01;
+    hl.addMesh(mesh, new Color3(0.6, 0.8, 0.2));
+
 }
 function controlShieldPlane(scene: Scene, parent: TransformNode) {
     const control_plane = MeshBuilder.CreatePlane("shield-control-plane", { width: 3.5, height: 1.5, updatable: true }, scene);
@@ -47,8 +56,8 @@ function controlShieldPlane(scene: Scene, parent: TransformNode) {
 }
 export function addShadowToShield(generators: Array<ShadowGenerator>, scene: Scene) {
     generators.forEach(generator => {
-         generator.addShadowCaster(scene.getMeshByName('shield'), false);
-    });   
+        generator.addShadowCaster(scene.getMeshByName('shield'), false);
+    });
 }
 //----------OBSERVABLES----------------->
 export function addPosition$(actionFn: any) {
