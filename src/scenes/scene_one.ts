@@ -1,17 +1,16 @@
-import { GameState } from "@/game_state/game_state";
+import { AGAME, GameState } from "@/game_state/game_state";
 import { addRun$, addShadowToBall, ballComposition, onRun$ } from "@/objects/ball";
 import { enemyCollideReaction } from "@/objects/enemy/enemy";
 import { initPoints, newPoints } from "@/objects/points/points";
-import { addPosition$, addShadowToShield, onPosition$, shildComposition } from "@/objects/shield";
-import { clampToBoxShieldPosition, debugPhysicsInfo } from "@/utils/utility";
+import { addPosition$, addShadowToShield, shildComposition } from "@/objects/shield";
+import { clampToBoxShieldPosition } from "@/utils/utility";
 import {
-    Color3, Color4, DeviceOrientationCamera, DirectionalLight, EventState, HavokPlugin,
+    Color3, Color4, DirectionalLight, EventState, HavokPlugin,
     HemisphericLight, IBasePhysicsCollisionEvent, IPointerEvent, Mesh,
     MeshBuilder, PhysicsBody, PhysicsHelper, PhysicsMotionType, PhysicsShapeConvexHull,
-    PhysicsViewer,
-    PickingInfo, PointerEventTypes, PointerInfo, Quaternion, Scene, ShadowGenerator,
+    PickingInfo, PointerEventTypes, Quaternion, Scene, ShadowGenerator,
     SpotLight,
-    StandardMaterial, Texture, Tools, TransformNode, UniversalCamera, Vector3
+    StandardMaterial, Tools, TransformNode, UniversalCamera, Vector3
 } from "@babylonjs/core";
 
 
@@ -41,7 +40,7 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     //----------- EVENTS -------->
     addSceneEvents(GameState.state.gameObjects.ball, shield, shield_physics, scene);
 
-    (globalThis.HVK as HavokPlugin).onCollisionObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
+    (AGAME.HVK as HavokPlugin).onCollisionObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
         const collider = eventData.collider.transformNode;
         const agCollider = eventData.collidedAgainst.transformNode;
         if (agCollider.name === "shield" || collider.name === "shield") {
@@ -50,7 +49,7 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
 
         }
     });
-    (globalThis.HVK as HavokPlugin).onCollisionEndedObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
+    (AGAME.HVK as HavokPlugin).onCollisionEndedObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
         const collider = eventData.collider.transformNode;
         const agCollider = eventData.collidedAgainst.transformNode;
         if (agCollider.name === "ball" || collider.name === "ball") {
@@ -73,7 +72,7 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
 }
 //--------------------------------->
 function initScene(gravity: Vector3, physicsEngine: HavokPlugin) {
-    const scene = new Scene(globalThis.gameEngine);
+    const scene = new Scene(AGAME.Engine);
     scene.enablePhysics(gravity, physicsEngine);
     scene.clearColor = new Color4(0.05, 0.04, 0.06, 1);
     scene.ambientColor = new Color3(1, 0.1, 1);
@@ -235,7 +234,7 @@ function addSceneEvents(ball: Mesh, shield: TransformNode, shield_physics: Mesh,
     }
     scene.onBeforeRenderObservable.add(() => {
         ballJoinShield();
-        (globalThis.HVK as HavokPlugin).setTargetTransform(shield_physics.getPhysicsBody(), shield.position, Quaternion.Identity())
+        (AGAME.HVK as HavokPlugin).setTargetTransform(shield_physics.getPhysicsBody(), shield.position, Quaternion.Identity())
     });
 }
 function pointerDownHandler(pickInfo: PickingInfo, shield: TransformNode, scene: Scene) {

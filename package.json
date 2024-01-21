@@ -13,10 +13,17 @@
     "staticOutPath": "public",
     "watcherGlob": "**"
   },
+  "@parcel/bundler-default": {
+    "minBundles": 1,
+    "minBundleSize": 5000,
+    "maxParallelRequests": 20
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@parcel/compressor-gzip": "^2.11.0",
+    "@symbiotejs/symbiote": "^2.0.5",
     "parcel": "^2.10.3",
     "parcel-reporter-static-files-copy": "^1.5.3",
     "typescript": "^5.3.2"
