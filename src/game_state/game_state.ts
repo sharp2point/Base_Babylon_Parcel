@@ -1,8 +1,19 @@
 import { resetBall } from "@/objects/ball";
 import { addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
 import { gameObjectDispose } from "@/utils/utility";
-import { AssetContainer, Camera, ITimerData, Mesh, PhysicsBody, PhysicsHelper, Scene, Tools, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
-import Timer from "timer.js";
+import { AssetContainer, Camera, Mesh, PhysicsHelper, Scene, Tools, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
+
+
+export const AGAME = {
+    HavokPhysics: null,
+    HVK: null,
+    Canvas: null,
+    Engine: null,
+    Gravity: null,
+    Scene: null,
+    ScreenAspect: null,
+    RenderLock: true,
+}
 
 export const GameState = function _GameState() {
 };
@@ -175,7 +186,7 @@ GameState.signalReaction = () => {
     }
 }
 GameState.menuOpen = () => {
-    globalThis.renderLock = true;
+    AGAME.RenderLock = true;
     const game_menu = document.querySelector(".game-menu");
     game_menu.classList.remove("hide");
     let progress = '';
@@ -186,7 +197,7 @@ GameState.menuOpen = () => {
     stat.innerHTML = progress;
 }
 GameState.menuClose = () => {
-    globalThis.renderLock = false;
+    AGAME.RenderLock = false;
     const game_menu = document.querySelector(".game-menu");
     game_menu.classList.add("hide");
 }
@@ -255,42 +266,42 @@ GameState.clearLevelTime = () => {
     points_menu.innerHTML = `0`;
 }
 GameState.cameraSettings = () => {
-    console.log("AP: ", globalThis.screenAspect);
+    console.log("AP: ", AGAME.ScreenAspect);
     const camera = GameState.camera() as UniversalCamera;
-    if (globalThis.screenAspect >= 0.40 && globalThis.screenAspect < 0.45) {        
+    if (AGAME.ScreenAspect >= 0.40 && AGAME.ScreenAspect < 0.45) {
         camera.position = new Vector3(0, 15.5, -4);
         camera.target = new Vector3(0, -1, 3);
         camera.fov = camera.fov = Tools.ToRadians(120);
-    } else if (globalThis.screenAspect >= 0.45 && globalThis.screenAspect < 0.5) {
+    } else if (AGAME.ScreenAspect >= 0.45 && AGAME.ScreenAspect < 0.5) {
         camera.position = new Vector3(0, 14, -4);
         camera.target = new Vector3(0, 0, 0);
         camera.fov = camera.fov = Tools.ToRadians(117);
-    } else if (globalThis.screenAspect >= 0.5 && globalThis.screenAspect < 0.55) {
+    } else if (AGAME.ScreenAspect >= 0.5 && AGAME.ScreenAspect < 0.55) {
         camera.position = new Vector3(0, 13, -4);
         camera.target = new Vector3(0, 0, 0);
         camera.fov = camera.fov = Tools.ToRadians(115);
-    } else if (globalThis.screenAspect >= 0.55 && globalThis.screenAspect < 0.6) {
+    } else if (AGAME.ScreenAspect >= 0.55 && AGAME.ScreenAspect < 0.6) {
         camera.position = new Vector3(0, 13, -4);
         camera.target = new Vector3(0, 0, 0);
         camera.fov = camera.fov = Tools.ToRadians(115);
-    } else if (globalThis.screenAspect >= 0.6 && globalThis.screenAspect < 0.65) {
+    } else if (AGAME.ScreenAspect >= 0.6 && AGAME.ScreenAspect < 0.65) {
         camera.position = new Vector3(0, 13, -4);
         camera.target = new Vector3(0, 0, 0);
         camera.fov = camera.fov = Tools.ToRadians(115);
-    } else if (globalThis.screenAspect >= 0.65 && globalThis.screenAspect < 0.7) {
+    } else if (AGAME.ScreenAspect >= 0.65 && AGAME.ScreenAspect < 0.7) {
         camera.position = new Vector3(0, 11.5, -4);
         camera.target = new Vector3(0, 0, 0);
         camera.fov = camera.fov = Tools.ToRadians(115);
-    } else if (globalThis.screenAspect >= 0.7 && globalThis.screenAspect < 0.75) {
+    } else if (AGAME.ScreenAspect >= 0.7 && AGAME.ScreenAspect < 0.75) {
         camera.position = new Vector3(0, 11, -4);
         camera.target = new Vector3(0, 0, 0);
         camera.fov = camera.fov = Tools.ToRadians(115);
-    } else if (globalThis.screenAspect >= 0.75 && globalThis.screenAspect < 1) {
+    } else if (AGAME.ScreenAspect >= 0.75 && AGAME.ScreenAspect < 1) {
         camera.position = new Vector3(0, 11, -4);
         camera.target = new Vector3(0, 0, 0);
         camera.fov = Tools.ToRadians(115);
-    } else if (globalThis.screenAspect >= 1) {
-        camera.position = new Vector3(0, 15, -10);        
+    } else if (AGAME.ScreenAspect >= 1) {
+        camera.position = new Vector3(0, 15, -10);
         camera.target = Vector3.Zero();
         camera.fov = Tools.ToRadians(80);
     }

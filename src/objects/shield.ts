@@ -12,15 +12,15 @@ export function shildComposition(scene: Scene): [TransformNode, Mesh, Mesh] {
     return [shield, shield_physics, shield_control_plane];
 }
 function physicsShield(scene: Scene, parent: TransformNode) {
-    const shield = MeshBuilder.CreateBox("shield", { width: 3, height: 0.6, depth: 0.25, wrap: true, updatable: true }, scene);
+    const shield = MeshBuilder.CreateBox("shield", { width: 3.5, height: 0.6, depth: 0.25, wrap: true, updatable: true }, scene);
     shield.parent = parent;
     shield.receiveShadows = true;
     const shield_mt = new StandardMaterial(`shield-mt`, scene);
-    shield_mt.diffuseColor = new Color3(0.1, 0.09, 0.2);
-    shield_mt.alpha = 0.5;
+    shield_mt.emissiveColor = new Color3(0.7, 0.5, 0.1);
+    shield_mt.alpha = 0.8;
     shield_mt.maxSimultaneousLights = 10;
     shield.material = shield_mt;
-    addHighlight(shield);
+    //addHighlight(shield);
     const physics = new PhysicsBody(shield, PhysicsMotionType.ANIMATED, false, scene);
     physics.setMassProperties({ mass: GameState.state.physicsMaterial.shield.mass });
     const shape = new PhysicsShapeConvexHull(shield, scene);
@@ -43,7 +43,7 @@ function addHighlight(mesh: Mesh) {
 
 }
 function controlShieldPlane(scene: Scene, parent: TransformNode) {
-    const control_plane = MeshBuilder.CreatePlane("shield-control-plane", { width: 3.5, height: 1.5, updatable: true }, scene);
+    const control_plane = MeshBuilder.CreatePlane("shield-control-plane", { width: 5.5, height: 2.5, updatable: true }, scene);
     control_plane.position = new Vector3(0, 0.7, -0.5);
     control_plane.parent = parent;
     control_plane.isPickable = true;
