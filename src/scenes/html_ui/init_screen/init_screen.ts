@@ -7,6 +7,7 @@ export class InitScreen extends Symbiote {
 }
 
 InitScreen.template = html` 
+    <canvas class="init-screen-canvas"></canvas>
     <pre-loader></pre-loader>
     <play-button class="hide"></play-button>
 `;
@@ -27,10 +28,12 @@ InitScreen.rootStyles = css`
         gap:5rem;
         pointer-events: none;
     }
-    .init-screen-title{
-        font-size: 2rem;
-        
-        margin-top:-50px;
+    .init-screen-canvas{
+        position: absolute;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
     }
     pre-loader{
         

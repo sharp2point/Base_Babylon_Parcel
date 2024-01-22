@@ -18,7 +18,7 @@ function getScreenAspect() {
 }
 function loadAssets() {
     const img = new Image(256, 256);
-    img.src = "public/sprites/points10.png";
+    img.src = "public/sprites/points10.webp";
     img.onload = () => {
         GameState.sprites().set("points10", img);
     }
@@ -52,13 +52,13 @@ window.addEventListener('load', async () => {
     })
 });
 window.addEventListener('resize', () => {
-    // if (AGAME.Engine) {
-    //     AGAME.Engine.resize();
-    //     getScreenAspect();
-    // }
-    // if (GameState.camera()) {
-    //     GameState.cameraSettings();
-    // }
+    if (AGAME.Engine) {
+        AGAME.Engine.resize();
+        getScreenAspect();
+    }
+    if (GameState.camera()) {
+        GameState.cameraSettings();
+    }
 });
 window.addEventListener("keydown", (ev) => {
     if (ev.key === 'i' && ev.altKey) {

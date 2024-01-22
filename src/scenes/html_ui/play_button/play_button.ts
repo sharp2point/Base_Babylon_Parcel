@@ -28,8 +28,8 @@ PlayButton.rootStyles = css`
         width:150px;
         height:150px;
         padding:20px;
-        color:#999;
-        background-image: radial-gradient(rgba(45,45,45,1), rgba(45,30,65,1));
+        color:#BBB;
+        /*background-image: radial-gradient(rgba(45,45,45,1), rgba(45,30,65,1));*/
         border-radius: 50%;
         font-size:2.2rem;
         text-transform: uppercase;
@@ -44,7 +44,7 @@ PlayButton.rootStyles = css`
     a span{
         position: relative;
         z-index:1;
-        letter-spacing:0.2rem;
+        letter-spacing:0.2rem;       
     }
     a::before{
         content:'';
@@ -66,7 +66,7 @@ PlayButton.rootStyles = css`
         content:'';
         position:absolute;
         inset:2px;
-        background-image: radial-gradient(rgba(70,70,70,1), rgba(45,45,45,1),transparent);
+        background-image: radial-gradient(rgba(100,100,100,1) 0%,rgba(100,100,100,1) 55%, rgba(145,145,145,1) 57%, rgba(145,145,145,1) 60%,rgba(100,100,100,0.3) 100%);
         border-radius: 50%;
     }
 `;
