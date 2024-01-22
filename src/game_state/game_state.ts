@@ -21,7 +21,7 @@ GameState.state = {
     gameState: 10,
     isDragShield: false,
     isBallStart: false,
-    level: 5,
+    level: 1,
     levelTimeHandler: null,
     levelTime: 0,
     dragBox: {
@@ -89,6 +89,31 @@ GameState.changeGameState = (state: number) => {
     GameState.state.gameState = state;
     GameState.signalReaction();
 };
+GameState.signalReaction = () => {
+    switch (GameState.gameState()) {
+        case GameState.state.signals.GAME_RUN: {
+            console.log("GAMERUN");
+            GameState.clearLevelTime();
+            GameState.hideInitUI();
+            GameState.resetScene();
+            GameState.initLevelTime();
+            break;
+        }
+        case GameState.state.signals.GAME_OTHER_BALL: {
+            console.log("GAME_OTHER_BALL");
+            GameState.clearLevelTime();
+            GameState.showInitUI()
+            break;
+        }
+        case GameState.state.signals.LEVEL_WIN: {
+            console.log("LEVEL_WIN")
+            GameState.nextLevel();
+            GameState.clearLevelTime();
+            GameState.showInitUI();
+            break;
+        }
+    }
+}
 GameState.createMap = (level: number) => {
     GameState.state.gameObjects.enemyNodes = new TransformNode("enemies-node", GameState.state.gameObjects.scene);
 
@@ -139,113 +164,50 @@ GameState.createMap = (level: number) => {
         for (let j = 0; j < maps[level][i].length; j++) {
             switch (maps[level][i][j]) {
                 case 1: {
-                    const emesh = enemy(`enemy-bloc-${j + 9 * i}`,
-                        new Vector3(j * gap, GameState.state.sizes.enemy, i * gap).
-                            add(new Vector3(-(deltaX), 0, GameState.gameBox().height / 2 - 10)),
+                    const name = `enemy-bloc-${j + 9 * i}`;
+                    const emesh = enemy(name, new Vector3(j * gap, GameState.state.sizes.enemy, i * gap).
+                        add(new Vector3(-(deltaX), 0, GameState.gameBox().height / 2 - 10)),
                         GameState.state.gameObjects.enemyNodes);
-                    addShadowToEnemy(GameState.state.gameObjects.shadow, `enemy-${j + 9 * i}`);
+                    addShadowToEnemy(GameState.state.gameObjects.shadow, name);
                     break;
                 }
             }
         }
     }
 };
-GameState.signalReaction = () => {
-    switch (GameState.gameState()) {
-        case GameState.state.signals.MENU_OPEN: {
-            console.log("MENU_OPEN")
-            GameState.menuOpen();
-            GameState.resetScene();
-            break;
-        }
-        case GameState.state.signals.GAME_RUN: {
-            console.log("GAMERUN");
-            GameState.clearLevelTime();
-            GameState.menuClose();
-            GameState.resetScene();
-            GameState.initLevelTime();
-            break;
-        }
-        case GameState.state.signals.GAME_OTHER_BALL: {
-            console.log("GAME_OTHER_BALL");
-            GameState.clearLevelTime();
-            GameState.menuOpen();
-            GameState.resetScene();
-            break;
-        }
-        case GameState.state.signals.LEVEL_WIN: {
-            console.log("LEVEL_WIN")
-            GameState.state.level < 5 ?
-                GameState.state.level += 1 :
-                GameState.state.level = 1;
-            GameState.clearLevelTime();
-            GameState.menuOpen();
-            GameState.resetScene();
-            break;
-        }
-    }
-}
-GameState.menuOpen = () => {
-    AGAME.RenderLock = true;
-    const game_menu = document.querySelector(".game-menu");
-    game_menu.classList.remove("hide");
-    let progress = '';
-    GameState.playerProgress().forEach((v, k) => {
-        progress += `<div class="level"><span>level ${k}:</span><span>${v}</span> </div>`
-    });
-    const stat = document.querySelector(".play-progress");
-    stat.innerHTML = progress;
-}
-GameState.menuClose = () => {
-    AGAME.RenderLock = false;
-    const game_menu = document.querySelector(".game-menu");
-    game_menu.classList.add("hide");
-}
 GameState.resetScene = () => {
     GameState.state.isBallStart = false;
     resetBall();
     GameState.disposeEnemies();
     GameState.playerProgress().set(GameState.state.level, 0);
-    GameState.createMap(GameState.state.level);
+    setTimeout(() => {
+        GameState.createMap(GameState.state.level);
+    }, 1000);
 }
 //----------------------------------------------->
 GameState.isAllEnemiesDie = () => {
     return (GameState.enemyNodes() as TransformNode).getChildren().length > 0 ? false : true;
 }
-GameState.menuCreate = () => {
-    const menu_place = document.createElement('div');
-    menu_place.classList.add('game-menu');
-
-    const level_menu = document.createElement('div');
-    level_menu.classList.add("level-menu");
-    document.body.appendChild(level_menu);
-
-    level_menu.innerHTML = `<span class="level-menu-timer">0</span>`
-
-    menu_place.innerHTML += `<div class="menu">
-        <button class="bt play-bt">Play</button>
-        <div class="play-progress">
-        </div>
-    </div>`;
-    document.body.appendChild(menu_place);
-    const playButton = document.querySelector(".play-bt");
-    playButton.addEventListener('click', () => {
-        GameState.changeGameState(GameState.state.signals.GAME_RUN);// GAME_RUN: 100
-    })
-}
 GameState.disposeEnemies = () => {
     if (GameState.damageNodes().length > 0) {
         GameState.damageNodes().forEach(tn => {
             tn.getChildren().forEach(obj => {
+                console.log("Damage die")
                 gameObjectDispose(obj as Mesh);
             })
         })
     }
     if (GameState.enemyNodes()?.getChildren() && GameState.enemyNodes().getChildren().length > 0) {
         GameState.enemyNodes().getChildren().forEach(obj => {
+            console.log("Cube die")
             gameObjectDispose(obj as Mesh);
         })
     }
+
+    (GameState.scene() as Scene).getMeshesById("enemy-cube").forEach(m => {
+        console.log("Cube die by id")
+        m.dispose();
+    })
 }
 GameState.calculatePoints = (enemy: Mesh) => {
     const meta = enemy["meta"];
@@ -253,17 +215,13 @@ GameState.calculatePoints = (enemy: Mesh) => {
     if (GameState.playerProgress().has(key)) {
         const points = GameState.playerProgress().get(key) + meta.points
         GameState.playerProgress().set(key, points);
-        //----------------------------------------->
-        const points_menu = document.querySelector(".level-menu-timer");
-        points_menu.innerHTML = `${points}`;
     }
 }
 GameState.initLevelTime = () => {
 
 }
 GameState.clearLevelTime = () => {
-    const points_menu = document.querySelector(".level-menu-timer");
-    points_menu.innerHTML = `0`;
+
 }
 GameState.cameraSettings = () => {
     console.log("AP: ", AGAME.ScreenAspect);
@@ -305,5 +263,41 @@ GameState.cameraSettings = () => {
         camera.target = Vector3.Zero();
         camera.fov = Tools.ToRadians(80);
     }
+}
+GameState.nextLevel = () => {
+    GameState.state.level < 5 ?
+        GameState.state.level += 1 :
+        GameState.state.level = 1;
+}
+
+// HTML UI ---------------------------------->
+
+GameState.loadHtmlUI = () => {
+    const init_screen = document.createElement('init-screen');
+    document.body.appendChild(init_screen);
+}
+GameState.hideInitUI = () => {
+    const init_screen = document.querySelector('init-screen');
+    init_screen.classList.add("hide");
+}
+GameState.showInitUI = () => {
+    const init_screen = document.querySelector('init-screen');
+    init_screen.classList.remove("hide");
+    AGAME.RenderLock = true;
+    let progress = '';
+    GameState.playerProgress().forEach((v, k) => {
+        progress += `<div class="level"><span>level ${k}:</span><span>${v}</span> </div>`
+    });
+}
+GameState.hidePreLoader = () => {
+    const pre_loader = document.querySelector('pre-loader');
+    const play_button = document.querySelector('play-button');
+    pre_loader.classList.add("hide");
+    play_button.classList.remove("hide");
+    play_button.addEventListener('click', () => {
+        GameState.hideInitUI();
+        GameState.changeGameState(GameState.state.signals.GAME_RUN);// GAME_RUN: 100
+        AGAME.RenderLock = false;
+    })
 }
 

@@ -1,14 +1,11 @@
-import { Engine, HavokPlugin, Vector3 } from "@babylonjs/core";
-import { sceneOne } from "./scenes/scene_one";
 import { AGAME, GameState } from "./game_state/game_state";
 import { load3DModels } from "./utils/loaderGlbFiles";
 
-
-async function initPhysics(HavokPhysics: any) {
-    const physics = await HavokPhysics();
+async function initCore() {
+    const { Engine, HavokPlugin, Vector3 } = await import("@babylonjs/core");
+    const havok = await import("@babylonjs/havok");
+    const physics = await havok.default();
     AGAME.HVK = new HavokPlugin(true, physics);
-}
-function initGameGlobalsObject() {
     AGAME.Canvas = document.querySelector('#app');
     AGAME.Engine = new Engine(AGAME.Canvas, true);
     AGAME.Gravity = new Vector3(0, -9.81, 0);
@@ -27,34 +24,41 @@ function loadAssets() {
     }
 }
 
+function initGameTimeout() {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(true);
+        }, 4000);
+    });
+}
+
 window.addEventListener('load', async () => {
-    const physics = await import("@babylonjs/havok");
-    const init_screen = document.createElement('init-screen');
-    document.body.appendChild(init_screen);
-    initPhysics(physics.default).then(() => {
-        initGameGlobalsObject();
-        getScreenAspect();
-        
-        const scene = sceneOne(AGAME.Gravity, AGAME.HVK);
-        GameState.cameraSettings();
-        //GameState.signalReaction();
+    getScreenAspect();
+    GameState.loadHtmlUI();
+    await initGameTimeout();
+    initCore().then(async () => {
         loadAssets();
+        const { sceneOne } = await import("./scenes/scene_one");
+        AGAME.Scene = sceneOne(AGAME.Gravity, AGAME.HVK);
+        GameState.cameraSettings();
         load3DModels();
+        GameState.hidePreLoader();
+
         AGAME.Engine.runRenderLoop(() => {
             if (!AGAME.RenderLock) {
-                scene.render();
+                AGAME.Scene.render();
             }
         });
     })
 });
 window.addEventListener('resize', () => {
-    if (AGAME.Engine) {
-        AGAME.Engine.resize();
-        getScreenAspect();
-    }
-    if (GameState.camera()) {
-        GameState.cameraSettings();
-    }
+    // if (AGAME.Engine) {
+    //     AGAME.Engine.resize();
+    //     getScreenAspect();
+    // }
+    // if (GameState.camera()) {
+    //     GameState.cameraSettings();
+    // }
 });
 window.addEventListener("keydown", (ev) => {
     if (ev.key === 'i' && ev.altKey) {

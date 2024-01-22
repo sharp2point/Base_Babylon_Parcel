@@ -6,10 +6,9 @@ export class InitScreen extends Symbiote {
     }
 }
 
-InitScreen.template = html`    
-    <h2 class="init-screen-title">{{title}}</h2>
+InitScreen.template = html` 
     <pre-loader></pre-loader>
-    <play-button></play-button>
+    <play-button class="hide"></play-button>
 `;
 
 InitScreen.rootStyles = css`
