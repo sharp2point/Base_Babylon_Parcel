@@ -1,4 +1,5 @@
 import { AGAME, GameState } from "./game_state/game_state";
+import { initPIXI } from "./pixi/pixi_ui";
 import { load3DModels } from "./utils/loaderGlbFiles";
 
 async function initCore() {
@@ -43,6 +44,10 @@ window.addEventListener('load', async () => {
         GameState.cameraSettings();
         load3DModels();
         GameState.hidePreLoader();
+        //-------------------------------------->
+        //GameState.drawCanvas();
+        initPIXI();
+        //--------------------------------------->
 
         AGAME.Engine.runRenderLoop(() => {
             if (!AGAME.RenderLock) {

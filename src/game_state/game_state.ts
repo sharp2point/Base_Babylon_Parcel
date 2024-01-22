@@ -1,5 +1,6 @@
 import { resetBall } from "@/objects/ball";
 import { addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
+import { drawScoreBoard } from "@/pixi/pixi_ui";
 import { gameObjectDispose } from "@/utils/utility";
 import { AssetContainer, Camera, Mesh, PhysicsHelper, Scene, Tools, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
 
@@ -7,6 +8,7 @@ import { AssetContainer, Camera, Mesh, PhysicsHelper, Scene, Tools, TransformNod
 export const AGAME = {
     HavokPhysics: null,
     HVK: null,
+    PIXI: null,
     Canvas: null,
     Engine: null,
     Gravity: null,
@@ -93,23 +95,36 @@ GameState.signalReaction = () => {
     switch (GameState.gameState()) {
         case GameState.state.signals.GAME_RUN: {
             console.log("GAMERUN");
-            GameState.clearLevelTime();
-            GameState.hideInitUI();
-            GameState.resetScene();
-            GameState.initLevelTime();
+            GameState.pipe(
+                [
+                    GameState.clearLevelTime,
+                    GameState.hideInitUI,
+                    GameState.resetScene,
+                    GameState.initLevelTime,
+                ]
+            );
+
             break;
         }
         case GameState.state.signals.GAME_OTHER_BALL: {
             console.log("GAME_OTHER_BALL");
-            GameState.clearLevelTime();
-            GameState.showInitUI()
+            GameState.pipe(
+                [
+                    GameState.clearLevelTime,
+                    GameState.showInitUI
+                ]
+            );
             break;
         }
         case GameState.state.signals.LEVEL_WIN: {
             console.log("LEVEL_WIN")
-            GameState.nextLevel();
-            GameState.clearLevelTime();
-            GameState.showInitUI();
+            GameState.pipe(
+                [
+                    GameState.nextLevel,
+                    GameState.clearLevelTime,
+                    GameState.showInitUI
+                ]
+            )
             break;
         }
     }
@@ -184,6 +199,11 @@ GameState.resetScene = () => {
         GameState.createMap(GameState.state.level);
     }, 500);
 }
+GameState.pipe = (fnArr: Array<Function>) => {
+    setTimeout(() => {
+        fnArr.forEach(fn => fn());
+    }, 500)
+}
 //----------------------------------------------->
 GameState.isAllEnemiesDie = () => {
     return (GameState.enemyNodes() as TransformNode).getChildren().length > 0 ? false : true;
@@ -215,6 +235,7 @@ GameState.calculatePoints = (enemy: Mesh) => {
     if (GameState.playerProgress().has(key)) {
         const points = GameState.playerProgress().get(key) + meta.points
         GameState.playerProgress().set(key, points);
+        drawScoreBoard(`SCORE: ${points}`);
     }
 }
 GameState.initLevelTime = () => {
@@ -224,7 +245,7 @@ GameState.clearLevelTime = () => {
 
 }
 GameState.cameraSettings = () => {
-    console.log("AP: ", AGAME.ScreenAspect);
+    // console.log("AP: ", AGAME.ScreenAspect);
     const camera = GameState.camera() as UniversalCamera;
     if (AGAME.ScreenAspect < 0.45) {
         camera.position = new Vector3(0, 16.0, 0);
@@ -299,5 +320,12 @@ GameState.hidePreLoader = () => {
         GameState.changeGameState(GameState.state.signals.GAME_RUN);// GAME_RUN: 100
         AGAME.RenderLock = false;
     })
+}
+
+//------------- CANVAS test ----------------->
+GameState.drawCanvas = () => {
+    const cnv = document.createElement('canvas');
+    cnv.classList.add('score-board');
+    document.body.appendChild(cnv);
 }
 

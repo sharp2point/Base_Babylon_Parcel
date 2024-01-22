@@ -33,6 +33,7 @@
     "@babylonjs/havok": "^1.3.0",
     "@babylonjs/inspector": "^6.37.1",
     "@babylonjs/loaders": "^6.31.2",
+    "pixi.js": "^7.3.3",
     "timer.js": "^1.0.4"
   }
 }
