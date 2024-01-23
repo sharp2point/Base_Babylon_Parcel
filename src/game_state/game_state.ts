@@ -1,6 +1,6 @@
 import { resetBall } from "@/objects/ball";
 import { addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
-import { drawScoreBoard } from "@/pixi/pixi_ui";
+import { drawScoreBoard, hideScoreBoard, showScoreBoard } from "@/pixi/pixi_ui";
 import { gameObjectDispose } from "@/utils/utility";
 import { AssetContainer, Camera, Mesh, PhysicsHelper, Scene, Tools, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
 
@@ -70,6 +70,15 @@ GameState.state = {
         sprites: new Map<string, HTMLImageElement>(),
         containers3D: new Map<string, AssetContainer>()
     },
+    ui: {
+        init_screen: null,
+        score_board: {
+            size: {
+                width: 500,
+                height: 100,
+            }
+        }
+    },
     playerProgress: new Map<number, number>()
 };
 //---- ACCSESSORS---------------------------->
@@ -85,6 +94,7 @@ GameState.ball = (): Mesh => GameState.state.gameObjects.ball;
 GameState.points = (): Mesh => GameState.state.gameObjects.points;
 GameState.sprites = (): Map<string, HTMLImageElement> => GameState.state.assets.sprites;
 GameState.playerProgress = (): Map<number, number> => GameState.state.playerProgress;
+GameState.UI = () => GameState.state.ui;
 //----------------------------------------------------------------------->
 
 GameState.changeGameState = (state: number) => {
@@ -95,11 +105,13 @@ GameState.signalReaction = () => {
     switch (GameState.gameState()) {
         case GameState.state.signals.GAME_RUN: {
             console.log("GAMERUN");
+            drawScoreBoard('SCORE: 0');
             GameState.pipe(
                 [
                     GameState.clearLevelTime,
                     GameState.hideInitUI,
                     GameState.resetScene,
+                    showScoreBoard,
                     GameState.initLevelTime,
                 ]
             );
@@ -111,6 +123,7 @@ GameState.signalReaction = () => {
             GameState.pipe(
                 [
                     GameState.clearLevelTime,
+                    hideScoreBoard,
                     GameState.showInitUI
                 ]
             );
@@ -122,6 +135,8 @@ GameState.signalReaction = () => {
                 [
                     GameState.nextLevel,
                     GameState.clearLevelTime,
+
+                    hideScoreBoard,
                     GameState.showInitUI
                 ]
             )
@@ -212,20 +227,17 @@ GameState.disposeEnemies = () => {
     if (GameState.damageNodes().length > 0) {
         GameState.damageNodes().forEach(tn => {
             tn.getChildren().forEach(obj => {
-                console.log("Damage die")
                 gameObjectDispose(obj as Mesh);
             })
         })
     }
     if (GameState.enemyNodes()?.getChildren() && GameState.enemyNodes().getChildren().length > 0) {
         GameState.enemyNodes().getChildren().forEach(obj => {
-            console.log("Cube die")
             gameObjectDispose(obj as Mesh);
         })
     }
 
     (GameState.scene() as Scene).getMeshesById("enemy-cube").forEach(m => {
-        console.log("Cube die by id")
         m.dispose();
     })
 }
@@ -244,47 +256,6 @@ GameState.initLevelTime = () => {
 GameState.clearLevelTime = () => {
 
 }
-GameState.cameraSettings = () => {
-    // console.log("AP: ", AGAME.ScreenAspect);
-    const camera = GameState.camera() as UniversalCamera;
-    if (AGAME.ScreenAspect < 0.45) {
-        camera.position = new Vector3(0, 16.0, 0);
-        camera.target = new Vector3(0, 0, 5);
-        camera.fov = camera.fov = Tools.ToRadians(120);
-    } else if (AGAME.ScreenAspect >= 0.45 && AGAME.ScreenAspect < 0.5) {
-        camera.position = new Vector3(0, 15, 0);
-        camera.target = new Vector3(0, 0, 5);
-        camera.fov = camera.fov = Tools.ToRadians(115);
-    } else if (AGAME.ScreenAspect >= 0.5 && AGAME.ScreenAspect < 0.55) {
-        camera.position = new Vector3(0, 15, 0);
-        camera.target = new Vector3(0, 0, 5);
-        camera.fov = camera.fov = Tools.ToRadians(115);
-    } else if (AGAME.ScreenAspect >= 0.55 && AGAME.ScreenAspect < 0.6) {
-        camera.position = new Vector3(0, 14, 0);
-        camera.target = new Vector3(0, 0, 5);
-        camera.fov = camera.fov = Tools.ToRadians(115);
-    } else if (AGAME.ScreenAspect >= 0.6 && AGAME.ScreenAspect < 0.65) {
-        camera.position = new Vector3(0, 14, 0);
-        camera.target = new Vector3(0, 0, 5);
-        camera.fov = camera.fov = Tools.ToRadians(115);
-    } else if (AGAME.ScreenAspect >= 0.65 && AGAME.ScreenAspect < 0.7) {
-        camera.position = new Vector3(0, 13, 0);
-        camera.target = new Vector3(0, 0, 4);
-        camera.fov = camera.fov = Tools.ToRadians(115);
-    } else if (AGAME.ScreenAspect >= 0.7 && AGAME.ScreenAspect < 0.75) {
-        camera.position = new Vector3(0, 12, 0);
-        camera.target = new Vector3(0, 0, 3);
-        camera.fov = camera.fov = Tools.ToRadians(115);
-    } else if (AGAME.ScreenAspect >= 0.75 && AGAME.ScreenAspect < 1) {
-        camera.position = new Vector3(0, 12, -2);
-        camera.target = new Vector3(0, 0, 2);
-        camera.fov = Tools.ToRadians(110);
-    } else if (AGAME.ScreenAspect >= 1) {
-        camera.position = new Vector3(0, 15, -10);
-        camera.target = Vector3.Zero();
-        camera.fov = Tools.ToRadians(80);
-    }
-}
 GameState.nextLevel = () => {
     GameState.state.level < 5 ?
         GameState.state.level += 1 :
@@ -294,16 +265,15 @@ GameState.nextLevel = () => {
 // HTML UI ---------------------------------->
 
 GameState.loadHtmlUI = () => {
-    const init_screen = document.createElement('init-screen');
-    document.body.appendChild(init_screen);
+    GameState.UI().init_screen = document.createElement('init-screen');
+    document.body.appendChild(GameState.UI().init_screen);
 }
 GameState.hideInitUI = () => {
-    const init_screen = document.querySelector('init-screen');
-    init_screen.classList.add("hide");
+    GameState.UI().init_screen.classList.add("hide");
 }
 GameState.showInitUI = () => {
-    const init_screen = document.querySelector('init-screen');
-    init_screen.classList.remove("hide");
+    GameState.UI().init_screen.setAttribute('attr-title', `Level: ${GameState.state.level}`);
+    GameState.UI().init_screen.classList.remove("hide");
     AGAME.RenderLock = true;
     let progress = '';
     GameState.playerProgress().forEach((v, k) => {
@@ -315,17 +285,13 @@ GameState.hidePreLoader = () => {
     const play_button = document.querySelector('play-button');
     pre_loader.classList.add("hide");
     play_button.classList.remove("hide");
+
+    GameState.UI().init_screen.setAttribute('attr-title', `Level: ${GameState.state.level}`);
+
     play_button.addEventListener('click', () => {
         GameState.hideInitUI();
         GameState.changeGameState(GameState.state.signals.GAME_RUN);// GAME_RUN: 100
         AGAME.RenderLock = false;
     })
-}
-
-//------------- CANVAS test ----------------->
-GameState.drawCanvas = () => {
-    const cnv = document.createElement('canvas');
-    cnv.classList.add('score-board');
-    document.body.appendChild(cnv);
 }
 

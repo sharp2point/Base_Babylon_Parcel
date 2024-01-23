@@ -2,12 +2,16 @@ import Symbiote, { html, css } from "@symbiotejs/symbiote";
 
 export class InitScreen extends Symbiote {
     init$ = {
-        title: 'ARCANOID 3D'
+        title: '',
     }
 }
+InitScreen.bindAttributes({
+    'attr-title': 'title'
+});
 
 InitScreen.template = html` 
     <canvas class="init-screen-canvas"></canvas>
+    <h2>{{title}}</h2>
     <pre-loader></pre-loader>
     <play-button class="hide"></play-button>
 `;

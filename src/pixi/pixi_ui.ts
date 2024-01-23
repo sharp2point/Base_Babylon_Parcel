@@ -1,27 +1,31 @@
-import { AGAME } from '@/game_state/game_state';
+import { AGAME, GameState } from '@/game_state/game_state';
 import * as PIXI from 'pixi.js';
 
 export function initPIXI() {
     const pixiPlace = document.createElement('div');
     pixiPlace.classList.add("score-board")
-    pixiPlace.style.width = "90vw";
-    pixiPlace.style.height = "100px";    
+    pixiPlace.style.width = `${GameState.UI().score_board.size.width}px`;
+    pixiPlace.style.height = `${GameState.UI().score_board.size.height}px`;
+    pixiPlace.style.left = `calc(50% - ${GameState.UI().score_board.size.width / 2}px)`;
     document.body.appendChild(pixiPlace);
     const app = new PIXI.Application({ backgroundAlpha: 0, resizeTo: pixiPlace });
     pixiPlace.appendChild(app.view as HTMLCanvasElement);
-    AGAME.PIXI = app;
+    AGAME.PIXI = {
+        place: pixiPlace,
+        app: app
+    };
 }
 
 export function drawScoreBoard(text: string) {
 
     const style = new PIXI.TextStyle({
-        fontFamily: 'Arial',
+        fontFamily: 'Impact',
         fontSize: 36,
-        fontStyle: 'italic',
-        fontWeight: 'bold',
-        fill: ['#ffffff', '#00ff99'], // gradient
-        stroke: '#4a1850',
-        strokeThickness: 5,
+        fontStyle: 'normal',
+        fontWeight: '100',
+        fill: ['#ffffff', '#aaaaaa'], // gradient
+        stroke: '#aaaaaa',
+        strokeThickness: 1,
         dropShadow: true,
         dropShadowColor: '#000000',
         dropShadowBlur: 4,
@@ -31,10 +35,17 @@ export function drawScoreBoard(text: string) {
         wordWrapWidth: 440,
         lineJoin: 'round',
     });
-    const basicText = new PIXI.Text(text,style);
-    basicText.x = 50;
-    basicText.y = 50;
+    const basicText = new PIXI.Text(text, style);
+    basicText.x = 30;
+    basicText.y = 30;
 
-    (AGAME.PIXI as PIXI.Application<PIXI.ICanvas>).stage.removeChildren();
-    AGAME.PIXI.stage.addChild(basicText);
+    (AGAME.PIXI.app as PIXI.Application<PIXI.ICanvas>).stage.removeChildren();
+    AGAME.PIXI.app.stage.addChild(basicText);
+}
+
+export function hideScoreBoard() {
+    (AGAME.PIXI.place as HTMLElement).classList.add("hide");
+}
+export function showScoreBoard() {
+    (AGAME.PIXI.place as HTMLElement).classList.remove("hide");
 }

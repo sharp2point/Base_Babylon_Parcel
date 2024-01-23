@@ -1,6 +1,7 @@
 import { AGAME, GameState } from "./game_state/game_state";
-import { initPIXI } from "./pixi/pixi_ui";
+import { hideScoreBoard, initPIXI } from "./pixi/pixi_ui";
 import { load3DModels } from "./utils/loaderGlbFiles";
+import { cameraSettings } from "./utils/utility";
 
 async function initCore() {
     const { Engine, HavokPlugin, Vector3 } = await import("@babylonjs/core");
@@ -41,12 +42,12 @@ window.addEventListener('load', async () => {
         loadAssets();
         const { sceneOne } = await import("./scenes/scene_one");
         AGAME.Scene = sceneOne(AGAME.Gravity, AGAME.HVK);
-        GameState.cameraSettings();
+        cameraSettings();
         load3DModels();
         GameState.hidePreLoader();
         //-------------------------------------->
-        //GameState.drawCanvas();
         initPIXI();
+        hideScoreBoard();
         //--------------------------------------->
 
         AGAME.Engine.runRenderLoop(() => {
@@ -62,7 +63,7 @@ window.addEventListener('resize', () => {
         getScreenAspect();
     }
     if (GameState.camera()) {
-        GameState.cameraSettings();
+        cameraSettings();
     }
 });
 window.addEventListener("keydown", (ev) => {
