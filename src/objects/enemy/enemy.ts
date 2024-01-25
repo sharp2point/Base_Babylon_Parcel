@@ -1,3 +1,4 @@
+import { ASSETS } from "@/game_state/assets/state";
 import { GameState } from "@/game_state/game_state";
 import { gameObjectDispose } from "@/utils/utility";
 import { Color3, Color4, HighlightLayer, Mesh, MeshBuilder, PhysicsBody, PhysicsHelper, PhysicsMotionType, PhysicsRadialImpulseFalloff, PhysicsShapeConvexHull, Scalar, Scene, ShadowGenerator, SolidParticle, SolidParticleSystem, StandardMaterial, TransformNode, Vector3 } from "@babylonjs/core";
@@ -11,7 +12,7 @@ export function enemy(name: string, position: Vector3, parent: TransformNode) {
     return enemy;
 }
 function physicsEnemy(name: string, options: { size: number, position: Vector3 }, parent: TransformNode) {
-    const enemy = MeshBuilder.CreateBox(name, { size: options.size, updatable: true }, GameState.scene());    
+    const enemy = MeshBuilder.CreateBox(name, { size: options.size, updatable: true }, GameState.scene());
     enemy.position = options.position;
     enemy.parent = parent;
     const material = new StandardMaterial("enemy-material", GameState.scene());
@@ -36,7 +37,7 @@ export function enemyCollideReaction(enemy: Mesh) {
     enemyDamageModelEffect(enemy)
 }
 function enemyDamageModelEffect(enemy: Mesh) {
-    const instanceModel = GameState.state.assets.containers3D.get("enemy_damage").
+    const instanceModel = ASSETS.containers3D.get("enemy_damage").
         instantiateModelsToScene((name: string) => `enemy-damage-${name}`, true);
     const tn = new TransformNode(`tn-enemies`, GameState.scene())//GameState.enemyNodes();
     GameState.damageNodes().push(tn);

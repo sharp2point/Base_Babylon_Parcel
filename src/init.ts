@@ -1,5 +1,7 @@
-import { AGAME, GameState } from "./game_state/game_state";
-import { hideScoreBoard, initPIXI } from "./pixi/pixi_ui";
+import { ASSETS } from "./game_state/assets/state";
+import { AGAME } from "./game_state/main/state";
+import { GameState } from "./game_state/game_state";
+import { getScreenAspect, loadAssets } from "./utils/clear_utils";
 import { load3DModels } from "./utils/loaderGlbFiles";
 import { cameraSettings } from "./utils/utility";
 
@@ -12,43 +14,21 @@ async function initCore() {
     AGAME.Engine = new Engine(AGAME.Canvas, true);
     AGAME.Gravity = new Vector3(0, -9.81, 0);
 }
-function getScreenAspect() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const aspect = width / height;
-    AGAME.ScreenAspect = aspect;
-}
-function loadAssets() {
-    const img = new Image(256, 256);
-    img.src = "public/sprites/points10.webp";
-    img.onload = () => {
-        GameState.sprites().set("points10", img);
-    }
-}
 
-function initGameTimeout() {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(true);
-        }, 4000);
-    });
-}
 
 window.addEventListener('load', async () => {
-    getScreenAspect();
-    GameState.loadHtmlUI();
-    await initGameTimeout();
+    AGAME.ScreenAspect = getScreenAspect();
+    loadAssets(ASSETS.sprites);
     initCore().then(async () => {
-        loadAssets();
         const { sceneOne } = await import("./scenes/scene_one");
+
         AGAME.Scene = sceneOne(AGAME.Gravity, AGAME.HVK);
-        cameraSettings();
+        cameraSettings(AGAME.ScreenAspect);
         load3DModels();
-        GameState.hidePreLoader();
-        //-------------------------------------->
-        initPIXI();
-        hideScoreBoard();
-        //--------------------------------------->
+
+        ///---------------------
+        GameState.levelRun();
+        //----------------------
 
         AGAME.Engine.runRenderLoop(() => {
             if (!AGAME.RenderLock) {
@@ -58,12 +38,12 @@ window.addEventListener('load', async () => {
     })
 });
 window.addEventListener('resize', () => {
+    AGAME.ScreenAspect = getScreenAspect();
     if (AGAME.Engine) {
         AGAME.Engine.resize();
-        getScreenAspect();
     }
     if (GameState.camera()) {
-        cameraSettings();
+        cameraSettings(AGAME.ScreenAspect);
     }
 });
 window.addEventListener("keydown", (ev) => {

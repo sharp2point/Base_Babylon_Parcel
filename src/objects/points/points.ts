@@ -1,3 +1,4 @@
+import { ASSETS } from "@/game_state/assets/state";
 import { GameState } from "@/game_state/game_state";
 import { Mesh, MeshBuilder, Scene, Vector3, Animation, StandardMaterial, DynamicTexture, Matrix, CanvasAlphaMode, AlphaState, Color3 } from "@babylonjs/core";
 
@@ -21,7 +22,7 @@ export function newPoints(text: string, position: Vector3) {
     material.diffuseTexture = txt;
     material.emissiveTexture = txt;
     points.material = material;
-    ctx.drawImage(GameState.sprites().get('points10'), 0, 0, 256, 256, 0, 0, 40, 40);
+    ctx.drawImage(ASSETS.sprites.get('points10'), 0, 0, 256, 256, 0, 0, 40, 40);
     txt.update();
     animatePoints(points);
 }

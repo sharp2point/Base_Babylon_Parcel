@@ -1,9 +1,10 @@
-import { AGAME, GameState } from "@/game_state/game_state";
+import { GameState } from "@/game_state/game_state";
+import { AGAME } from "@/game_state/main/state";
 import { addRun$, addShadowToBall, ballComposition, onRun$ } from "@/objects/ball";
 import { enemyCollideReaction } from "@/objects/enemy/enemy";
 import { initPoints, newPoints } from "@/objects/points/points";
 import { addPosition$, addShadowToShield, shildComposition } from "@/objects/shield";
-import { clampToBoxShieldPosition } from "@/utils/utility";
+import { clampToBoxShieldPosition, isAllEnemiesDie } from "@/utils/utility";
 import {
     Color3, Color4, DirectionalLight, EventState, HavokPlugin,
     HemisphericLight, IBasePhysicsCollisionEvent, IPointerEvent, Mesh,
@@ -58,7 +59,7 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
                 enemyCollideReaction(agCollider as Mesh);
                 newPoints("10", agCollider.position);
                 GameState.calculatePoints(agCollider as Mesh);
-                if (GameState.isAllEnemiesDie()) {
+                if (isAllEnemiesDie()) {
                     GameState.changeGameState(GameState.state.signals.LEVEL_WIN);
                 }
             }

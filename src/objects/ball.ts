@@ -10,7 +10,7 @@ export function ballComposition(scene: Scene): Mesh {
     ball["run$"] = new Observable();
 
     ball.onBeforeRenderObservable.add(() => {
-        spot.position = ball.absolutePosition.clone().add(new Vector3(0, 1.5, 0));
+        spot.position = ball.absolutePosition.clone().add(new Vector3(0, 2.5, 0));
         if (GameState.state.isBallStart) {
 
             clearBallVelocityY(ball.getPhysicsBody());
@@ -24,7 +24,7 @@ export function ballComposition(scene: Scene): Mesh {
 }
 function physicsBall(scene: Scene): Mesh {
     const ball = MeshBuilder.CreateSphere("ball", { diameter: GameState.state.sizes.ball, segments: 32, updatable: false }, scene);
-    ball.position = new Vector3(0, 0.2, -3);
+    ball.position = new Vector3(0, 0.2, GameState.state.dragBox.up);
     ball.receiveShadows = true;
     const mt = new StandardMaterial("ball-mt", scene);
     mt.diffuseColor = new Color3(0.7, 0.3, 0.15);
@@ -56,7 +56,7 @@ export function resetBall() {
     const physics = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody;
     physics.setLinearVelocity(Vector3.Zero());
     physics.setMotionType(PhysicsMotionType.ANIMATED);
-    physics.setTargetTransform(Vector3.Zero().add(new Vector3(0, 0.25, 0)), Quaternion.Identity());
+    physics.setTargetTransform(Vector3.Zero().add(new Vector3(0, 0.25, GameState.state.dragBox.up)), Quaternion.Identity());
     addRun$();
 }
 function velocityControl() {
