@@ -46,4 +46,12 @@ export function loadDestDanceModel(scene: Scene) {
     });
   });
 }
+export function loadFirePathModel(scene: Scene) {
+  return new Promise((res) => {
+    loadModel(`public/models/`, `firepath.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("firepath", container as AssetContainer);
+      res(true);
+    });
+  });
+}
 export { loadToAssetContainer, mergeMeshes, loadModel, instateMesh };

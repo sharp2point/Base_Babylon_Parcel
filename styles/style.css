@@ -50,20 +50,32 @@
             gap: 0.1rem;
             width:300px;
             min-height: 90px;
-            margin-bottom: 1rem;
+            margin-bottom: 12rem;
+            /* border:1px solid red; */
 
             .text{
                 display: flex;
                 color:antiquewhite;
                 font: 1.2rem sans-serif;
-                line-height: 1.1rem;
+                line-height: 1.3rem;
                 margin-top:0.5rem;
             }
             .text-name {
                 display: flex;
                 color: rgb(233, 69, 69);
                 font: 1.8rem, "Impact" sans-serif;
-                line-height: 1.4rem;
+                line-height: 1.6rem;
+            }
+        }
+        @media (max-width:400px){
+            .ui-text-block{
+                margin-bottom: 10rem;
+                .text{
+                    font: 1rem sans-serif;
+                }
+                .text-name {
+                    font: 1.2rem, "Impact" sans-serif;
+                }
             }
         }
     }

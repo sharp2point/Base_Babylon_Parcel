@@ -8,7 +8,6 @@ import { UISTATE } from "./game_state/ui/state";
 import { getScreenAspect, loadAssets } from "./utils/clear_utils";
 import { loadDamageEnemyModel } from "./utils/loaderGlbFiles";
 import { cameraSettings } from "./utils/utility";
-import { endUIPreloader} from "./ui/ui";
 
 async function initCore() {
     const physics = await havok.default();
@@ -50,7 +49,7 @@ window.addEventListener('load', async () => {
         loadDamageEnemyModel(AGAME.Scene);
 
         //-------------------------------------->
-        endUIPreloader();
+        //endUIPreloader();
         //--------------------------------------->
 
         AGAME.Engine.runRenderLoop(() => {

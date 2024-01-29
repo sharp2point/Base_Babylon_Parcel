@@ -1,15 +1,11 @@
 import { ASSETS } from "@/game_state/assets/state";
 import { UISTATE } from "@/game_state/ui/state";
 import { getInnerWindow } from "@/utils/clear_utils";
-import { loadDestDanceModel } from "@/utils/loaderGlbFiles";
 import {
-    AbstractMesh, Animation, AssetContainer, Color3, Color4, DirectionalLight,
-    HemisphericLight, Mesh, MeshBuilder, ParticleSystem, Scalar, Scene, SpotLight,
+    Animation, CircleEase, Color3, Color4, EasingFunction, HemisphericLight, Mesh, MeshBuilder, ParticleSystem, Scene, SineEase, SpotLight,
     StandardMaterial, Texture, Tools, TransformNode, UniversalCamera, Vector3
 } from "@babylonjs/core";
 import { backSetOpaq_0 } from "./html/ui_components";
-
-let childsDist: AbstractMesh[] = null;
 
 export function UIScene() {
     const window_size = getInnerWindow();
@@ -26,26 +22,19 @@ export function UIScene() {
     light.specular = new Color3(0.2, 0.1, 0.2);
     light.intensity = 0.5;
 
-    const spot = new SpotLight("spot-1", new Vector3(0, 20, 0), new Vector3(0, -1, 0), Tools.ToRadians(120), 20, scene);
+    const spot = new SpotLight("spot-1", new Vector3(0, 20, 0), new Vector3(0, -1, 0), Tools.ToRadians(120), 10, scene);
     spot.diffuse = new Color3(0.5, 0.3, 1);
-    spot.specular = new Color3(0.4, 0.3, 0.1);
-    spot.intensity = 1;
+    spot.specular = new Color3(0.4, 0.3, 0.5);
+    spot.intensity = 2;
 
-    const dirLight = new DirectionalLight("dir-1-light", new Vector3(0.4, -0.35, -0.83), scene);
-    dirLight.position = new Vector3(0, 10, 5);
-    dirLight.diffuse = new Color3(1, 1, 1);
-    dirLight.specular = new Color3(1, 1, 1);
-    dirLight.intensity = 1;
-
-    sceneBuilder(scene);    
+    sceneBuilder(scene);
     hero(scene);
     loader(scene);
-    loadDestDanceModel(scene).then(() => {
-        childsDist = destdanceModel(new Vector3(0, 20, 0), scene);
-    });
 
     scene.onReadyObservable.add(() => {
         backSetOpaq_0();
+        //headerSpot(scene);
+        header(new Vector3(0, 11, -7), scene);
     })
     return scene;
 }
@@ -55,9 +44,9 @@ function sceneBuilder(scene: Scene) {
     const ground = MeshBuilder.CreateGround("ground", { width: window_size.width, height: window_size.height }, scene);
     const material = new StandardMaterial("ground-mt", scene);
     material.diffuseColor = new Color3(0.05, 0.05, 0.1);
+    material.maxSimultaneousLights = 10;
     ground.material = material;
 }
-
 function loader(scene: Scene) {
     const tn = new TransformNode('loader-tn', scene);
 
@@ -104,10 +93,10 @@ function ballLoader(scene: Scene, diffuse: Color3, position: Vector3): Mesh {
     return ball;
 }
 function spotBall(scene: Scene, diffuse: Color3, specular: Color3, position: Vector3) {
-    const spot = new SpotLight("spot-ball", position, new Vector3(0, -1, 0), Tools.ToRadians(200), 10, scene);
+    const spot = new SpotLight("spot-ball2", position, new Vector3(0, -1, 0), Tools.ToRadians(200), 10, scene);
     spot.diffuse = diffuse;
     spot.specular = specular;
-    spot.intensity = 0.5;
+    spot.intensity = 1;
     return spot;
 }
 function particleBall(scene: Scene, ball: Mesh, color1: Color4, color2: Color4) {
@@ -169,61 +158,54 @@ function hero(scene: Scene) {
 
     return hero;
 }
-function destdanceModel(position: Vector3, scene: Scene) {
-    let inx = 0;
-    const instanceModel: AssetContainer = ASSETS.containers3D.get("destrun").
-        instantiateModelsToScene((name: string) => {
-            inx += 1;
-            return `destdance-${inx}`;
-        }, true);
-    const tn = new TransformNode(`tn-destdance`, scene);
-    const childs = instanceModel.rootNodes[0].getChildMeshes();
+function header(position: Vector3, scene: Scene) {
+    const tn = new TransformNode("header-tn", scene);
+    const plane = MeshBuilder.CreatePlane("header-palne", { width: 10, height: 2 }, scene);
+    //plane.showBoundingBox = true;
+    plane.setParent(tn);
+    const txt = new Texture("public/sprites/head.webp", scene);
+    txt.hasAlpha = true;
+    const material = new StandardMaterial("header-mt", scene);
+    material.diffuseTexture = txt;
+    material.emissiveTexture = txt;
+    material.maxSimultaneousLights = 10;
+    plane.material = material;
+    tn.rotation.y = Tools.ToRadians(180);
+    tn.rotation.x = Tools.ToRadians(90);
+    tn.position = position.multiply(new Vector3(1, 0, 1));
+    const scale = 1.1;
+    tn.scaling = new Vector3(scale, scale + 0.5, (scale));
 
-    childs.forEach(m => {
-
-        m.setParent(tn);
-        m.position = m.position.clone().add(new Vector3(0, 0, 0));
-        const keys = [
-            { frame: 0, value: m.position.clone() },
-            { frame: 120, value: new Vector3(Scalar.RandomRange(-5, 5), 10, Scalar.RandomRange(-5, 5)) },
-        ];
-        const anim = new Animation(`${m.name}-anim`, "position", 10, Animation.ANIMATIONTYPE_VECTOR3,
-            Animation.ANIMATIONLOOPMODE_CONSTANT, false);
-        anim.setKeys(keys);
-        m.animations.push(anim);
-
-        const keysRotY = [
-            { frame: 0, value: m.rotation.clone() },
-            {
-                frame: 120, value: new Vector3(
-                    Scalar.RandomRange(Tools.ToRadians(-359), Tools.ToRadians(359)),
-                    Scalar.RandomRange(Tools.ToRadians(-359), Tools.ToRadians(359)),
-                    Scalar.RandomRange(Tools.ToRadians(-359), Tools.ToRadians(359)))
-            },
-        ];
-        const animY = new Animation(`${m.name}-animY`, "rotation", 120, Animation.ANIMATIONTYPE_VECTOR3,
-            Animation.ANIMATIONLOOPMODE_CONSTANT, false);
-        animY.setKeys(keysRotY);
-        m.animations.push(animY);
-
-
-    });
-
-    tn.position = position;
-    tn.scaling = new Vector3(2, 2, 2);
-    return childs;
+    const keys = [
+        {
+            frame: 0,
+            value: new Vector3(0, 0, -10)
+        },
+        {
+            frame: 120,
+            value: position
+        }
+    ];
+    const anim = new Animation("headerY-anim", "position", 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+    anim.setKeys(keys);
+    const ese = new CircleEase();
+    ese.setEasingMode(EasingFunction.EASINGMODE_EASEIN);
+    anim.setEasingFunction(ese);
+    tn.animations.push(anim);
+    scene.beginAnimation(tn, 0, 120, false, 1);
 }
-function destroyHeaderText(meshes: AbstractMesh[], scene: Scene) {
-    meshes.forEach(m => {
-        m = (m as Mesh);
-        setTimeout(() => {
-            scene.beginAnimation(m, 0, 120, false, 3);
-        }, Scalar.RandomRange(200, 3000));
-    })
+function headerSpot(scene: Scene) {
+    const spot2 = new SpotLight("spot-2", new Vector3(0, 25, -20), new Vector3(0, -1, 0), Tools.ToRadians(200), 40, scene);
+    spot2.diffuse = new Color3(0.4, 0.6, 1);
+    spot2.specular = new Color3(0.4, 0.2, 0.1);
+    spot2.intensity = 0;
+
+    const anim = setInterval(() => {
+        if (spot2.intensity < 10) {
+            spot2.intensity += 0.05;
+        }
+        else {
+            clearInterval(anim);
+        }
+    }, 10);
 }
-export function endUIPreloader() {
-    destroyHeaderText(childsDist, UISTATE.Scene);
-}
-
-
-
