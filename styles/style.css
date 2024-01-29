@@ -1,13 +1,76 @@
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+@import url("base.css");
+@import url("preloader.css");
+
 
 #app{
     background: black;
     width: 100vw;
     height: 100svh;
+    top:0;
+    left:0;
+    z-index: 1;
+}
+#ui-place{
+    position: absolute;
+    background: rgba(0, 0, 0, 0);
+    width: 100vw;
+    height: 100svh;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    pointer-events: none;
+
+    #ui-canvas {
+        position: absolute;
+        background: rgba(0, 0, 0, 0);
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+    }
+    
+    .html-ui {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        position: absolute;
+        top: 0;
+        left: 0;
+        wIdth: 100%;
+        height: 100%;
+        z-index: 50;
+        background: rgba(0, 0, 0, 1);        
+
+        .ui-text-block{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.1rem;
+            width:300px;
+            min-height: 90px;
+            margin-bottom: 1rem;
+
+            .text{
+                display: flex;
+                color:antiquewhite;
+                font: 1.2rem sans-serif;
+                line-height: 1.1rem;
+                margin-top:0.5rem;
+            }
+            .text-name {
+                display: flex;
+                color: rgb(233, 69, 69);
+                font: 1.8rem, "Impact" sans-serif;
+                line-height: 1.4rem;
+            }
+        }
+    }
+    .html-back-opaq-0{
+        animation: animation-back-opaq 1s;
+        background: rgba(0, 0, 0, 0);
+    }
 }
 
 /*------------------------------------------------*/
@@ -31,6 +94,15 @@
 
     100% {
         opacity: 0;
+    }
+}
+@keyframes animation-back-opaq {
+    0% {
+        background-color: rgba(0,0,0,1);
+    }
+
+    100% {
+        background-color: rgba(0, 0, 0, 0);
     }
 }
 .hide{

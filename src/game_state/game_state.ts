@@ -118,11 +118,9 @@ GameState.signalReaction = () => {
 GameState.resetScene = () => {
     GameState.state.isBallStart = false;
     resetBall();
-    // disposeEnemies();
+    disposeEnemies();
     // GameState.playerProgress().set(GameState.state.level, 0);
-    // setTimeout(() => {
-    //     createMap(GameState.state.level);
-    // }, 500);
+    
 }
 GameState.pipe = (fnArr: Array<Function>) => {
     setTimeout(() => {

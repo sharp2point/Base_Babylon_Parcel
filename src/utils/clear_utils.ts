@@ -17,3 +17,9 @@ export function getScreenAspect() {
     const height = window.innerHeight;
     return width / height;
 }
+export function getInnerWindow() {
+    return {
+        width: window.innerWidth,
+        height: window.innerHeight
+    }
+}
