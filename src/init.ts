@@ -71,10 +71,10 @@ window.addEventListener('resize', () => {
 });
 window.addEventListener("keydown", (ev) => {
     if (ev.key === 'i' && ev.altKey) {
-        // if (Inspector.IsVisible) {
-        //     Inspector.Hide();
-        // } else {
-        //     Inspector.Show(AGAME.Scene, { embedMode: true, });
-        // }
+        if (Inspector.IsVisible) {
+            Inspector.Hide();
+        } else {
+            Inspector.Show(AGAME.Scene, { embedMode: true, });
+        }
     }
 });

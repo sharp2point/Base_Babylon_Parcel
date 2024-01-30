@@ -2,39 +2,60 @@ import { ASSETS } from "@/game_state/assets/state";
 import { UISTATE } from "@/game_state/ui/state";
 import { getInnerWindow } from "@/utils/clear_utils";
 import {
-    Animation, CircleEase, Color3, Color4, EasingFunction, HemisphericLight, Mesh, MeshBuilder, ParticleSystem, Scene, SineEase, SpotLight,
-    StandardMaterial, Texture, Tools, TransformNode, UniversalCamera, Vector3
+    Animation, AssetContainer, Axis, CircleEase, Color3, Color4, DirectionalLight, EasingFunction, GlowLayer, HemisphericLight, HighlightLayer, Light, Mesh, MeshBuilder, NoiseProceduralTexture, PBRMaterial, ParticleSystem, Scalar, Scene, ShadowGenerator, ShadowLight, SineEase, Space, SpotLight,
+    StandardMaterial, Texture, Tools, TransformNode, UniversalCamera, ValueCondition, Vector3
 } from "@babylonjs/core";
 import { backSetOpaq_0 } from "./html/ui_components";
+import { loadShieldYarModel, loadShieldYarPartModel } from "@/utils/loaderGlbFiles";
 
 export function UIScene() {
     const window_size = getInnerWindow();
     const scene = new Scene(UISTATE.Engine);
-    scene.clearColor = new Color4(0, 0, 0, 0);
+    scene.clearColor = new Color4(1, 1, 1, 0);
+    scene.ambientColor = new Color3(1, 1, 1);
 
     const camera = new UniversalCamera("ui-camera", new Vector3(0, 30, 0), scene);
     camera.fov = Tools.ToRadians(70);
     camera.target = new Vector3(0, 0, 0);
     UISTATE.Camera = camera;
 
-    const light = new HemisphericLight("ui-light", new Vector3(0, 1, 0), scene);
-    light.diffuse = new Color3(0.2, 0.2, 0.2);
-    light.specular = new Color3(0.2, 0.1, 0.2);
-    light.intensity = 0.5;
+    // const light = new HemisphericLight("ui-light", new Vector3(0, 1, 0), scene);
+    // light.diffuse = new Color3(0.1, 0.1, 0.1);
+    // light.specular = new Color3(0, 0, 0);
+    // light.intensity = 0.5;
+
+    const dirLight = new DirectionalLight("dir-light", new Vector3(0, -1, -2), scene);
+    dirLight.diffuse = new Color3(0.9, 0.7, 0.7);
+    dirLight.specular = new Color3(0, 0, 0);
+    dirLight.intensity = 0.7;
+    dirLight.shadowEnabled = true;
+
+    const spot2 = new SpotLight("shield-yar-spot", new Vector3(0, 25, -20), new Vector3(0, -1, 0), Tools.ToRadians(60), 40, scene);
+    spot2.diffuse = new Color3(1, 1, 1);
+    spot2.specular = new Color3(0, 0, 0);
+    spot2.intensity = 5;
+    spot2.shadowEnabled = true;
 
     const spot = new SpotLight("spot-1", new Vector3(0, 20, 0), new Vector3(0, -1, 0), Tools.ToRadians(120), 10, scene);
-    spot.diffuse = new Color3(0.5, 0.3, 1);
-    spot.specular = new Color3(0.4, 0.3, 0.5);
-    spot.intensity = 2;
+    spot.diffuse = new Color3(0.4, 0.3, 1);
+    spot.specular = new Color3(0.7, 0.7, 0.5);
+    spot.intensity = 1;
+    spot.shadowEnabled = true;
 
     sceneBuilder(scene);
     hero(scene);
     loader(scene);
+    loadShieldYarModel(scene).then(() => {
+        const meshes = shieldYarModel(new Vector3(0, 12, -8), scene);
+    });
+
+    const menuNode = rotationZMenu(new Vector3(0, 0, 0), camera, scene);
+    addAnimationMenu(menuNode, scene);
+    scene.beginAnimation(menuNode, 0, 120, true, 0.1);
 
     scene.onReadyObservable.add(() => {
         backSetOpaq_0();
-        //headerSpot(scene);
-        header(new Vector3(0, 11, -7), scene);
+        shield(new Vector3(0, 1, -12), scene);
     })
     return scene;
 }
@@ -42,8 +63,9 @@ export function UIScene() {
 function sceneBuilder(scene: Scene) {
     const window_size = getInnerWindow();
     const ground = MeshBuilder.CreateGround("ground", { width: window_size.width, height: window_size.height }, scene);
+    ground.receiveShadows = true;
     const material = new StandardMaterial("ground-mt", scene);
-    material.diffuseColor = new Color3(0.05, 0.05, 0.1);
+    material.diffuseColor = new Color3(0.1, 0.1, 0.3);
     material.maxSimultaneousLights = 10;
     ground.material = material;
 }
@@ -93,10 +115,10 @@ function ballLoader(scene: Scene, diffuse: Color3, position: Vector3): Mesh {
     return ball;
 }
 function spotBall(scene: Scene, diffuse: Color3, specular: Color3, position: Vector3) {
-    const spot = new SpotLight("spot-ball2", position, new Vector3(0, -1, 0), Tools.ToRadians(200), 10, scene);
+    const spot = new SpotLight("spot-ball2", position, new Vector3(0, -1, 0), Tools.ToRadians(80), 10, scene);
     spot.diffuse = diffuse;
     spot.specular = specular;
-    spot.intensity = 1;
+    spot.intensity = 0.7;
     return spot;
 }
 function particleBall(scene: Scene, ball: Mesh, color1: Color4, color2: Color4) {
@@ -158,54 +180,138 @@ function hero(scene: Scene) {
 
     return hero;
 }
-function header(position: Vector3, scene: Scene) {
-    const tn = new TransformNode("header-tn", scene);
-    const plane = MeshBuilder.CreatePlane("header-palne", { width: 10, height: 2 }, scene);
+function shield(position: Vector3, scene: Scene) {
+    const tn = new TransformNode("shield-tn", scene);
+    const plane = MeshBuilder.CreatePlane("shield-palne", { width: 10, height: 8 }, scene);
+    plane.receiveShadows = true;
+
     //plane.showBoundingBox = true;
     plane.setParent(tn);
-    const txt = new Texture("public/sprites/head.webp", scene);
+    const txt = new Texture("public/sprites/shield.webp", scene);
     txt.hasAlpha = true;
-    const material = new StandardMaterial("header-mt", scene);
+    const material = new StandardMaterial("shield-mt", scene);
     material.diffuseTexture = txt;
-    material.emissiveTexture = txt;
+    //material.emissiveTexture = txt;
+    material.alpha = 0.5;
+    material.opacityTexture = txt;
     material.maxSimultaneousLights = 10;
+
     plane.material = material;
     tn.rotation.y = Tools.ToRadians(180);
     tn.rotation.x = Tools.ToRadians(90);
-    tn.position = position.multiply(new Vector3(1, 0, 1));
-    const scale = 1.1;
-    tn.scaling = new Vector3(scale, scale + 0.5, (scale));
+    tn.position = position;
+    tn.scaling = new Vector3(3, 3, 3);
+}
+function shieldYarModel(position: Vector3, scene: Scene) {
+    const tn = new TransformNode("shield-yar-tn", scene);
 
+    const inst = ASSETS.containers3D.get("shield_yar") as AssetContainer;
+    const inst_model = inst.instantiateModelsToScene((name) => {
+        return `${name}-shield`;
+    }, true);
+
+    const childs = inst_model.rootNodes[0].getChildMeshes();
+    childs.forEach(m => {
+        m.receiveShadows = true;
+        m.setParent(tn);
+    })
+
+    tn.position = position;
+    tn.rotation.x = Tools.ToRadians(20);
+    tn.scaling = new Vector3(1, 1, 1);
+    return childs;
+}
+function rotationZMenu(position: Vector3, camera: UniversalCamera, scene: Scene) {
+    const tn = new TransformNode("menuZ-tn", scene);
+    const item = MeshBuilder.CreateBox("menu-item", { width: 0.25, height: 4, depth: 4, updatable: true }, scene);
+    item.isVisible = false;
+    item.isEnabled(false);
+
+    const item_counts = 12;
+    const angle = Tools.ToRadians(360 / item_counts);
+    const menu_radius = 10;
+
+    for (let i = 0; i < item_counts; i++) {
+        const posX = position.x + Math.cos(angle * i) * menu_radius;
+        const posY = position.y + Math.sin(angle * i) * menu_radius;
+        const itm = item.clone(`menu-item-${i}`, null, true, false);
+        itm.rotation.z = Tools.ToRadians(i * 360 / item_counts)
+        itm.position = new Vector3(posX,  posY,position.z);
+        itm.isVisible = true;
+        itm.isEnabled(true);
+        itm.setParent(tn);
+        // itm.onBeforeRenderObservable.add(() => {
+        //     // const cam_subs = (camera.position).subtract(itm.position);
+        //     // const cam_cross = Vector3.Cross(camera.position, cam_subs);
+        //     // const cross_axis = Vector3.Cross(cam_cross, cam_subs);
+        //     // itm.rotation = Vector3.RotationFromAxis(cam_subs, cross_axis, cam_cross);
+        //     itm.lookAt(camera.position, 0, 0, 0);
+        // })
+    }
+    tn.position = position.add(new Vector3(0, 5, 0));
+    return tn;
+}
+function addAnimationMenu(tnode: TransformNode, scene: Scene) {
     const keys = [
-        {
-            frame: 0,
-            value: new Vector3(0, 0, -10)
-        },
-        {
-            frame: 120,
-            value: position
-        }
+        { frame: 0, value: 0 },
+        { frame: 120, value: Tools.ToRadians(359) },
     ];
-    const anim = new Animation("headerY-anim", "position", 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT);
+    const anim = new Animation(`${tnode.name}-anim`, "rotation.z", 60, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
     anim.setKeys(keys);
-    const ese = new CircleEase();
-    ese.setEasingMode(EasingFunction.EASINGMODE_EASEIN);
-    anim.setEasingFunction(ese);
-    tn.animations.push(anim);
-    scene.beginAnimation(tn, 0, 120, false, 1);
+    tnode.animations.push(anim);
 }
-function headerSpot(scene: Scene) {
-    const spot2 = new SpotLight("spot-2", new Vector3(0, 25, -20), new Vector3(0, -1, 0), Tools.ToRadians(200), 40, scene);
-    spot2.diffuse = new Color3(0.4, 0.6, 1);
-    spot2.specular = new Color3(0.4, 0.2, 0.1);
-    spot2.intensity = 0;
+//----------------------------------------------------------------->
+// function shieldYarPrtModel(position: Vector3, scene: Scene) {
+//     const tn = new TransformNode("shield-yar_prt-tn", scene);
 
-    const anim = setInterval(() => {
-        if (spot2.intensity < 10) {
-            spot2.intensity += 0.05;
-        }
-        else {
-            clearInterval(anim);
-        }
-    }, 10);
-}
+//     const inst = ASSETS.containers3D.get("shield_yar_prt") as AssetContainer;
+//     const inst_model = inst.instantiateModelsToScene((name) => {
+//         return `${name}-shield_prt`;
+//     }, true);
+
+//     const childs = inst_model.rootNodes[0].getChildMeshes();
+//     childs.forEach(m => {
+//         m.receiveShadows = true;
+//         m.setParent(tn);
+//     })
+
+//     tn.position = position;
+//     tn.rotation.x = Tools.ToRadians(20);
+//     tn.scaling = new Vector3(1, 1, 1);
+//     return childs;
+// }
+// function addAnimationPrt(meshes: Array<Mesh>, scene: Scene) {
+//     meshes.forEach(m => {
+//         const positionStart = m.position.clone();
+//         const positionEnd = positionStart.add(new Vector3(Scalar.RandomRange(-20, 20), 30, Scalar.RandomRange(-20, 20)));
+//         // const positionEnd = positionStart.add(new Vector3(3, 3, 3));
+//         const keys = [
+//             { frame: 0, value: positionEnd },
+//             { frame: 120, value: positionStart },
+//         ];
+//         const anim = new Animation(`${m.name}-anim`, "position", 60, Animation.ANIMATIONTYPE_VECTOR2, Animation.ANIMATIONLOOPMODE_CONSTANT);
+//         anim.setKeys(keys);
+//         m.animations.push(anim);
+//     });
+//     return meshes;
+// }
+// function playPrtAnimation(meshes: Array<Mesh>, scene: Scene) {
+//     meshes.forEach((m, i) => {
+//         setTimeout(() => {
+//             scene.beginAnimation(m, 0, 120, false, 1, () => {
+//                 m.dispose();
+//             });
+//         }, i * 10);
+//     })
+
+// }
+// function appenShadowTo(light: ShadowLight, meshes: Array<Mesh>) {
+//     const shadow = new ShadowGenerator(1024, light);
+//     shadow.usePoissonSampling = true;
+//     shadow.useExponentialShadowMap = true;
+//     shadow.useBlurExponentialShadowMap = true;
+
+//     meshes.forEach(m => {
+//         shadow.addShadowCaster(m);
+//     })
+// }

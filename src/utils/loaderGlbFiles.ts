@@ -54,4 +54,20 @@ export function loadFirePathModel(scene: Scene) {
     });
   });
 }
+export function loadShieldYarModel(scene: Scene) {
+  return new Promise((res) => {
+    loadModel(`public/models/`, `shield_yar.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("shield_yar", container as AssetContainer);
+      res(true);
+    });
+  });
+}
+export function loadShieldYarPartModel(scene: Scene) {
+  return new Promise((res) => {
+    loadModel(`public/models/`, `shield_yar_prt.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("shield_yar_prt", container as AssetContainer);
+      res(true);
+    });
+  });
+}
 export { loadToAssetContainer, mergeMeshes, loadModel, instateMesh };

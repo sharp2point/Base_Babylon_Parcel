@@ -55,21 +55,21 @@
 
             .text{
                 display: flex;
-                color:antiquewhite;
+                color:rgb(235, 230, 225,0.5);
                 font: 1.2rem sans-serif;
                 line-height: 1.3rem;
-                margin-top:0.5rem;
+                margin-top:0.2rem;
             }
             .text-name {
                 display: flex;
-                color: rgb(233, 69, 69);
+                color: rgba(233, 69, 69,0.5);
                 font: 1.8rem, "Impact" sans-serif;
                 line-height: 1.6rem;
             }
         }
         @media (max-width:400px){
             .ui-text-block{
-                margin-bottom: 10rem;
+                margin-bottom: 3rem;
                 .text{
                     font: 1rem sans-serif;
                 }
