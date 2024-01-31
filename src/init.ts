@@ -22,7 +22,7 @@ async function initUI() {
     ui_canvas.setAttribute("id", "ui-canvas");
     place.appendChild(ui_canvas);
     UISTATE.Canvas = document.querySelector('#ui-canvas');
-    UISTATE.Engine = new Engine(UISTATE.Canvas, true, { xrCompatible: false }, true);
+    UISTATE.Engine = new Engine(UISTATE.Canvas, true, { xrCompatible: false }, true);  
 }
 
 window.addEventListener('load', async () => {
