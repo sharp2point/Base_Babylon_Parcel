@@ -2,11 +2,13 @@ import { ASSETS } from "@/game_state/assets/state";
 import { UISTATE } from "@/game_state/ui/state";
 import { getInnerWindow } from "@/utils/clear_utils";
 import {
-    Animation, AssetContainer, Axis, CircleEase, Color3, Color4, DirectionalLight, DynamicTexture, EasingFunction, EventState, GlowLayer, HemisphericLight, HighlightLayer, IPointerEvent, Light, Mesh, MeshBuilder, NoiseProceduralTexture, PBRMaterial, ParticleSystem, PickingInfo, PointerEventTypes, PointerInfo, Scalar, Scene, ShadowGenerator, ShadowLight, SineEase, Space, SpotLight,
-    StandardMaterial, Texture, Tools, TransformNode, UniversalCamera, ValueCondition, Vector3
+    Animation, AssetContainer, Color3, Color4, DirectionalLight, IPointerEvent, Mesh, MeshBuilder,
+    ParticleSystem, PickingInfo, PointerEventTypes, Scene, SpotLight,
+    StandardMaterial, Texture, Tools, TransformNode, UniversalCamera, Vector3
 } from "@babylonjs/core";
 import { backSetOpaq_0 } from "./html/ui_components";
-import { loadShieldYarModel, loadShieldYarPartModel } from "@/utils/loaderGlbFiles";
+import { loadShieldYarModel } from "@/utils/loaderGlbFiles";
+import { getItemOnPointerDown, spinMenu, spinMenuByIndexItem} from "./spin_menu";
 
 export function UIScene() {
     const window_size = getInnerWindow();
@@ -19,6 +21,37 @@ export function UIScene() {
     camera.target = new Vector3(0, 0, 0);
     UISTATE.Camera = camera;
 
+    addLights(scene);
+
+    sceneBuilder(scene);
+    hero(scene);
+    loader(scene);
+    loadShieldYarModel(scene).then(() => {
+        const meshes = shieldYarModel(new Vector3(0, 12, -8), scene);
+    });
+
+    scene.onReadyObservable.add(() => {
+        onReady(scene);
+    });
+    let inx = 0
+    scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
+        if (pic.pickedMesh.name.includes(`menu-item-`)) {
+            getItemOnPointerDown(pic.pickedMesh.name)
+        }
+        spinMenuByIndexItem(inx);
+        inx += 1;
+    }
+    return scene;
+}
+//------------------------------------------------------>
+function onReady(scene: Scene) {
+    backSetOpaq_0();
+    shield(new Vector3(0, 1, -12), scene);
+    spinMenu(new Vector3(0, 0, 0), scene);
+    spinMenuByIndexItem(0);
+}
+function addLights(scene: Scene) {
     // const light = new HemisphericLight("ui-light", new Vector3(0, 1, 0), scene);
     // light.diffuse = new Color3(0.1, 0.1, 0.1);
     // light.specular = new Color3(0, 0, 0);
@@ -41,28 +74,6 @@ export function UIScene() {
     spot.specular = new Color3(0.7, 0.7, 0.5);
     spot.intensity = 1;
     spot.shadowEnabled = true;
-
-    sceneBuilder(scene);
-    hero(scene);
-    loader(scene);
-    loadShieldYarModel(scene).then(() => {
-        const meshes = shieldYarModel(new Vector3(0, 12, -8), scene);
-    });
-
-    scene.onReadyObservable.add(() => {
-        backSetOpaq_0();
-        shield(new Vector3(0, 1, -12), scene);
-        const menuNode = rotationZMenu(new Vector3(0, 0, 0), scene);
-        addAnimationMenu(menuNode, scene);
-        scene.beginAnimation(menuNode, 0, 120, true, 0.1);
-
-    });
-
-    scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
-        const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
-        console.log("Pick", pic.pickedMesh.name)
-    }
-    return scene;
 }
 function sceneBuilder(scene: Scene) {
     const window_size = getInnerWindow();
@@ -225,73 +236,7 @@ function shieldYarModel(position: Vector3, scene: Scene) {
     tn.scaling = new Vector3(1, 1, 1);
     return childs;
 }
-function rotationZMenu(position: Vector3, scene: Scene) {
-    const item_counts = 12;
-    const angle = Tools.ToRadians(360 / item_counts);
-    const menu_radius = 10;
-    const item_width = 4;
-    const item_height = 4;
 
-    const tn = new TransformNode("menu-rotate-tn", scene);
-    const item = MeshBuilder.CreateBox("menu-item", { width: 0.1, height: item_height, depth: item_width }, scene);
-    item.isVisible = false;
-    item.isEnabled(false);
-
-    [...Array(item_counts).keys()].forEach((i) => {
-        const itm = newItemMenu(item, {
-            name: `menu-item-${i}`,
-            rotation: Tools.ToRadians(i * 360 / item_counts),
-            position: new Vector3(
-                position.x + Math.cos(angle * i) * menu_radius,
-                position.y + Math.sin(angle * i) * menu_radius,
-                position.z)
-        }, scene)
-        appendMaterialItemMneu(itm, `${i}`, scene);
-        itm.setParent(tn);
-    });
-    tn.position = position.add(new Vector3(0, 5, 0));
-    return tn;
-}
-function newItemMenu(base: Mesh, options: { name: string, rotation: number, position: Vector3 }, scene: Scene) {
-    const itm = base.clone(options.name, null, true, false);
-    itm.isPickable = true;
-    itm.rotation.z = options.rotation;
-    itm.position = options.position;
-    itm.isVisible = true;
-    itm.isEnabled(true);
-    return itm;
-}
-function appendMaterialItemMneu(item: Mesh, text: string, scene: Scene) {
-    const texture_width = 256;
-    const texture_height = 256;
-    const font_size = 100;
-    const font = `${font_size}px Arial, serif`;
-
-    const txt = new DynamicTexture("item-menu-txt", { width: texture_width, height: texture_height }, scene);
-    const ctx = txt.getContext();
-    ctx.font = font;
-    const measure_text = ctx.measureText(text);
-    const text_width = measure_text.width;
-    const text_pos_x = texture_width / 2 - text_width / 2;
-    const text_pos_y = texture_height / 2 + font_size / 4;
-
-    txt.drawText(text, text_pos_x, text_pos_y, font, "rgba(255,255,200,1)", "rgba(20,25,20,0.5)", true, true);
-    const material = new StandardMaterial("round-menu-mt", scene);
-    material.diffuseTexture = txt;
-    material.alpha = 1;
-
-    item.material = material;
-
-}
-function addAnimationMenu(tnode: TransformNode, scene: Scene) {
-    const keys = [
-        { frame: 0, value: 0 },
-        { frame: 120, value: Tools.ToRadians(359) },
-    ];
-    const anim = new Animation(`${tnode.name}-anim`, "rotation.z", 60, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
-    anim.setKeys(keys);
-    tnode.animations.push(anim);
-}
 //----------------------------------------------------------------->
 // function shieldYarPrtModel(position: Vector3, scene: Scene) {
 //     const tn = new TransformNode("shield-yar_prt-tn", scene);
