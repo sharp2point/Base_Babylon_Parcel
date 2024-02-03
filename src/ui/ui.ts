@@ -8,7 +8,7 @@ import {
 } from "@babylonjs/core";
 import { backSetOpaq_0 } from "./html/ui_components";
 import { loadShieldYarModel } from "@/utils/loaderGlbFiles";
-import { getItemOnPointerDown, menuItemOnPointerMove, spinMenu, spinMenuByIndexItem, spinMenuToNext, spinMenuToPrev } from "./spin_menu";
+import { clearFocusItem, getItemOnPointerDown, menuItemOnPointerMove, spinMenu } from "./spin_menu";
 
 export function UIScene() {
     const window_size = getInnerWindow();
@@ -40,13 +40,8 @@ export function UIScene() {
 
         if (!isSpinMenu) {
             if (pic.pickedMesh.name.includes(`menu-item-`)) {
-                getItemOnPointerDown(pic.pickedMesh.name)
-                if (pic.pickedPoint.x < -1) {
-                    spinMenuToNext();
-                } else if (pic.pickedPoint.x > 1) {
-                    spinMenuToPrev();
-                } else {
-                    console.log("SELCT ITEM")
+                if (pic.pickedMesh.name.includes(`Center`)) {
+                    getItemOnPointerDown(pic.pickedMesh.name, pic.pickedPoint.x);
                 }
             }
             isSpinMenu = true;
@@ -59,8 +54,11 @@ export function UIScene() {
     scene.onPointerMove = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
         if (pic.pickedMesh.name.includes(`menu-item-`)) {
-            getItemOnPointerDown(pic.pickedMesh.name)
-            menuItemOnPointerMove(pic.pickedPoint);
+            if (pic.pickedMesh.name.includes(`Center`)) {
+                menuItemOnPointerMove(pic.pickedMesh.name, pic.pickedPoint);
+            }
+        } else {
+            clearFocusItem();
         }
     }
     return scene;

@@ -17,10 +17,16 @@ const SPINMENUSTATE = {
     angle: null, // угол между пунктами меню 360/колличество пунктов
     node: null, // узел трансформации меню
     start_item: 0, // начальная позиция
-    items: new Map<string, number>(), // хранилище углов расположения пунктов меню
+    items: new Map<string, { item: TransformNode, angle: number, level: number }>(), // хранилище углов расположения пунктов меню
     prefix_item: `menu-item-`, // префикс имён пунктов меню
     deltaZ: 90, // угол доворота меню по оси Z 
-    select_place: 1.5 // зона выбора пункта меню (при клике/наведению) мышью
+    select_place: 1.1, // зона выбора пункта меню (при клике/наведению) мышью
+    menu_y_position: 5,
+    focus_item: null,
+    colors: {
+        standart: "rgb(20,20,150)",
+        focus: "rgb(120,100,10)"
+    }
 }
 
 export function spinMenu(position: Vector3, scene: Scene) {
@@ -29,13 +35,10 @@ export function spinMenu(position: Vector3, scene: Scene) {
         SPINMENUSTATE.node = new TransformNode("menu-rotate-tn", scene);
         //--------------------------------------------------------->        
         const item_tn = initMenuItemElementsFromModel(scene);
-        //const item_tn = initMenuItemFromNativeElements(scene);
-
 
         [...Array(SPINMENUSTATE.positions).keys()].forEach((i) => {
             const name = `${SPINMENUSTATE.prefix_item}${i}`;
             const angle = Tools.ToRadians(i * (SPINMENUSTATE.angle));
-            SPINMENUSTATE.items.set(name, i * SPINMENUSTATE.angle);
 
             const itm = newItemMenu(item_tn, {
                 name: name,
@@ -50,29 +53,44 @@ export function spinMenu(position: Vector3, scene: Scene) {
             if (text_mesh && text_mesh instanceof Mesh) {
                 appendTextItemMenu(text_mesh, `${i}`, scene);
             }
+
             itemShow(itm);
+            SPINMENUSTATE.items.set(name, { item: itm, angle: i * SPINMENUSTATE.angle, level: i });
             itm.setParent(SPINMENUSTATE.node);
         });
-        SPINMENUSTATE.node.position = position.add(new Vector3(0, 5, 0));
+        SPINMENUSTATE.node.position = position.add(new Vector3(0, SPINMENUSTATE.menu_y_position, 0));
         spinMenuByIndexItem(0);
     });
 }
 export function spinMenuByIndexItem(itemIndex: number) {
     itemIndex = itemIndex >= 0 ? itemIndex : SPINMENUSTATE.positions + itemIndex;
     const index = Math.abs(itemIndex % SPINMENUSTATE.positions);
-    const angle = SPINMENUSTATE.items.get(`${SPINMENUSTATE.prefix_item}${index}`);
+    const angle = SPINMENUSTATE.items.get(`${SPINMENUSTATE.prefix_item}${index}`).angle;
     spinMenuOnAngle(angle + SPINMENUSTATE.deltaZ);
 }
-export function getItemOnPointerDown(name: string) {
-    //console.log(name, "-> angle: ", SPINMENUSTATE.items.get(name));
-}
-export function menuItemOnPointerMove(movePoint: Vector3) {
-    if (movePoint.x < -SPINMENUSTATE.select_place) {
-        console.log("NEXT")
-    } else if (movePoint.x > SPINMENUSTATE.select_place) {
-        console.log("PREV")
+export function getItemOnPointerDown(name: string, picked_point: number) {
+    name = name.split(".Center")[0];
+    if (picked_point < -SPINMENUSTATE.select_place) {
+        clearFocusItem();
+        spinMenuToNext();
+    } else if (picked_point > SPINMENUSTATE.select_place) {
+        clearFocusItem();
+        spinMenuToPrev();
     } else {
-        console.log("SELCT ITEM")
+        const level = SPINMENUSTATE.items.get(`${name}`).level;
+        //console.log("Start level: ", level)
+    }
+}
+export function menuItemOnPointerMove(name: string, movePoint: Vector3) {
+    name = name.split(".Center")[0];
+    const item = SPINMENUSTATE.items.get(`${name}`);
+    if (movePoint.x < -SPINMENUSTATE.select_place) {
+        //console.log("NEXT")
+    } else if (movePoint.x > SPINMENUSTATE.select_place) {
+        //console.log("PREV")
+    } else {
+        //console.log("SELCT ITEM")
+        movePointerItem(item);
     }
 }
 export function spinMenuToNext() {
@@ -105,7 +123,7 @@ function spinAnimation(node: TransformNode, start_value: number, end_value: numb
     scene.beginAnimation(node, 0, 60, false, 2);
 }
 
-//---------------------------------------------->
+//--MENU ITEM-------------------------------->
 const ITEMSTATE = {
     border: null,
     center: null,
@@ -128,11 +146,11 @@ function initMenuItemElementsFromModel(scene: Scene) {
     const asset = ASSETS.containers3D.get("menu_item") as AssetContainer;
     const instance_item = asset.instantiateModelsToScene((name) => name, true);
     const item_elements = instance_item.rootNodes[0].getChildMeshes();
-    // const m = Mesh.MergeMeshes(item_elements as Array<Mesh>, true, false, null, false, false);
+
     item_elements.forEach(m => {
         m.setParent(tn);
     });
-    tn.scaling = new Vector3(0.7, 0.7, 0.7);
+    tn.scaling = new Vector3(0.6, 0.6, 0.6);
     itemHide(tn);
     return tn;
 }
@@ -146,38 +164,16 @@ function initMenuItemFromNativeElements(scene: Scene) {
     tn.scaling = new Vector3(2, 2, 2)
     return tn;
 }
-function setMaterialToItemMenu(scene: Scene) {
-    const border_mt = new StandardMaterial("border-item-mt", scene);
-    border_mt.diffuseColor = new Color3(1, 1, 0.1);
-    ITEMSTATE.border.material = border_mt;
-
-    const left_mt = new StandardMaterial("left-item-mt", scene);
-    left_mt.diffuseColor = new Color3(0.1, 0.1, 0.15);
-    ITEMSTATE.left.material = left_mt;
-
-    const right_mt = new StandardMaterial("right-item-mt", scene);
-    right_mt.diffuseColor = new Color3(0.1, 0.15, 0.1);
-    ITEMSTATE.right.material = right_mt;
-
-    // const center_mt = new StandardMaterial("center-item-mt", scene);
-    // center_mt.diffuseColor = new Color3(0.15, 0.1, 0.1);
-    // ITEMSTATE.center.material = center_mt;
-
-    const larrow_mt = new StandardMaterial("larrow-item-mt", scene);
-    larrow_mt.diffuseColor = new Color3(0.1, 0.1, 0.2);
-    ITEMSTATE.left_arrow.material = larrow_mt;
-
-    const rarrow_mt = new StandardMaterial("rarrow-item-mt", scene);
-    rarrow_mt.diffuseColor = new Color3(0.2, 0.1, 0.1);
-    ITEMSTATE.right_arrow.material = rarrow_mt;
-
-    const lsarrow_mt = new StandardMaterial("lsarrow-item-mt", scene);
-    lsarrow_mt.diffuseColor = new Color3(0.1, 0.1, 0.2);
-    ITEMSTATE.left_sub_arrow.material = lsarrow_mt;
-
-    const rsarrow_mt = new StandardMaterial("rsarrow-item-mt", scene);
-    rsarrow_mt.diffuseColor = new Color3(0.2, 0.1, 0.1);
-    ITEMSTATE.right_sub_arrow.material = rsarrow_mt;
+//-- DynamicTexture Work ----------------------------->
+function redrawText(text: string, options: { back_color: string }, ctx: ICanvasRenderingContext) {
+    ctx.clearRect(0, 0, 1024, 1024);
+    ctx.fillStyle = options.back_color;
+    ctx.fillRect(0, 0, 512, 512);
+    //---------------------------------------------------
+    formatTextCtx("Level:", 60, { x: 180, y: 350 }, ctx)
+    formatTextCtx(text, 150, { x: 210, y: 200 }, ctx);
+    formatTextCtx("result: 1200", 40, { x: 160, y: 120 }, ctx);
+    //-----------------------------------------------------------
 }
 function formatTextCtx(text: string, font_size: number, position: { x: number, y: number }, ctx: ICanvasRenderingContext) {
     ctx.save();
@@ -185,10 +181,9 @@ function formatTextCtx(text: string, font_size: number, position: { x: number, y
     ctx.translate(position.x, position.y);
     const measure_text = ctx.measureText(text);
     const text_pos_x = measure_text.width / 2;
-    console.log(measure_text.width);
+
     ctx.translate(-text_pos_x, 0);
     ctx.scale(1, -1);
-
     ctx.fillStyle = "rgb(255,255,255)";
     ctx.fillText(text, text_pos_x, 0);
     ctx.restore();
@@ -206,13 +201,7 @@ function appendTextItemMenu(item: Mesh, text: string, scene: Scene) {
 
     const ctx = txt.getContext();
     ctx.font = font;
-    ctx.fillStyle = "rgb(20,20,150)";
-    ctx.fillRect(0, 0, 512, 512);
-    //---------------------------------------------------
-    formatTextCtx("Level:", 60, { x: 170, y:350 }, ctx)
-    formatTextCtx(text, 150, { x: 200, y: 200 }, ctx);
-    formatTextCtx("result: 1200", 40, { x: 160, y: 120 }, ctx);
-    //-----------------------------------------------------------
+    redrawText(text, { back_color: SPINMENUSTATE.colors.standart }, ctx);
     txt.update();
 
     const material = new StandardMaterial("round-menu-mt", scene);
@@ -238,4 +227,26 @@ function itemShow(node: TransformNode) {
         m.isVisible = true;
     });
 }
+//-- POINTER Event --------------------------------------->
+function movePointerItem(item_object: { item: TransformNode, angle: number, level: number }) {
+    SPINMENUSTATE.focus_item = item_object;
+    const center = item_object.item.getChildMeshes().filter((m) => m.name.includes(".Center"))[0];
+    const material = center.material as StandardMaterial;
+    const texture = material.diffuseTexture as DynamicTexture;
+    const ctx = texture.getContext();
+    redrawText(`${item_object.level}`, { back_color: SPINMENUSTATE.colors.focus }, ctx);
+    texture.update();
+}
+export function clearFocusItem() {
+    if (SPINMENUSTATE.focus_item) {
+        const center = SPINMENUSTATE.focus_item.item.getChildMeshes().filter((m) => m.name.includes(".Center"))[0];
+        const material = center.material as StandardMaterial;
+        const texture = material.diffuseTexture as DynamicTexture;
+        const ctx = texture.getContext();
+        redrawText(`${SPINMENUSTATE.focus_item.level}`, { back_color: SPINMENUSTATE.colors.standart }, ctx);
+        texture.update();
+        SPINMENUSTATE.focus_item = null;
+    }
+}
+
 
