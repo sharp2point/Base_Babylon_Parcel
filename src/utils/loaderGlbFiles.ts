@@ -38,18 +38,18 @@ export function loadDamageEnemyModel(scene: Scene) {
     ASSETS.containers3D.set("enemy_damage", container as AssetContainer);
   })
 }
-export function loadDestDanceModel(scene: Scene) {
+export function loadMenuItemModel(scene: Scene) {
   return new Promise((res) => {
-    loadModel(`public/models/`, `destrun.glb`, scene).then((container) => {
-      ASSETS.containers3D.set("destrun", container as AssetContainer);
+    loadModel(`public/models/`, `menuItem.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("menu_item", container as AssetContainer);
       res(true);
     });
   });
 }
-export function loadFirePathModel(scene: Scene) {
+export function loadMenuItem2Model(scene: Scene) {
   return new Promise((res) => {
-    loadModel(`public/models/`, `firepath.glb`, scene).then((container) => {
-      ASSETS.containers3D.set("firepath", container as AssetContainer);
+    loadModel(`public/models/`, `menuItem2.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("menu_item", container as AssetContainer);
       res(true);
     });
   });

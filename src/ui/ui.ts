@@ -8,7 +8,7 @@ import {
 } from "@babylonjs/core";
 import { backSetOpaq_0 } from "./html/ui_components";
 import { loadShieldYarModel } from "@/utils/loaderGlbFiles";
-import { getItemOnPointerDown, spinMenu, spinMenuByIndexItem} from "./spin_menu";
+import { getItemOnPointerDown, menuItemOnPointerMove, spinMenu, spinMenuByIndexItem, spinMenuToNext, spinMenuToPrev } from "./spin_menu";
 
 export function UIScene() {
     const window_size = getInnerWindow();
@@ -33,14 +33,35 @@ export function UIScene() {
     scene.onReadyObservable.add(() => {
         onReady(scene);
     });
-    let inx = 0
+
+    let isSpinMenu = false;
     scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
+
+        if (!isSpinMenu) {
+            if (pic.pickedMesh.name.includes(`menu-item-`)) {
+                getItemOnPointerDown(pic.pickedMesh.name)
+                if (pic.pickedPoint.x < -1) {
+                    spinMenuToNext();
+                } else if (pic.pickedPoint.x > 1) {
+                    spinMenuToPrev();
+                } else {
+                    console.log("SELCT ITEM")
+                }
+            }
+            isSpinMenu = true;
+            setTimeout(() => {
+                isSpinMenu = false;
+            }, 600)
+        }
+
+    }
+    scene.onPointerMove = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
         if (pic.pickedMesh.name.includes(`menu-item-`)) {
             getItemOnPointerDown(pic.pickedMesh.name)
+            menuItemOnPointerMove(pic.pickedPoint);
         }
-        spinMenuByIndexItem(inx);
-        inx += 1;
     }
     return scene;
 }
@@ -49,7 +70,6 @@ function onReady(scene: Scene) {
     backSetOpaq_0();
     shield(new Vector3(0, 1, -12), scene);
     spinMenu(new Vector3(0, 0, 0), scene);
-    spinMenuByIndexItem(0);
 }
 function addLights(scene: Scene) {
     // const light = new HemisphericLight("ui-light", new Vector3(0, 1, 0), scene);
