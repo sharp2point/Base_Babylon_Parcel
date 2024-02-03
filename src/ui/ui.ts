@@ -2,7 +2,8 @@ import { ASSETS } from "@/game_state/assets/state";
 import { UISTATE } from "@/game_state/ui/state";
 import { getInnerWindow } from "@/utils/clear_utils";
 import {
-    Animation, AssetContainer, Color3, Color4, DirectionalLight, IPointerEvent, Mesh, MeshBuilder,
+    Animation, AssetContainer, Color3, Color4, DirectionalLight, HemisphericLight, IPointerEvent, Mesh, MeshBuilder,
+    PBRMaterial,
     ParticleSystem, PickingInfo, PointerEventTypes, Scene, SpotLight,
     StandardMaterial, Texture, Tools, TransformNode, UniversalCamera, Vector3
 } from "@babylonjs/core";
@@ -27,7 +28,7 @@ export function UIScene() {
     hero(scene);
     loader(scene);
     loadShieldYarModel(scene).then(() => {
-        const meshes = shieldYarModel(new Vector3(0, 12, -8), scene);
+        const meshes = shieldYarModel(new Vector3(0, 8, -8), scene);
     });
 
     scene.onReadyObservable.add(() => {
@@ -61,7 +62,7 @@ export function UIScene() {
             clearFocusItem();
         }
     }
-    return scene;
+    UISTATE.Scene = scene;
 }
 //------------------------------------------------------>
 function onReady(scene: Scene) {
@@ -70,20 +71,20 @@ function onReady(scene: Scene) {
     spinMenu(new Vector3(0, 0, 0), scene);
 }
 function addLights(scene: Scene) {
-    // const light = new HemisphericLight("ui-light", new Vector3(0, 1, 0), scene);
-    // light.diffuse = new Color3(0.1, 0.1, 0.1);
-    // light.specular = new Color3(0, 0, 0);
-    // light.intensity = 0.5;
+    const light = new HemisphericLight("ui-light", new Vector3(0, 1, 0), scene);
+    light.diffuse = new Color3(0.5, 0.5, 0.5);
+    light.specular = new Color3(0, 0, 0);
+    light.intensity = 1;
 
-    const dirLight = new DirectionalLight("dir-light", new Vector3(0, -1, -2), scene);
-    dirLight.diffuse = new Color3(0.9, 0.7, 0.7);
-    dirLight.specular = new Color3(0, 0, 0);
-    dirLight.intensity = 0.7;
-    dirLight.shadowEnabled = true;
+    // const dirLight = new DirectionalLight("dir-light", new Vector3(0, -1, -2), scene);
+    // dirLight.diffuse = new Color3(0.9, 0.7, 0.7);
+    // dirLight.specular = new Color3(0.5, 0.5, 0.5);
+    // dirLight.intensity = 0.1;
+    // dirLight.shadowEnabled = true;
 
-    const spot2 = new SpotLight("shield-yar-spot", new Vector3(0, 25, -20), new Vector3(0, -1, 0), Tools.ToRadians(60), 40, scene);
+    const spot2 = new SpotLight("shield-yar-spot", new Vector3(0, 10, -25), new Vector3(0, -0.5, 1), Tools.ToRadians(60), 30, scene);
     spot2.diffuse = new Color3(1, 1, 1);
-    spot2.specular = new Color3(0, 0, 0);
+    spot2.specular = new Color3(0.2, 0.1, 0.05);
     spot2.intensity = 5;
     spot2.shadowEnabled = true;
 

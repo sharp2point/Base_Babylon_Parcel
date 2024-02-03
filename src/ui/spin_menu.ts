@@ -1,4 +1,5 @@
 import { ASSETS } from "@/game_state/assets/state";
+import { GameState } from "@/game_state/game_state";
 import { loadMenuItem2Model } from "@/utils/loaderGlbFiles";
 import {
     Animation, AssetContainer, BezierCurveEase, CircleEase, Color3, DynamicTexture, EasingFunction,
@@ -78,6 +79,7 @@ export function getItemOnPointerDown(name: string, picked_point: number) {
         spinMenuToPrev();
     } else {
         const level = SPINMENUSTATE.items.get(`${name}`).level;
+        GameState.levelRun(level);
         //console.log("Start level: ", level)
     }
 }

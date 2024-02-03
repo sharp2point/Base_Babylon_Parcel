@@ -15,46 +15,32 @@ async function initCore() {
     AGAME.Canvas = document.querySelector('#app');
     AGAME.Engine = new Engine(AGAME.Canvas, true, { xrCompatible: false }, true);
     AGAME.Gravity = new Vector3(0, -9.81, 0);
-}
-async function initUI() {
-    const place = document.querySelector("#ui-place") as HTMLElement;
-    const ui_canvas = document.createElement("canvas") as HTMLCanvasElement;
-    ui_canvas.setAttribute("id", "ui-canvas");
-    place.appendChild(ui_canvas);
-    UISTATE.Canvas = document.querySelector('#ui-canvas');
-    UISTATE.Engine = new Engine(UISTATE.Canvas, true, { xrCompatible: false }, true);  
+    UISTATE.Canvas = AGAME.Canvas;
+    UISTATE.Engine = AGAME.Engine;
 }
 
 window.addEventListener('load', async () => {
     AGAME.ScreenAspect = getScreenAspect();
     loadAssets(ASSETS.sprites);
-
     AGAME.RenderLock = true;
     UISTATE.RenderLock = false;
 
-    initUI().then(async () => {
-        const { UIScene } = await import("./ui/ui");
-        UISTATE.Scene = UIScene();
-        UISTATE.Engine.runRenderLoop(() => {
-            if (!UISTATE.RenderLock) {
-                UISTATE.Scene.render();
-            }
-        })
-
-    });
     initCore().then(async () => {
+        const { UIScene } = await import("./ui/ui");
         const { sceneOne } = await import("./scenes/scene_one");
-        AGAME.Scene = sceneOne(AGAME.Gravity, AGAME.HVK);
+        UIScene();
+        sceneOne(AGAME.Gravity, AGAME.HVK);
         cameraSettings(AGAME.ScreenAspect);
         loadDamageEnemyModel(AGAME.Scene);
-
         //-------------------------------------->
         //endUIPreloader();
         //--------------------------------------->
 
         AGAME.Engine.runRenderLoop(() => {
-            if (!AGAME.RenderLock) {
+            if (!AGAME.RenderLock && UISTATE.RenderLock) {
                 AGAME.Scene.render();
+            } else if (!UISTATE.RenderLock && AGAME.RenderLock) {
+                UISTATE.Scene.render();
             }
         });
     });

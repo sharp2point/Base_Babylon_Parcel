@@ -61,10 +61,10 @@ export function addShadowToShield(generators: Array<ShadowGenerator>, scene: Sce
 }
 //----------OBSERVABLES----------------->
 export function addPosition$(actionFn: any) {
-    GameState.state.gameObjects.shield["position$"].add(() => {
+    GameState.shieldNode()["position$"].add(() => {
         actionFn();
     });
 }
 export function onPosition$() {
-    GameState.state.gameObjects.shield["position$"].notifyObservers()
+    GameState.shieldNode()["position$"].notifyObservers()
 }

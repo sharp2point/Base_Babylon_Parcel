@@ -2,6 +2,8 @@ import { createMap } from "@/level_builder/level_builder";
 import { resetBall } from "@/objects/ball";
 import { disposeEnemies } from "@/utils/utility";
 import { AGAME } from "./main/state";
+import { UISTATE } from "./ui/state";
+import { Scene } from "@babylonjs/core";
 
 export const GameState = function _GameState() {
 };
@@ -9,6 +11,7 @@ GameState.state = {
     gameState: 10,
     isDragShield: false,
     isBallStart: false,
+    isResetBall: false,
     level: 1,
     levelTimeHandler: null,
     levelTime: 0,
@@ -22,7 +25,8 @@ GameState.state = {
         globalTransformNode: null,
         worldNode: null,
         ball: null,
-        shield: null,
+        shield_node: null,
+        shield_body: null,
         scene: null,
         shadow: null,
         physicsHelper: null,
@@ -71,6 +75,8 @@ GameState.enemyNodes = () => GameState.state.gameObjects.enemyNodes;
 GameState.damageNodes = () => GameState.state.gameObjects.damageNodes;
 GameState.gameState = (): number => GameState.state.gameState;
 GameState.ball = () => GameState.state.gameObjects.ball;
+GameState.shieldNode = () => GameState.state.gameObjects.shield_node;
+GameState.shieldBody = () => GameState.state.gameObjects.shield_body;
 GameState.points = () => GameState.state.gameObjects.points;
 GameState.playerProgress = (): Map<number, number> => GameState.state.playerProgress;
 GameState.UI = () => GameState.state.ui;
@@ -78,54 +84,37 @@ GameState.UI = () => GameState.state.ui;
 
 GameState.changeGameState = (state: number) => {
     GameState.state.gameState = state;
-    GameState.signalReaction();
-};
-GameState.signalReaction = () => {
     switch (GameState.gameState()) {
+        case GameState.state.signals.MENU_OPEN: {
+            console.log("MENUOPEN");
+            break;
+        }
         case GameState.state.signals.GAME_RUN: {
             console.log("GAMERUN");
-            GameState.pipe(
-                [                    
-                    GameState.resetScene,
-                    createMap,
-                ]
-            );
-
+            GameState.resetScene();
+            createMap();
             break;
         }
         case GameState.state.signals.GAME_OTHER_BALL: {
             console.log("GAME_OTHER_BALL");
-            GameState.pipe(
-                [
-                    GameState.resetScene,
-                ]
-            );
+            GameState.resetScene();
+            GameState.menuRun();
             break;
         }
         case GameState.state.signals.LEVEL_WIN: {
             console.log("LEVEL_WIN")
-            GameState.pipe(
-                [
-                    GameState.resetScene,
-                    GameState.nextLevel,
-                ]
-            )
+            GameState.resetScene();
+            GameState.menuRun();
             break;
         }
     }
-}
-
+};
 GameState.resetScene = () => {
-    GameState.state.isBallStart = false;
     resetBall();
     disposeEnemies();
+    GameState.state.isResetBall = false;
+    GameState.state.isBallStart = false;
     // GameState.playerProgress().set(GameState.state.level, 0);
-    
-}
-GameState.pipe = (fnArr: Array<Function>) => {
-    setTimeout(() => {
-        fnArr.forEach(fn => fn());
-    }, 500)
 }
 //----------------------------------------------->
 
@@ -142,9 +131,23 @@ GameState.nextLevel = () => {
         GameState.state.level += 1 :
         GameState.state.level = 1;
 }
-GameState.levelRun = () => {
-    GameState.changeGameState(GameState.state.signals.GAME_RUN);
+GameState.levelRun = (level: number) => {
+    (UISTATE.Scene as Scene).detachControl();
     AGAME.RenderLock = false;
+    UISTATE.RenderLock = true;
+    GameState.changeGameState(GameState.state.signals.GAME_RUN);
+    setTimeout(() => {
+        (AGAME.Scene as Scene).attachControl();
+    }, 1000);
+}
+GameState.menuRun = () => {
+    (AGAME.Scene as Scene).detachControl();
+    AGAME.RenderLock = true;
+    UISTATE.RenderLock = false;
+    GameState.changeGameState(GameState.state.signals.MENU_OPEN);
+    setTimeout(() => {
+        (UISTATE.Scene as Scene).attachControl();
+    }, 1000);
 }
 
 
