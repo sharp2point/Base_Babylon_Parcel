@@ -1,11 +1,10 @@
 import { GameState } from "@/game_state/game_state";
+import { AGAME } from "@/game_state/main/state";
 import { Color3, HavokPlugin, Light, Material, Mesh, MeshBuilder, Observable, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, PointLight, Quaternion, Scene, ShadowGenerator, SpotLight, StandardMaterial, Tools, TrailMesh, Vector3 } from "@babylonjs/core";
 
 export function ballComposition(scene: Scene): Mesh {
     const ball = physicsBall(scene);
     const spot = ballSpot(ball, scene);
-    // const ptLight = ballPointLight(ball, scene);
-    // ptLight.parent = ball;
 
     ball["run$"] = new Observable();
 
@@ -34,9 +33,12 @@ function physicsBall(scene: Scene): Mesh {
     mt.maxSimultaneousLights = 10;
     mt.alpha = 1;
     ball.material = mt;
+    appendPhysicsBody(ball, scene);
+    return ball;
+}
+function appendPhysicsBody(ball: Mesh, scene: Scene) {
     const physics = new PhysicsBody(ball, PhysicsMotionType.ANIMATED, false, scene);
-    restitution: GameState.state.physicsMaterial.ball.restitution,
-        physics.setMassProperties({ mass: GameState.state.physicsMaterial.ball.mass })
+    physics.setMassProperties({ mass: GameState.state.physicsMaterial.ball.mass });
     const shape = new PhysicsShapeConvexHull(ball, scene);
     shape.material = {
         restitution: GameState.state.physicsMaterial.ball.restitution,
@@ -45,23 +47,21 @@ function physicsBall(scene: Scene): Mesh {
     physics.shape = shape;
     physics.setCollisionCallbackEnabled(true);
     physics.setCollisionEndedCallbackEnabled(true);
-    return ball;
 }
 function clearBallVelocityY(ball_physics: PhysicsBody) {
     ball_physics.setLinearVelocity(ball_physics.getLinearVelocity().clone().multiply(new Vector3(1, 0, 1)))
 }
 function ballPhysicsActivate() {
-    const physics = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody
+    const physics = GameState.ball().getPhysicsBody() as PhysicsBody
     physics.setMotionType(PhysicsMotionType.DYNAMIC)
-    physics.applyImpulse(new Vector3(0, 0, 200), GameState.state.gameObjects.ball.getAbsolutePosition());
-    physics.applyForce(new Vector3(0, 0, 5000), GameState.state.gameObjects.ball.getAbsolutePosition());
+    physics.applyImpulse(new Vector3(0, 0, 200), GameState.ball().getAbsolutePosition());
+    physics.applyForce(new Vector3(0, 0, 5000), GameState.ball().getAbsolutePosition());
 }
 export function resetBall() {
     GameState.state.isResetBall = true;
-    const physics = GameState.ball().getPhysicsBody();
-    physics.setLinearVelocity(Vector3.Zero());
-    physics.setMotionType(PhysicsMotionType.ANIMATED);
-    physics.setTargetTransform(Vector3.Zero().add(new Vector3(0, 0.25, GameState.state.dragBox.up)), Quaternion.Identity());
+    (AGAME.HVK as HavokPlugin).removeBody(GameState.ball().getPhysicsBody());
+    GameState.ball().position = new Vector3(0, 0.25, GameState.state.dragBox.up);
+    appendPhysicsBody(GameState.ball(), (GameState.ball() as Mesh).getScene());
     addRun$();
 }
 function velocityControl() {
@@ -75,20 +75,13 @@ function velocityControl() {
 }
 function ballSpot(ball: Mesh, scene: Scene) {
     const ballSpot = new SpotLight("ball-spot", ball.position.clone().add(new Vector3(0, 1.5, 0)),
-        new Vector3(0, -1, 0), Tools.ToRadians(50), 25, scene);
+        new Vector3(0, -1, 0), Tools.ToRadians(60), 25, scene);
     ballSpot.diffuse = new Color3(0.5, 0.5, 0.5);
-    ballSpot.specular = new Color3(0.9, 0.8, 0.8);
+    ballSpot.specular = new Color3(0.5, 0.3, 0.2);
     ballSpot.intensity = 1.5;
     ballSpot.falloffType = Light.FALLOFF_PHYSICAL;
     ballSpot.shadowEnabled = true;
     return ballSpot
-}
-function ballPointLight(ball: Mesh, scene: Scene) {
-    const pointLight = new PointLight("ball-ptlight", ball.position.clone(), scene);
-    pointLight.diffuse = new Color3(0.5, 0.5, 0.5);
-    pointLight.specular = new Color3(0.5, 0.4, 0.4);
-    pointLight.intensity = 0.5;
-    return pointLight;
 }
 export function addShadowToBall(generators: Array<ShadowGenerator>, scene: Scene) {
     generators.forEach(generator => {
@@ -99,7 +92,6 @@ export function addShadowToBall(generators: Array<ShadowGenerator>, scene: Scene
 //------------OBSERVABLES--------------------------->
 export function addRun$() {
     GameState.state.gameObjects.ball["run$"].addOnce(() => {
-        console.log("ONCE RUN")
         GameState.state.isBallStart = true;
         setTimeout(() => {
             ballPhysicsActivate();
@@ -107,6 +99,5 @@ export function addRun$() {
     })
 }
 export function onRun$() {
-    console.log("ONRUN")
     GameState.state.gameObjects.ball["run$"].notifyObservers();
 }

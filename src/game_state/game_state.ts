@@ -138,7 +138,7 @@ GameState.levelRun = (level: number) => {
     GameState.changeGameState(GameState.state.signals.GAME_RUN);
     setTimeout(() => {
         (AGAME.Scene as Scene).attachControl();
-    }, 1000);
+    }, 600);
 }
 GameState.menuRun = () => {
     (AGAME.Scene as Scene).detachControl();
@@ -147,7 +147,7 @@ GameState.menuRun = () => {
     GameState.changeGameState(GameState.state.signals.MENU_OPEN);
     setTimeout(() => {
         (UISTATE.Scene as Scene).attachControl();
-    }, 1000);
+    }, 600);
 }
 
 
