@@ -44,6 +44,49 @@
         background: rgba(0, 0, 0, 1);  
         pointer-events: none;
 
+        .notyfy-container{
+            position: absolute;
+            top: calc(50svh - 130px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width:350px;
+            height: 300px;
+
+            .notify-win{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: rgb(250,250,250);
+                
+                background: transparent;                
+                width: 100%;
+                height: 100%;
+
+                p{
+                   font:bold 5rem "Arial",sans-serif; 
+                   text-shadow: -2px -2px 5px rgb(19, 19, 19);
+                }
+            }
+            .notify-game-other{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: rgb(116, 33, 33);
+                
+                background: transparent;                
+                width: 100%;
+                height: 100%;
+
+                p{
+                   font:bold 4rem "Arial",sans-serif; 
+                   text-shadow: -2px -2px 5px rgb(3, 3, 3);
+                }
+            }
+
+        }
+
         .ui-text-block{
             display: flex;
             flex-direction: column;

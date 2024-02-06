@@ -2,6 +2,7 @@ import { ASSETS } from "@/game_state/assets/state";
 import { UISTATE } from "@/game_state/ui/state";
 import { getInnerWindow } from "@/utils/clear_utils";
 import {
+    AbstractMesh,
     Animation, AssetContainer, Color3, Color4, DirectionalLight, HemisphericLight, IPointerEvent, Mesh, MeshBuilder,
     PBRMaterial,
     ParticleSystem, PickingInfo, PointerEventTypes, Scene, SpotLight,
@@ -22,13 +23,21 @@ export function UIScene() {
     camera.target = new Vector3(0, 0, 0);
     UISTATE.Camera = camera;
 
+    const light = new HemisphericLight("rarog-light", new Vector3(0, 8, -8), scene);
+    light.diffuse = new Color3(0.9, 0.9, 0.9);
+    light.specular = new Color3(0, 0, 0);
+    light.intensity = 2;
+
     addLights(scene);
 
     sceneBuilder(scene);
     hero(scene);
     loader(scene);
     loadShieldYarModel(scene).then(() => {
+
         const meshes = shieldYarModel(new Vector3(0, 8, -8), scene);
+
+        light.includedOnlyMeshes = meshes
     });
 
     scene.onReadyObservable.add(() => {
@@ -74,13 +83,13 @@ function addLights(scene: Scene) {
     const light = new HemisphericLight("ui-light", new Vector3(0, 1, 0), scene);
     light.diffuse = new Color3(0.5, 0.5, 0.5);
     light.specular = new Color3(0, 0, 0);
-    light.intensity = 1;
+    light.intensity = 0.2;
 
-    // const dirLight = new DirectionalLight("dir-light", new Vector3(0, -1, -2), scene);
-    // dirLight.diffuse = new Color3(0.9, 0.7, 0.7);
-    // dirLight.specular = new Color3(0.5, 0.5, 0.5);
-    // dirLight.intensity = 0.1;
-    // dirLight.shadowEnabled = true;
+    const dirLight = new DirectionalLight("dir-light", new Vector3(0, -1, -2), scene);
+    dirLight.diffuse = new Color3(0.9, 0.7, 0.7);
+    dirLight.specular = new Color3(0.5, 0.5, 0.5);
+    dirLight.intensity = 0.7;
+    dirLight.shadowEnabled = true;
 
     const spot2 = new SpotLight("shield-yar-spot", new Vector3(0, 10, -25), new Vector3(0, -0.5, 1), Tools.ToRadians(60), 30, scene);
     spot2.diffuse = new Color3(1, 1, 1);

@@ -4,6 +4,7 @@ import { disposeEnemies } from "@/utils/utility";
 import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
 import { Scene } from "@babylonjs/core";
+import { gameNotify } from "@/scenes/parts/notifyContainer";
 
 export const GameState = function _GameState() {
 };
@@ -97,14 +98,24 @@ GameState.changeGameState = (state: number) => {
         }
         case GameState.state.signals.GAME_OTHER_BALL: {
             console.log("GAME_OTHER_BALL");
-            GameState.resetScene();
-            GameState.menuRun();
+            gameNotify(GameState.state.signals.GAME_OTHER_BALL, {
+
+            }, 3000).then(() => {
+                GameState.resetScene();
+                GameState.menuRun();
+            });
+
             break;
         }
         case GameState.state.signals.LEVEL_WIN: {
-            console.log("LEVEL_WIN")
-            GameState.resetScene();
-            GameState.menuRun();
+            console.log("LEVEL_WIN");
+            gameNotify(GameState.state.signals.LEVEL_WIN, {
+                
+            }, 3000).then(() => {
+                GameState.resetScene();
+                GameState.menuRun();
+            });
+
             break;
         }
     }
