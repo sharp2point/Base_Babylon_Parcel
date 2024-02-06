@@ -35,7 +35,7 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     dragBoxLines();
     addShadowsToObjects(shadowGenArray, scene);
     AGAME.Scene = scene;
-    
+
     //--------- OBSERVER -------->
     addPosition$(() => { });
 
@@ -94,22 +94,29 @@ function addCamera(scene: Scene) {
     return camera;
 }
 function addLights(scene: Scene): [HemisphericLight, DirectionalLight, Array<ShadowGenerator>] {
-    const hemiLight = new HemisphericLight("main-scene-hemilight", new Vector3(0, 1, 0), scene);
+    const hemiLight = new HemisphericLight("main-scene-hemilight", new Vector3(0, 1, -8), scene);
     hemiLight.diffuse = new Color3(1, 1, 1);
-    hemiLight.intensity = 0.2;
+    hemiLight.specular = new Color3(1, 1, 1);
+    hemiLight.intensity = 0.3;
 
-    const dirLight = new DirectionalLight("main-scene-dirlight", new Vector3(0, -1, -1), scene);
+    // const hemiEnemyLight = new HemisphericLight("enemy-hemilight", new Vector3(0, 1, -8), GameState.scene());
+    // hemiEnemyLight.diffuse = new Color3(1, 1, 1);
+    // hemiEnemyLight.specular = new Color3(1, 1, 1);
+    // hemiEnemyLight.intensity = 1;
+    // GameState.state.enemyLight = hemiEnemyLight;
+
+    const dirLight = new DirectionalLight("main-scene-dirlight", new Vector3(0, -1, -5), scene);
     dirLight.position = new Vector3(0, 20, -20);
     dirLight.diffuse = new Color3(1, 1, 1);
     dirLight.specular = new Color3(0.25, 0.25, 0.2);
-    dirLight.intensity = 0.2;
+    dirLight.intensity = 0.1;
 
     const leftSpot = new SpotLight("left-scene-spot",
         new Vector3(-GameState.gameBox().width / 2 - 2, 6, GameState.gameBox().height / 2 + 2),
         new Vector3(0.5, -0.5, -0.5), Tools.ToRadians(50), 10, scene);
     leftSpot.diffuse = new Color3(0.9, 0.8, 0.7);
     leftSpot.specular = new Color3(0.3, 0.2, 0.3);
-    leftSpot.intensity = 0.7;
+    leftSpot.intensity = 0.9;
     leftSpot.shadowEnabled = true;
 
     const rightSpot = new SpotLight("right-scene-spot",
@@ -117,7 +124,7 @@ function addLights(scene: Scene): [HemisphericLight, DirectionalLight, Array<Sha
         new Vector3(-0.5, -0.5, -0.5), Tools.ToRadians(50), 10, scene);
     rightSpot.diffuse = new Color3(0.9, 0.8, 0.7);
     rightSpot.specular = new Color3(0.3, 0.2, 0.3);
-    rightSpot.intensity = 0.7;
+    rightSpot.intensity = 0.9;
     rightSpot.shadowEnabled = true;
 
     const shadowGen = new ShadowGenerator(1024, dirLight);

@@ -32,7 +32,11 @@ function instateMesh(nameMesh: string, assetContainer: AssetContainer) {
   return mesh;
 }
 //---------------------------------------------------------------------->
-
+export function loadEnemyModel(scene: Scene) {
+  loadModel(`public/models/`, `cristal_one.glb`, scene).then((container) => {
+    ASSETS.containers3D.set("cristal", container as AssetContainer);
+  })
+}
 export function loadDamageEnemyModel(scene: Scene) {
   loadModel(`public/models/`, `damage.glb`, scene).then((container) => {
     ASSETS.containers3D.set("enemy_damage", container as AssetContainer);

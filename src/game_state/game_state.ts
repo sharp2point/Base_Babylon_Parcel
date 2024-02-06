@@ -16,6 +16,7 @@ GameState.state = {
     level: 1,
     levelTimeHandler: null,
     levelTime: 0,
+    enemyLight: null,
     dragBox: {
         up: -5,
         down: -10.0,
@@ -93,7 +94,7 @@ GameState.changeGameState = (state: number) => {
         case GameState.state.signals.GAME_RUN: {
             console.log("GAMERUN");
             GameState.resetScene();
-            createMap();
+            createMap(GameState.state.enemyLight);
             break;
         }
         case GameState.state.signals.GAME_OTHER_BALL: {
@@ -110,7 +111,7 @@ GameState.changeGameState = (state: number) => {
         case GameState.state.signals.LEVEL_WIN: {
             console.log("LEVEL_WIN");
             gameNotify(GameState.state.signals.LEVEL_WIN, {
-                
+
             }, 3000).then(() => {
                 GameState.resetScene();
                 GameState.menuRun();

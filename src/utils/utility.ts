@@ -1,9 +1,6 @@
 import { GameState } from "@/game_state/game_state";
 import { Mesh, PhysicsViewer, Scene, Tools, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
 
-export function randomInt(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
 export function clampToBoxShieldPosition(position: Vector3, shield: TransformNode, amount: number) {
     try {
         const new_position = Vector3.Clamp(position,
