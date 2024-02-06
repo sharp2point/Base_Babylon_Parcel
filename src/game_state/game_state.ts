@@ -13,7 +13,7 @@ GameState.state = {
     isDragShield: false,
     isBallStart: false,
     isResetBall: false,
-    level: 1,
+    level: 5,
     levelTimeHandler: null,
     levelTime: 0,
     enemyLight: null,

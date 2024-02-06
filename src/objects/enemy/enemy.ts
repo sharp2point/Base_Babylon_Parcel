@@ -3,21 +3,66 @@ import { GameState } from "@/game_state/game_state";
 import { gameObjectDispose } from "@/utils/utility";
 import { AssetContainer, Color3, Color4, HighlightLayer, Mesh, MeshBuilder, PBRBaseMaterial, PBRMaterial, ParticleSystem, PhysicsBody, PhysicsHelper, PhysicsMotionType, PhysicsRadialImpulseFalloff, PhysicsShapeConvexHull, PointColor, PointLight, Scalar, Scene, ShadowGenerator, SolidParticle, SolidParticleSystem, StandardMaterial, Texture, TransformNode, Vector3 } from "@babylonjs/core";
 
-export function enemy(name: string, position: Vector3, parent: TransformNode) {
-    // const enemy = physicsEnemy(name, { size: GameState.state.sizes.enemy, position: position }, parent);
-    const enemy = physicsEnemyFromModel(name, { size: GameState.state.sizes.enemy, position: position }, parent);
-    enemy["meta"] = {
+export const ENEMYTYPES = {
+    simple10: {
         level: 1,
-        points: 10
+        points: 10,
+        lifes: 1,
+        material: 'enemy-simple10-mt'
+    },
+    simple25: {
+        level: 1,
+        points: 25,
+        lifes: 1,
+        material: 'enemy-simple25-mt'
+    },
+    simple50: {
+        level: 1,
+        points: 50,
+        lifes: 3,
+        material: 'enemy-simple50-mt'
+    },
+    parts: {
+        level: 0,
+        points: 0,
+        lifes: 0,
+        material: 'enemy-parts-mt'
     }
+}
+
+export function enemy(name: string, type: string, position: Vector3, parent: TransformNode) {
+    // const enemy = physicsEnemy(name, { size: GameState.state.sizes.enemy, position: position }, parent);
+    console.log("ENEMY---->", type);
+    const enemy = physicsEnemyFromModel(name, { size: GameState.state.sizes.enemy, position: position }, parent);
+
+
+    switch (type) {
+        case "simple10": {
+            enemy["meta"] = ENEMYTYPES.simple10;
+            console.log("ENEMY---->", enemy["meta"])
+            break;
+        }
+        case "simple25": {
+            enemy["meta"] = ENEMYTYPES.simple25;
+            break;
+        }
+        case "simple50": {
+            enemy["meta"] = ENEMYTYPES.simple50;
+            break;
+        }
+    }
+    appendMaterial(enemy)
+    const material = getMaterialByEnemyType(enemy) as PBRMaterial;
+    const color = material.albedoColor;
     const prt = appendParticles(enemy, {
-        color1: new Color4(0.1, 0.5, 0.9, 0.5),
-        color2: new Color4(0.1, 0.2, 0.9, 0.5),
-        color3: new Color4(0.1, 0.2, 0.9, 0.5),
+        color1: Color4.FromColor3(color, 0.5),
+        color2: Color4.FromColor3(color, 0.5),
+        color3: Color4.FromColor3(color, 0.5),
         capacity: 900, emitRate: 300, max_size: 0.2, updateSpeed: 0.01,
         emmitBox: new Vector3(0.9, 0.9, 0.9), lifeTime: 1, gravityY: 1.5
     }, GameState.scene());
     prt.start();
+
     return enemy;
 }
 
@@ -40,17 +85,100 @@ function physicsEnemyFromModel(name: string, options: { size: number, position: 
         friction: GameState.state.physicsMaterial.enemy.friction
     };
     physics.shape = shape;
-    appendMaterial(model, GameState.scene())
+
     return model;
 }
-function appendMaterial(mesh: Mesh, scene: Scene) {
-    mesh.material = (GameState.scene() as Scene).getMaterialByName("enemy-cristal-mt");
+function getMaterialByEnemyType(mesh: Mesh) {
+    return (GameState.scene() as Scene).getMaterialByName(mesh["meta"].material)
+}
+function getMaterialByName(name: string) {
+    return (GameState.scene() as Scene).getMaterialByName(name)
+}
+function appendMaterial(mesh: Mesh) {
+    mesh.material = getMaterialByEnemyType(mesh);
 }
 export function createEnemyMaterial(scene: Scene) {
-    const pbr = new PBRMaterial("enemy-cristal-mt", GameState.scene());
-    pbr.roughness = 0.9;
-    pbr.metallic = 0.05;
-    pbr.albedoColor = new Color3(0.1, 0.1, 0.7);
+    const pbr10 = new PBRMaterial("enemy-simple10-mt", GameState.scene());
+    pbr10.roughness = 0.9;
+    pbr10.metallic = 0.05;
+    pbr10.albedoColor = new Color3(0.1, 0.1, 0.9);
+    pbr10.anisotropy.isEnabled = true;
+    pbr10.anisotropy.intensity = 0.5;
+    pbr10.anisotropy.direction.x = 0.5;
+    pbr10.anisotropy.direction.y = 0.5;
+    //------------------------------------------
+    pbr10.sheen.isEnabled = true;
+    pbr10.sheen.intensity = 0.9;
+    pbr10.sheen.color = new Color3(0.9, 0.3, 0.1);
+
+    const pbr25 = new PBRMaterial("enemy-simple25-mt", GameState.scene());
+    pbr25.roughness = 0.9;
+    pbr25.metallic = 0.05;
+    pbr25.albedoColor = new Color3(0.9, 0.1, 0.1);
+    pbr25.anisotropy.isEnabled = true;
+    pbr25.anisotropy.intensity = 0.5;
+    pbr25.anisotropy.direction.x = 0.5;
+    pbr25.anisotropy.direction.y = 0.5;
+    //------------------------------------------
+    pbr25.sheen.isEnabled = true;
+    pbr25.sheen.intensity = 0.9;
+    pbr25.sheen.color = new Color3(0.1, 0.9, 0.1);
+
+    const pbr50 = new PBRMaterial("enemy-simple50-mt", GameState.scene());
+    pbr50.roughness = 0.9;
+    pbr50.metallic = 0.05;
+    pbr50.albedoColor = new Color3(0.1, 0.9, 0.1);
+    pbr50.anisotropy.isEnabled = true;
+    pbr50.anisotropy.intensity = 0.5;
+    pbr50.anisotropy.direction.x = 0.5;
+    pbr50.anisotropy.direction.y = 0.5;
+    //------------------------------------------
+    pbr50.sheen.isEnabled = true;
+    pbr50.sheen.intensity = 0.9;
+    pbr50.sheen.color = new Color3(0.9, 0.3, 0.1);
+
+    const pbrprt = new PBRMaterial("enemy-parts-mt", GameState.scene());
+    pbrprt.roughness = 0.9;
+    pbrprt.metallic = 0.05;
+    pbrprt.albedoColor = new Color3(0.1, 0.05, 0.1);
+    pbrprt.anisotropy.isEnabled = true;
+    pbrprt.anisotropy.intensity = 0.5;
+    pbrprt.anisotropy.direction.x = 0.5;
+    pbrprt.anisotropy.direction.y = 0.5;
+    //------------------------------------------
+    pbrprt.sheen.isEnabled = true;
+    pbrprt.sheen.intensity = 0.9;
+    pbrprt.sheen.color = new Color3(0.9, 0.3, 0.1);
+    //------------------------------------------
+    // pbr.subSurface.isRefractionEnabled = true;
+    // pbr.subSurface.refractionIntensity = 0.8;
+    // pbr.subSurface.indexOfRefraction = 1.5;
+    // //--------------------------------------------
+    // pbr.subSurface.isTranslucencyEnabled = true;
+    // pbr.subSurface.translucencyIntensity = 0.8;
+    // pbr.subSurface.isTranslucencyEnabled = true;
+    // pbr.subSurface.tintColor = Color3.White();
+    //-----------------------------------------
+    // pbr.subSurface.isScatteringEnabled = true;
+    // pbr.subSurface.scatteringDiffusionProfile = new Color3(0.75, 0.25, 0.2);
+    //--------------------------------------
+    // pbr.clearCoat.isEnabled = true;
+    // pbr.clearCoat.intensity = 1.5;
+    // pbr.clearCoat.isTintEnabled = true;
+    // pbr.clearCoat.tintColor = Color3.Blue();
+    // pbr.clearCoat.tintColorAtDistance = 1;
+    // pbr.clearCoat.tintThickness = 1.5;
+    // // //-------------------------------------------
+    // pbr.clearCoat.isTintEnabled = true;
+    // pbr.clearCoat.indexOfRefraction = 2;
+    //----------------------------------------
+    // pbr.iridescence.isEnabled = true;
+    // pbr.iridescence.intensity = 0.9;
+    // pbr.iridescence.indexOfRefraction = 1.3;
+    // pbr.iridescence.minimumThickness = 100; // in nanometers
+    // pbr.iridescence.maximumThickness = 400; // in nanometers
+    //-------------------------------------------
+
 }
 export function addShadowToEnemy(generators: Array<ShadowGenerator>, name: string) {
     generators.forEach(generator => {
@@ -67,8 +195,11 @@ function enemyDamageModelEffect(enemy: Mesh) {
     GameState.damageNodes().push(tn);
     const childs = instanceModel.rootNodes[0].getChildMeshes();
 
+    const material = getMaterialByName('enemy-parts-mt') as PBRMaterial;
+    const color = material.albedoColor;
+
     childs.forEach(m => {
-        appendMaterial(m, GameState.scene());
+        m.material = material;
         m.setParent(tn);
 
         tn.position = enemy.position.clone();
@@ -78,11 +209,11 @@ function enemyDamageModelEffect(enemy: Mesh) {
         shape.material = { restitution: 0.1, friction: 0.1 };
         phy.shape = shape;
         const prt = appendParticles(m, {
-            color1: new Color4(0.1, 0.1, 0.5, 0.2),
-            color2: new Color4(0.2, 0.1, 0.7, 0.2),
-            color3: new Color4(0.01, 0.01, 0.1, 0.2),
-            capacity: 600, emitRate: 300, max_size: 0.9, updateSpeed: 0.05,
-            emmitBox: new Vector3(0.3, 0.3, 0.3), lifeTime: 1, gravityY: 2
+            color1: new Color4(0.1, 0.1, 0.1, 0.5),
+            color2: Color4.FromColor3(color, 0.8),
+            color3: new Color4(0.01, 0.01, 0.05, 0.7),
+            capacity: 600, emitRate: 200, max_size: 0.5, updateSpeed: 0.05,
+            emmitBox: new Vector3(0.3, 0.3, 0.3), lifeTime: 2, gravityY: 0.5
         }, GameState.scene());
         prt.start();
     });

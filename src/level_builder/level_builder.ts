@@ -17,7 +17,43 @@ export function createMap(light: HemisphericLight) {
             switch (lmap[i][j]) {
                 case 1: {
                     const name = `enemy-bloc-${j + 9 * i}`;
-                    const emesh = enemy(name,
+                    const emesh = enemy(name, "simple10",
+                        new Vector3(
+                            j * gap,
+                            GameState.state.sizes.enemy / 2, i * gap).add(
+                                new Vector3(
+                                    -(deltaX),
+                                    0,
+                                    GameState.gameBox().height / 2 - 10
+                                )
+                            ),
+                        GameState.state.gameObjects.enemyNodes);
+
+                    addShadowToEnemy(GameState.state.gameObjects.shadow, name);
+                    enemies.push(emesh);
+                    break;
+                }
+                case 2: {
+                    const name = `enemy-bloc-${j + 9 * i}`;
+                    const emesh = enemy(name, "simple25",
+                        new Vector3(
+                            j * gap,
+                            GameState.state.sizes.enemy / 2, i * gap).add(
+                                new Vector3(
+                                    -(deltaX),
+                                    0,
+                                    GameState.gameBox().height / 2 - 10
+                                )
+                            ),
+                        GameState.state.gameObjects.enemyNodes);
+
+                    addShadowToEnemy(GameState.state.gameObjects.shadow, name);
+                    enemies.push(emesh);
+                    break;
+                }
+                case 3: {
+                    const name = `enemy-bloc-${j + 9 * i}`;
+                    const emesh = enemy(name, "simple50",
                         new Vector3(
                             j * gap,
                             GameState.state.sizes.enemy / 2, i * gap).add(
