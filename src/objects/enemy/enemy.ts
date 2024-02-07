@@ -255,7 +255,6 @@ function enemyDamageModelEffect(enemy: Mesh) {
                     prt.dispose();
                     m.onBeforeRenderObservable.clear();
                     m.dispose();
-                    console.log("CLEAR Y")
                 }
             })
 

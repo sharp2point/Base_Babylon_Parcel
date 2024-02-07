@@ -71,8 +71,6 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
                         }
                     }
                 }
-                // const physics = GameState.ball().getPhysicsBody();
-                //physics.applyForce(physics.getLinearVelocity().scale(1.1), GameState.ball().getAbsolutePosition());
             }
         }
     });
@@ -99,11 +97,11 @@ function addLights(scene: Scene): [HemisphericLight, DirectionalLight, Array<Sha
     hemiLight.specular = new Color3(1, 1, 1);
     hemiLight.intensity = 0.3;
 
-    // const hemiEnemyLight = new HemisphericLight("enemy-hemilight", new Vector3(0, 1, -8), GameState.scene());
-    // hemiEnemyLight.diffuse = new Color3(1, 1, 1);
-    // hemiEnemyLight.specular = new Color3(1, 1, 1);
-    // hemiEnemyLight.intensity = 1;
-    // GameState.state.enemyLight = hemiEnemyLight;
+    const hemiEnemyLight = new HemisphericLight("enemy-hemilight", new Vector3(0, 1, -8), GameState.scene());
+    hemiEnemyLight.diffuse = new Color3(1, 1, 1);
+    hemiEnemyLight.specular = new Color3(1, 1, 1);
+    hemiEnemyLight.intensity = 1;
+    GameState.state.enemyLight = hemiEnemyLight;
 
     const dirLight = new DirectionalLight("main-scene-dirlight", new Vector3(0, -1, -5), scene);
     dirLight.position = new Vector3(0, 20, -20);
@@ -248,7 +246,6 @@ function addSceneGameEvents() {
     }
 }
 function pointerDownHandler(pickInfo: PickingInfo, shield: TransformNode, scene: Scene) {
-    console.log("DOWN POINTER")
     const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
     clampToBoxShieldPosition(pic.pickedPoint, shield, 1);
     GameState.state.isDragShield = true;
@@ -256,7 +253,6 @@ function pointerDownHandler(pickInfo: PickingInfo, shield: TransformNode, scene:
 function pointerUpHandler(scene: Scene) {
     if (GameState.state.isDragShield) {
         GameState.state.isDragShield = false;
-        console.log("UP POINTER")
         onRun$()
     }
 }

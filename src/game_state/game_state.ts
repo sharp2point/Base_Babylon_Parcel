@@ -13,7 +13,7 @@ GameState.state = {
     isDragShield: false,
     isBallStart: false,
     isResetBall: false,
-    level: 1,
+    level: 0,
     levelTimeHandler: null,
     levelTime: 0,
     enemyLight: null,
@@ -122,11 +122,11 @@ GameState.changeGameState = (state: number) => {
     }
 };
 GameState.resetScene = () => {
+    renderPoints(0);
     resetBall();
     disposeEnemies();
     GameState.state.isResetBall = false;
     GameState.state.isBallStart = false;
-    // GameState.playerProgress().set(GameState.state.level, 0);
 }
 //----------------------------------------------->
 
@@ -136,18 +136,17 @@ GameState.calculatePoints = (enemy) => {
     if (GameState.playerProgress().has(key)) {
         const points = GameState.playerProgress().get(key) + meta.points
         GameState.playerProgress().set(key, points);
+        renderPoints(points);
     }
 }
-GameState.nextLevel = () => {
-    GameState.state.level < 5 ?
-        GameState.state.level += 1 :
-        GameState.state.level = 1;
-}
-GameState.levelRun = (level: number) => {
+GameState.levelRun = (level: number) => { // level -> binding from spin menu
     (UISTATE.Scene as Scene).detachControl();
     AGAME.RenderLock = false;
     UISTATE.RenderLock = true;
+    GameState.state.level = level;
+    GameState.playerProgress().set(level, 0);
     GameState.changeGameState(GameState.state.signals.GAME_RUN);
+    showPoints(true);
     setTimeout(() => {
         (AGAME.Scene as Scene).attachControl();
     }, 600);
@@ -157,9 +156,21 @@ GameState.menuRun = () => {
     AGAME.RenderLock = true;
     UISTATE.RenderLock = false;
     GameState.changeGameState(GameState.state.signals.MENU_OPEN);
+    showPoints(false);
     setTimeout(() => {
         (UISTATE.Scene as Scene).attachControl();
     }, 600);
+}
+//---------------------------------------------------
+function renderPoints(points: number) {
+    const res = `${points}`.padStart(4, '0');
+    (UISTATE.Scoreboard.score as HTMLElement).innerText = res;
+}
+function showPoints(isShow: boolean) {
+    const scoreboard = document.querySelector(".scoreboard");
+    isShow ?
+        scoreboard.classList.remove('hide') :
+        scoreboard.classList.add('hide');
 }
 
 

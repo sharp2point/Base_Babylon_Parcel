@@ -9,8 +9,8 @@ import {
 } from "@babylonjs/core";
 
 const SPINMENUSTATE = {
-    positions: 12, // колличество пунктов меню
-    diameter: 11, // диаметр меню
+    positions: 8, // колличество пунктов меню
+    diameter: 7, // диаметр меню
     item_size: { // размер пунктов меню
         width: 4,
         height: 4

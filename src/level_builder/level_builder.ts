@@ -73,5 +73,5 @@ export function createMap(light: HemisphericLight) {
         }
     }
 
-    // light.includedOnlyMeshes = enemies;
+    light.includedOnlyMeshes = enemies;
 };

@@ -34,7 +34,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: space-between;
         position: absolute;
         top: 0;
         left: 0;
@@ -43,6 +43,39 @@
         z-index: 50;
         background: rgba(0, 0, 0, 1);  
         pointer-events: none;
+
+        .scoreboard{
+            display:flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: space-evenly;
+            align-items: center;
+            width:360px;
+            height: 90px;
+            padding:5px;
+
+            .container-ui{
+                display:flex;
+                justify-content: space-between;
+                align-items: center;
+                width:50%;
+                height:100%;
+                margin:2px;
+                background-color: rgba(100,100,100,0.5);
+                box-shadow: 5px 5px 5px rgb(19, 19, 19);
+
+                .icon{
+                    width: 50px;
+                    height: 50px;
+                    margin-left:5px;
+                }
+                .score-ui , .timer-ui{
+                    font: bold 3.5rem "Arial", sans-serif;
+                    color:rgba(122, 175, 111, 0.9);
+                    margin-inline: 5px;
+                }           
+            }
+        }
 
         .notyfy-container{
             position: absolute;
@@ -94,33 +127,22 @@
             justify-content: flex-start;
             gap: 0.1rem;
             width:300px;
-            min-height: 90px;
-            margin-bottom: 12rem;
-            /* border:1px solid red; */
+            min-height: 80px;
+            margin-bottom: 1rem;
 
             .text{
                 display: flex;
-                color:rgb(235, 230, 225,0.5);
+                color:rgb(235, 230, 225,0.3);
                 font: 1.2rem sans-serif;
                 line-height: 1.3rem;
                 margin-top:0.2rem;
+                margin-inline-start: 0.5rem;
             }
             .text-name {
                 display: flex;
-                color: rgba(233, 69, 69,0.5);
+                color: rgba(233, 69, 69,0.4);
                 font: 1.8rem, "Impact" sans-serif;
-                line-height: 1.6rem;
-            }
-        }
-        @media (max-width:400px){
-            .ui-text-block{
-                margin-bottom: 3rem;
-                .text{
-                    font: 1rem sans-serif;
-                }
-                .text-name {
-                    font: 1.2rem, "Impact" sans-serif;
-                }
+                line-height: 1.0rem;
             }
         }
     }
@@ -166,4 +188,31 @@
     pointer-events: none;
     visibility: hidden;
     display: none;
+}
+
+/*---------------------------------------------*/
+ @media (max-width:400px) {
+     .ui-text-block {
+         margin-bottom: 1rem;
+
+         .text {
+             font: 1rem sans-serif;
+         }
+
+         .text-name {
+             font: 1.2rem, "Impact" sans-serif;
+         }
+     }
+ }
+@media (max-width:350px) {
+    .scoreboard {
+        width: 100% !important;
+        .icon {
+            width: 35px !important;
+            height: 35px !important;
+        }
+        .score-ui, .timer-ui{
+            font: bold 3rem "Arial", sans-serif !important;
+        }
+    }
 }
