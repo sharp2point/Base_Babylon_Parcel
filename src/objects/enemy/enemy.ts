@@ -37,21 +37,7 @@ export const ENEMYTYPES = {
 export function enemy(name: string, type: string, position: Vector3, parent: TransformNode) {
     const enemy = physicsEnemyFromModel(name, { size: GameState.state.sizes.enemy, position: position }, parent);
 
-    enemy["meta"] = ENEMYTYPES[type];
-
-    const material = getMaterialByEnemyType(enemy) as PBRMaterial;
-    enemy.material = material;
-    const color = material.albedoColor;
-    const prt = appendParticles(enemy, {
-        color1: Color4.FromColor3(color, 0.5),
-        color2: Color4.FromColor3(color, 0.5),
-        color3: Color4.FromColor3(color, 0.5),
-        capacity: 900, emitRate: 300, max_size: 0.2, updateSpeed: 0.01,
-        emmitBox: new Vector3(0.9, 0.9, 0.9), lifeTime: 1, gravityY: 1.5
-    }, GameState.scene());
-    prt.start();
-
-    enemy["meta"].particle = prt;
+    resetEnemy(enemy, ENEMYTYPES[type])
 
     return enemy;
 }
@@ -147,59 +133,47 @@ export function enemyCollideReaction(enemy: Mesh) {
     if (!reTypeEnemy(enemy)) {
         enemyDamageModelEffect(enemy);
     }
-
 }
-export function reTypeEnemy(enemy: Mesh) {
+//------------------------------------------------------------------->
+function reTypeEnemy(enemy: Mesh) {
     const meta = enemy["meta"];
-    
+
     switch (meta.level) {
         case 1: {
             return false;
             break;
         }
         case 2: {
-            (enemy["meta"].particle as ParticleSystem).dispose();
-            enemy["meta"] = ENEMYTYPES.simple10;
-            const material = getMaterialByEnemyType(enemy) as PBRMaterial;
-            enemy.material = material;
-            const color = material.albedoColor;
-            
-
-            const prt = appendParticles(enemy, {
-                color1: Color4.FromColor3(color, 0.5),
-                color2: Color4.FromColor3(color, 0.5),
-                color3: Color4.FromColor3(color, 0.5),
-                capacity: 900, emitRate: 300, max_size: 0.2, updateSpeed: 0.01,
-                emmitBox: new Vector3(0.9, 0.9, 0.9), lifeTime: 1, gravityY: 1.5
-            }, GameState.scene());
-            prt.start();
-
-            enemy["meta"].particle = prt;
+            resetEnemy(enemy, ENEMYTYPES.simple10)
             break;
         }
         case 3: {
-            (enemy["meta"].particle as ParticleSystem).dispose();
-            enemy["meta"] = ENEMYTYPES.simple25;
-            const material = getMaterialByEnemyType(enemy) as PBRMaterial;
-            enemy.material = material;
-            const color = material.albedoColor;            
-
-            const prt = appendParticles(enemy, {
-                color1: Color4.FromColor3(color, 0.5),
-                color2: Color4.FromColor3(color, 0.5),
-                color3: Color4.FromColor3(color, 0.5),
-                capacity: 900, emitRate: 300, max_size: 0.2, updateSpeed: 0.01,
-                emmitBox: new Vector3(0.9, 0.9, 0.9), lifeTime: 1, gravityY: 1.5
-            }, GameState.scene());
-            prt.start();
-
-            enemy["meta"].particle = prt;
+            resetEnemy(enemy, ENEMYTYPES.simple25);
             break;
         }
     }
     return true;
 }
-//------------------------------------------------------------------->
+function resetEnemy(enemy: Mesh, type: any) {
+    if (enemy["meta"] && enemy["meta"].particle) {
+        (enemy["meta"].particle as ParticleSystem).dispose();
+    }
+    enemy["meta"] = type;
+    const material = getMaterialByEnemyType(enemy) as PBRMaterial;
+    enemy.material = material;
+    const color = material.albedoColor;
+
+    const prt = appendParticles(enemy, {
+        color1: Color4.FromColor3(color, 0.5),
+        color2: Color4.FromColor3(color, 0.5),
+        color3: Color4.FromColor3(color, 0.5),
+        capacity: 900, emitRate: 300, max_size: 0.2, updateSpeed: 0.01,
+        emmitBox: new Vector3(0.9, 0.9, 0.9), lifeTime: 1, gravityY: 1.5
+    }, GameState.scene());
+    prt.start();
+
+    enemy["meta"].particle = prt;
+}
 function physicsEnemyFromModel(name: string, options: { size: number, position: Vector3 }, parent: TransformNode) {
     const inst = ASSETS.containers3D.get("cristal") as AssetContainer;
     const inst_model = inst.instantiateModelsToScene((name) => name);
