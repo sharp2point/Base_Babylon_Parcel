@@ -3,7 +3,7 @@ import { resetBall } from "@/objects/ball";
 import { disposeEnemies } from "@/utils/utility";
 import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
-import { Scene } from "@babylonjs/core";
+import { Observable, Observer, Scene } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
 import { resultRedraw } from "@/ui/spin_menu";
 
@@ -18,6 +18,7 @@ GameState.state = {
     levelTimeHandler: null,
     levelTime: 0,
     enemyLight: null,
+    stopRunTimer: null,
     dragBox: {
         up: -5,
         down: -10.0,
@@ -96,9 +97,11 @@ GameState.changeGameState = (state: number) => {
             console.log("GAMERUN");
             GameState.resetScene();
             createMap(GameState.state.enemyLight);
+            GameState.state.stopRunTimer = runTimer();
             break;
         }
         case GameState.state.signals.GAME_OTHER_BALL: {
+            GameState.state.stopRunTimer();
             console.log("GAME_OTHER_BALL");
             gameNotify(GameState.state.signals.GAME_OTHER_BALL, {
 
@@ -110,6 +113,7 @@ GameState.changeGameState = (state: number) => {
             break;
         }
         case GameState.state.signals.LEVEL_WIN: {
+            GameState.state.stopRunTimer();
             console.log("LEVEL_WIN");
             gameNotify(GameState.state.signals.LEVEL_WIN, {
 
@@ -123,6 +127,7 @@ GameState.changeGameState = (state: number) => {
     }
 };
 GameState.resetScene = () => {
+    renderTime(0);
     renderPoints(0);
     resetBall();
     disposeEnemies();
@@ -147,7 +152,7 @@ GameState.levelRun = (level: number) => { // level -> binding from spin menu
     GameState.state.level = level;
     GameState.playerProgress().set(level, 0);
     GameState.changeGameState(GameState.state.signals.GAME_RUN);
-    showPoints(true);
+    showScoreboard(true);
     setTimeout(() => {
         (AGAME.Scene as Scene).attachControl();
     }, 600);
@@ -158,22 +163,40 @@ GameState.menuRun = () => {
     UISTATE.RenderLock = false;
     resultRedraw(GameState.state.level, GameState.playerProgress().get(GameState.state.level))
     GameState.changeGameState(GameState.state.signals.MENU_OPEN);
-    showPoints(false);
+    showScoreboard(false);
     setTimeout(() => {
         (UISTATE.Scene as Scene).attachControl();
     }, 600);
 }
 //---------------------------------------------------
-function renderPoints(points: number) {
-    const res = `${points}`.padStart(4, '0');
-    (UISTATE.Scoreboard.score as HTMLElement).innerText = res;
-}
-function showPoints(isShow: boolean) {
+
+function showScoreboard(isShow: boolean) {
     const scoreboard = document.querySelector(".scoreboard");
     isShow ?
         scoreboard.classList.remove('hide') :
         scoreboard.classList.add('hide');
 }
+export function runTimer() {
+    let count = 60;
+    let sec = 0;
+
+    const obser$ = (AGAME.Scene as Scene).onBeforeRenderObservable.add(() => {
+        count -= 1;
+        if (count <= 0) {
+            count = 60;
+            sec += 1;
+            renderTime(sec);
+        }
+    });
+    return stopTimer(obser$)
+}
+function stopTimer(obser$: Observer<Scene>) {
+    return () => {
+        obser$.remove();
+    }
+}
+const renderPoints = (points: number) => (UISTATE.Scoreboard.score as HTMLElement).innerText = `${points}`.padStart(4, '0');
+const renderTime = (seconds: number) => (UISTATE.Scoreboard.timer as HTMLElement).innerText = `${seconds}`.padStart(4, '0');
 
 
 
