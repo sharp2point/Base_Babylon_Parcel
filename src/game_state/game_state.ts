@@ -5,6 +5,7 @@ import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
 import { Scene } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
+import { resultRedraw } from "@/ui/spin_menu";
 
 export const GameState = function _GameState() {
 };
@@ -155,6 +156,7 @@ GameState.menuRun = () => {
     (AGAME.Scene as Scene).detachControl();
     AGAME.RenderLock = true;
     UISTATE.RenderLock = false;
+    resultRedraw(GameState.state.level, GameState.playerProgress().get(GameState.state.level))
     GameState.changeGameState(GameState.state.signals.MENU_OPEN);
     showPoints(false);
     setTimeout(() => {

@@ -28,8 +28,8 @@ export function UIScene() {
     light.specular = new Color3(0, 0, 0);
     light.intensity = 5;
 
-    const spot = new SpotLight("spot-1", new Vector3(0, 20, 0), new Vector3(0, -1, 0), Tools.ToRadians(60), 20, scene);
-    spot.diffuse = new Color3(0.4, 0.3, 1);
+    const spot = new SpotLight("spot-1", new Vector3(0, 20, 0), new Vector3(0, -1, 0), Tools.ToRadians(90), 30, scene);
+    spot.diffuse = new Color3(1, 1, 1);
     spot.specular = new Color3(1, 1, 1);
     spot.intensity = 0.7;
     spot.shadowEnabled = true;
@@ -137,7 +137,7 @@ function spotBall(scene: Scene, diffuse: Color3, specular: Color3, position: Vec
     const spot = new SpotLight("spot-ball2", position, new Vector3(0, -1, 0), Tools.ToRadians(80), 10, scene);
     spot.diffuse = diffuse;
     spot.specular = specular;
-    spot.intensity = 0.4;
+    spot.intensity = 0.8;
     return spot;
 }
 function particleBall(scene: Scene, ball: Mesh, color1: Color4, color2: Color4) {
