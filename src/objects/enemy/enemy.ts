@@ -8,51 +8,39 @@ export const ENEMYTYPES = {
         level: 1,
         points: 10,
         lifes: 1,
-        material: 'enemy-simple10-mt'
+        material: 'enemy-simple10-mt',
+        particle: null
     },
     simple25: {
-        level: 1,
+        level: 2,
         points: 25,
         lifes: 1,
-        material: 'enemy-simple25-mt'
+        material: 'enemy-simple25-mt',
+        particle: null
     },
     simple50: {
-        level: 1,
+        level: 3,
         points: 50,
         lifes: 3,
-        material: 'enemy-simple50-mt'
+        material: 'enemy-simple50-mt',
+        particle: null
     },
     parts: {
         level: 0,
         points: 0,
         lifes: 0,
-        material: 'enemy-parts-mt'
+        material: 'enemy-parts-mt',
+        particle: null
     }
 }
 
 export function enemy(name: string, type: string, position: Vector3, parent: TransformNode) {
-    // const enemy = physicsEnemy(name, { size: GameState.state.sizes.enemy, position: position }, parent);
-    console.log("ENEMY---->", type);
     const enemy = physicsEnemyFromModel(name, { size: GameState.state.sizes.enemy, position: position }, parent);
 
+    enemy["meta"] = ENEMYTYPES[type];
 
-    switch (type) {
-        case "simple10": {
-            enemy["meta"] = ENEMYTYPES.simple10;
-            console.log("ENEMY---->", enemy["meta"])
-            break;
-        }
-        case "simple25": {
-            enemy["meta"] = ENEMYTYPES.simple25;
-            break;
-        }
-        case "simple50": {
-            enemy["meta"] = ENEMYTYPES.simple50;
-            break;
-        }
-    }
-    appendMaterial(enemy)
     const material = getMaterialByEnemyType(enemy) as PBRMaterial;
+    enemy.material = material;
     const color = material.albedoColor;
     const prt = appendParticles(enemy, {
         color1: Color4.FromColor3(color, 0.5),
@@ -63,39 +51,9 @@ export function enemy(name: string, type: string, position: Vector3, parent: Tra
     }, GameState.scene());
     prt.start();
 
+    enemy["meta"].particle = prt;
+
     return enemy;
-}
-
-function physicsEnemyFromModel(name: string, options: { size: number, position: Vector3 }, parent: TransformNode) {
-
-    const inst = ASSETS.containers3D.get("cristal") as AssetContainer;
-    const inst_model = inst.instantiateModelsToScene((name) => name);
-
-    const model = Mesh.MergeMeshes(inst_model.rootNodes[0].getChildMeshes(), true, false, null, false, false);
-    model.scaling = new Vector3(0.6, 0.6, 0.6);
-    model.position = options.position;
-    model.parent = parent;
-    model.name = name;
-
-    const physics = new PhysicsBody(model, PhysicsMotionType.DYNAMIC, false, GameState.scene());
-    physics.setMassProperties({ mass: GameState.state.physicsMaterial.enemy.mass });
-    const shape = new PhysicsShapeConvexHull(model, GameState.scene());
-    shape.material = {
-        restitution: GameState.state.physicsMaterial.enemy.restitution,
-        friction: GameState.state.physicsMaterial.enemy.friction
-    };
-    physics.shape = shape;
-
-    return model;
-}
-function getMaterialByEnemyType(mesh: Mesh) {
-    return (GameState.scene() as Scene).getMaterialByName(mesh["meta"].material)
-}
-function getMaterialByName(name: string) {
-    return (GameState.scene() as Scene).getMaterialByName(name)
-}
-function appendMaterial(mesh: Mesh) {
-    mesh.material = getMaterialByEnemyType(mesh);
 }
 export function createEnemyMaterial(scene: Scene) {
     const pbr10 = new PBRMaterial("enemy-simple10-mt", GameState.scene());
@@ -147,7 +105,7 @@ export function createEnemyMaterial(scene: Scene) {
     pbrprt.anisotropy.direction.y = 0.5;
     //------------------------------------------
     pbrprt.sheen.isEnabled = true;
-    pbrprt.sheen.intensity = 0.9;
+    pbrprt.sheen.intensity = 1.9;
     pbrprt.sheen.color = new Color3(0.9, 0.3, 0.1);
     //------------------------------------------
     // pbr.subSurface.isRefractionEnabled = true;
@@ -186,8 +144,100 @@ export function addShadowToEnemy(generators: Array<ShadowGenerator>, name: strin
     });
 }
 export function enemyCollideReaction(enemy: Mesh) {
-    enemyDamageModelEffect(enemy)
+    if (!reTypeEnemy(enemy)) {
+        enemyDamageModelEffect(enemy);
+    }
+
 }
+export function reTypeEnemy(enemy: Mesh) {
+    const meta = enemy["meta"];
+    
+    switch (meta.level) {
+        case 1: {
+            return false;
+            break;
+        }
+        case 2: {
+            (enemy["meta"].particle as ParticleSystem).dispose();
+            enemy["meta"] = ENEMYTYPES.simple10;
+            const material = getMaterialByEnemyType(enemy) as PBRMaterial;
+            enemy.material = material;
+            const color = material.albedoColor;
+            
+
+            const prt = appendParticles(enemy, {
+                color1: Color4.FromColor3(color, 0.5),
+                color2: Color4.FromColor3(color, 0.5),
+                color3: Color4.FromColor3(color, 0.5),
+                capacity: 900, emitRate: 300, max_size: 0.2, updateSpeed: 0.01,
+                emmitBox: new Vector3(0.9, 0.9, 0.9), lifeTime: 1, gravityY: 1.5
+            }, GameState.scene());
+            prt.start();
+
+            enemy["meta"].particle = prt;
+            break;
+        }
+        case 3: {
+            (enemy["meta"].particle as ParticleSystem).dispose();
+            enemy["meta"] = ENEMYTYPES.simple25;
+            const material = getMaterialByEnemyType(enemy) as PBRMaterial;
+            enemy.material = material;
+            const color = material.albedoColor;            
+
+            const prt = appendParticles(enemy, {
+                color1: Color4.FromColor3(color, 0.5),
+                color2: Color4.FromColor3(color, 0.5),
+                color3: Color4.FromColor3(color, 0.5),
+                capacity: 900, emitRate: 300, max_size: 0.2, updateSpeed: 0.01,
+                emmitBox: new Vector3(0.9, 0.9, 0.9), lifeTime: 1, gravityY: 1.5
+            }, GameState.scene());
+            prt.start();
+
+            enemy["meta"].particle = prt;
+            break;
+        }
+    }
+    return true;
+}
+//------------------------------------------------------------------->
+function physicsEnemyFromModel(name: string, options: { size: number, position: Vector3 }, parent: TransformNode) {
+    const inst = ASSETS.containers3D.get("cristal") as AssetContainer;
+    const inst_model = inst.instantiateModelsToScene((name) => name);
+
+    const model = Mesh.MergeMeshes(inst_model.rootNodes[0].getChildMeshes(), true, false, null, false, false);
+    model.scaling = new Vector3(0.6, 0.6, 0.6);
+    model.position = options.position;
+    model.parent = parent;
+    model.name = name;
+
+    appendPhysics(model, {
+        mass: GameState.state.physicsMaterial.enemy.mass,
+        shape_material: {
+            restitution: GameState.state.physicsMaterial.enemy.restitution,
+            friction: GameState.state.physicsMaterial.enemy.friction
+        }
+    });
+
+    return model;
+}
+function appendPhysics(mesh: Mesh, options: {
+    mass: number
+    shape_material: {
+        restitution: number,
+        friction: number,
+    }
+}): PhysicsBody {
+    const physics = new PhysicsBody(mesh, PhysicsMotionType.DYNAMIC, false, GameState.scene());
+    physics.setMassProperties({ mass: options.mass });
+    const shape = new PhysicsShapeConvexHull(mesh, GameState.scene());
+    shape.material = options.shape_material;
+    physics.shape = shape;
+    return physics;
+}
+const getMaterialByEnemyType = (mesh: Mesh): PBRMaterial => (GameState.scene() as Scene).getMaterialByName(mesh["meta"].material) as PBRMaterial ?? null
+
+const getMaterialByName = (name: string): PBRMaterial => (GameState.scene() as Scene).getMaterialByName(name) as PBRMaterial ?? null;
+
 function enemyDamageModelEffect(enemy: Mesh) {
     const instanceModel = ASSETS.containers3D.get("enemy_damage").
         instantiateModelsToScene((name: string) => `enemy-damage-${name}`, true);
@@ -195,27 +245,47 @@ function enemyDamageModelEffect(enemy: Mesh) {
     GameState.damageNodes().push(tn);
     const childs = instanceModel.rootNodes[0].getChildMeshes();
 
+    const material_enemy = getMaterialByEnemyType(enemy) as PBRMaterial
+    const color_enemy = material_enemy.albedoColor;
     const material = getMaterialByName('enemy-parts-mt') as PBRMaterial;
-    const color = material.albedoColor;
 
     childs.forEach(m => {
-        m.material = material;
-        m.setParent(tn);
+        if (m instanceof Mesh) {
+            m.material = material;
+            m.setParent(tn);
+            tn.position = enemy.position.clone();
+            appendPhysics(m, {
+                mass: 1, shape_material: {
+                    restitution: 0.1, friction: 0.1
+                }
+            });
+            const prt = appendParticles(m, {
+                color1: new Color4(0.1, 0.1, 0.1, 0.5),
+                color2: Color4.FromColor3(color_enemy, 0.8),
+                color3: new Color4(0.01, 0.01, 0.05, 0.7),
+                capacity: 600, emitRate: 200, max_size: 0.5, updateSpeed: 0.05,
+                emmitBox: new Vector3(0.3, 0.3, 0.3), lifeTime: 2, gravityY: 0.5
+            }, GameState.scene());
+            prt.start();
+            //---------------------------------------
+            setTimeout(() => {
+                prt.dispose();
+                setTimeout(() => {
+                    m.onBeforeRenderObservable.clear();
+                    m.dispose()
+                }, Scalar.RandomRange(1000, 5000));
+            }, Scalar.RandomRange(500, 5000));
+            //------------------------------------------------------------------
+            m.onBeforeRenderObservable.add(() => {
+                if (m.position.y < -0.5) {
+                    prt.dispose();
+                    m.onBeforeRenderObservable.clear();
+                    m.dispose();
+                    console.log("CLEAR Y")
+                }
+            })
 
-        tn.position = enemy.position.clone();
-        const phy = new PhysicsBody(m, PhysicsMotionType.DYNAMIC, false, GameState.scene());
-        phy.setMassProperties({ mass: 1 });
-        const shape = new PhysicsShapeConvexHull(m as Mesh, GameState.scene());
-        shape.material = { restitution: 0.1, friction: 0.1 };
-        phy.shape = shape;
-        const prt = appendParticles(m, {
-            color1: new Color4(0.1, 0.1, 0.1, 0.5),
-            color2: Color4.FromColor3(color, 0.8),
-            color3: new Color4(0.01, 0.01, 0.05, 0.7),
-            capacity: 600, emitRate: 200, max_size: 0.5, updateSpeed: 0.05,
-            emmitBox: new Vector3(0.3, 0.3, 0.3), lifeTime: 2, gravityY: 0.5
-        }, GameState.scene());
-        prt.start();
+        }
     });
     gameObjectDispose(enemy);
 }
