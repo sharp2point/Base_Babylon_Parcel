@@ -11,9 +11,12 @@ function uiHtmlComponents() {
     const place: HTMLElement = document.querySelector("#ui-place");
     const ui = UI(place);
     scoreBoard(ui);
-    textBlock(ui);
-    preloader(place);
+    const floor = downBlock(ui);
+    spinMenuButtons(floor);
+    showSpinMenuButtons(false)
+    textBlock(floor);
 
+    preloader(place);
 }
 function UI(parent: HTMLElement) {
     const ui = document.createElement("div");
@@ -56,8 +59,8 @@ function scoreBoard(parent: HTMLElement) {
 
     iconUI(points, "public/icons/score.png");
     iconUI(timer, "public/icons/timer.png");
-    UISTATE.Scoreboard.score = numberUI(points,'score-ui');
-    UISTATE.Scoreboard.timer = numberUI(timer,'timer-ui');
+    UISTATE.Scoreboard.score = numberUI(points, 'score-ui');
+    UISTATE.Scoreboard.timer = numberUI(timer, 'timer-ui');
 }
 function containerUI(parent: HTMLElement) {
     const ui = document.createElement("div");
@@ -77,14 +80,47 @@ function iconUI(parent: HTMLElement, pathToIcon: string) {
     }
     return ui;
 }
-function numberUI(parent: HTMLElement, class_name:string) {
+function numberUI(parent: HTMLElement, class_name: string) {
     const ui = document.createElement("span");
     ui.classList.add(class_name);
     ui.innerText = "0000";
     parent.appendChild(ui);
     return ui;
 }
+function spinMenuButtons(parent: HTMLElement) {
+    const buttonPlace = document.createElement("div");
+    buttonPlace.classList.add("menu-buttons-place");
 
+    const leftButton = document.createElement("button");
+    leftButton.classList.add("left-menu-button");
+    leftButton.innerText = "<<<";
+
+    const rightButton = document.createElement("button");
+    rightButton.classList.add("right-menu-button");
+    rightButton.innerText = ">>>";
+
+    buttonPlace.appendChild(leftButton);
+    buttonPlace.appendChild(rightButton);
+    parent.appendChild(buttonPlace);
+}
+export function showSpinMenuButtons(isShow: boolean) {
+    const leftButton = document.querySelector(".left-menu-button");
+    const rightButton = document.querySelector(".right-menu-button");
+    if (isShow) {
+        leftButton.classList.remove("hide");
+        rightButton.classList.remove("hide");
+    } else {
+        leftButton.classList.add("hide");
+        rightButton.classList.add("hide");
+    }
+
+}
+function downBlock(parent: HTMLElement) {
+    const block = document.createElement("div");
+    block.classList.add("down-block");
+    parent.appendChild(block);
+    return block
+}
 //----------------------------------------------->
 uiHtmlComponents();
 

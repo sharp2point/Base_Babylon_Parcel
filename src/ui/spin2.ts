@@ -1,18 +1,17 @@
 import { ASSETS } from "@/game_state/assets/state";
+import { GameState } from "@/game_state/game_state";
 import { loadMenuItemModel } from "@/utils/loaderGlbFiles";
 import {
-    Color3, DynamicTexture, Engine, Mesh,
-    MeshBuilder, MeshUVSpaceRenderer, Plane,
+    Color3, Mesh,
     Scene, StandardMaterial, Texture, Tools,
-    Vector3, Vector4, Animation,
+    Vector3, Animation,
     AssetContainer,
     TransformNode,
-    RegisterMaterialPlugin,
     IPointerEvent,
     PickingInfo,
     PointerEventTypes,
-    Scalar
 } from "@babylonjs/core";
+import { showSpinMenuButtons } from "./html/ui_components";
 
 const ITEM_MODELS = {
     border: null as Mesh,
@@ -39,6 +38,8 @@ export async function spinMenu2(scene: Scene) {
 
     setMenuIndex(0, menu, scene);
 
+    appendHtmlButtons(menu, scene);
+
     scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
         if (pic.pickedMesh.name.includes("moveHandler")) {
@@ -46,7 +47,7 @@ export async function spinMenu2(scene: Scene) {
                 isPointerDown = true;
                 initPointDown = pic.pickedPoint;
             } else {
-                console.log("Double Click");
+                GameState.levelRun(SPINMENU.focusItem["meta"].index);
                 isPointerDown = false;
             }
         }
@@ -57,10 +58,8 @@ export async function spinMenu2(scene: Scene) {
             const delta = initPointDown.x - pic.pickedPoint.x
             if (Math.abs(delta) > 5) {
                 if (delta > 0) {
-                    console.log("Next");
                     rotateToNextPosition(menu, scene)
                 } else {
-                    console.log("Prev");
                     rotateToPrevPosition(menu, scene)
                 }
                 isPointerDown = false;
@@ -263,9 +262,6 @@ function setMenuIndex(index: number, menu: TransformNode, scene: Scene) {
 
     let angle = Tools.ToRadians(item["meta"].angle);
 
-
-
-    console.log(item["meta"].angle)
     const rotateAnim = rotateMenuAnimation(menu, angle);
     scene.beginAnimation(menu, 0, 120, false, 1, () => {
         scene.removeAnimation(rotateAnim);
@@ -298,6 +294,18 @@ function rotateToPrevPosition(menu: TransformNode, scene: Scene) {
     let index = (SPINMENU.focusItem ? SPINMENU.focusItem["meta"].index : 0) - 1;
     index = index < 0 ? (SPINMENU.count - 1) : index;
     setMenuIndex(index, menu, scene)
+}
+function appendHtmlButtons(menu: TransformNode, scene: Scene) {
+    const leftButton = document.querySelector(".left-menu-button");
+    const rightButton = document.querySelector(".right-menu-button");
+
+    leftButton.addEventListener("click", () => {
+        rotateToPrevPosition(menu, scene)
+    })
+    rightButton.addEventListener("click", () => {
+        rotateToNextPosition(menu, scene)
+    })
+    showSpinMenuButtons(true);
 }
 //- Animations ------------------------------------------
 

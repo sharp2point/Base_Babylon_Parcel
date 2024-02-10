@@ -120,32 +120,62 @@
 
         }
 
-        .ui-text-block{
+        .down-block{
             display: flex;
             flex-direction: column;
+            justify-content: flex-end;
             align-items: center;
-            justify-content: flex-start;
-            gap: 0.1rem;
-            width:300px;
-            min-height: 80px;
-            margin-bottom: 1rem;
-
-            .text{
-                display: flex;
-                color:rgb(235, 230, 225,0.3);
-                font: 1.2rem sans-serif;
-                line-height: 1.3rem;
-                margin-top:0.2rem;
-                margin-inline-start: 0.5rem;
-            }
-            .text-name {
-                display: flex;
-                color: rgba(233, 69, 69,0.4);
-                font: 1.8rem, "Impact" sans-serif;
-                line-height: 1.0rem;
+            gap:2rem;
+            
+            .menu-buttons-place {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: center;
+                    align-items: center;
+                    height: 40px;
+                    padding: 5px;
+            
+                    .left-menu-button,
+                    .right-menu-button {
+                        width: 100px;
+                        height: 20px;
+                        color: antiquewhite;
+                        background: transparent;
+                        border: none;
+                        font-size: 2rem;
+                        pointer-events: all;
+                    }
+                }
+            
+                .ui-text-block {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: flex-start;
+                    gap: 0.1rem;
+                    width: 300px;
+                    min-height: 80px;
+                    margin-bottom: 1rem;
+            
+                    .text {
+                        display: flex;
+                        color: rgb(235, 230, 225, 0.3);
+                        font: 1.2rem sans-serif;
+                        line-height: 1.3rem;
+                        margin-top: 0.2rem;
+                        margin-inline-start: 0.5rem;
+                    }
+            
+                    .text-name {
+                        display: flex;
+                        color: rgba(233, 69, 69, 0.4);
+                        font: 1.8rem, "Impact" sans-serif;
+                        line-height: 1.0rem;
+                    }
+                }
             }
         }
-    }
+        
     .html-back-opaq-0{
         animation: animation-back-opaq 1s;
         background: rgba(0, 0, 0, 0);

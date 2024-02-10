@@ -27,7 +27,7 @@ export function UIScene() {
     const light = new HemisphericLight("ui-light", new Vector3(0, 1, 0), scene);
     light.diffuse = new Color3(0.5, 0.5, 0.5);
     light.specular = new Color3(0, 0, 0);
-    light.intensity = 0.1;
+    light.intensity = 0;
 
     const spot = new SpotLight("spot-1", new Vector3(0, 30, 0), new Vector3(0, -1, 0), Tools.ToRadians(60), 30, scene);
     spot.diffuse = new Color3(1, 1, 1);

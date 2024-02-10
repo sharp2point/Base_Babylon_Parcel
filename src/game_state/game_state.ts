@@ -6,6 +6,7 @@ import { UISTATE } from "./ui/state";
 import { Observable, Observer, Scene } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
 import { resultRedraw } from "@/ui/spin_menu";
+import { showSpinMenuButtons } from "@/ui/html/ui_components";
 
 export const GameState = function _GameState() {
 };
@@ -153,6 +154,7 @@ GameState.levelRun = (level: number) => { // level -> binding from spin menu
     GameState.playerProgress().set(level, 0);
     GameState.changeGameState(GameState.state.signals.GAME_RUN);
     showScoreboard(true);
+    showSpinMenuButtons(false);
     setTimeout(() => {
         (AGAME.Scene as Scene).attachControl();
     }, 600);
@@ -161,9 +163,10 @@ GameState.menuRun = () => {
     (AGAME.Scene as Scene).detachControl();
     AGAME.RenderLock = true;
     UISTATE.RenderLock = false;
-    resultRedraw(GameState.state.level, GameState.playerProgress().get(GameState.state.level))
+    //resultRedraw(GameState.state.level, GameState.playerProgress().get(GameState.state.level))
     GameState.changeGameState(GameState.state.signals.MENU_OPEN);
     showScoreboard(false);
+    showSpinMenuButtons(true);
     setTimeout(() => {
         (UISTATE.Scene as Scene).attachControl();
     }, 600);
