@@ -44,7 +44,7 @@ export function loadDamageEnemyModel(scene: Scene) {
 }
 export function loadMenuItemModel(scene: Scene) {
   return new Promise((res) => {
-    loadModel(`public/models/`, `menuItem.glb`, scene).then((container) => {
+    loadModel(`public/models/menu/`, `menuItem.glb`, scene).then((container) => {
       ASSETS.containers3D.set("menu_item", container as AssetContainer);
       res(true);
     });

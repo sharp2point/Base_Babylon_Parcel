@@ -1,5 +1,6 @@
 import { ASSETS } from "@/game_state/assets/state";
 import { GameState } from "@/game_state/game_state";
+import { appendParticles } from "@/utils/clear_utils";
 import { gameObjectDispose } from "@/utils/utility";
 import { AssetContainer, Color3, Color4, HighlightLayer, Mesh, MeshBuilder, PBRBaseMaterial, PBRMaterial, ParticleSystem, PhysicsBody, PhysicsHelper, PhysicsMotionType, PhysicsRadialImpulseFalloff, PhysicsShapeConvexHull, PointColor, PointLight, Scalar, Scene, ShadowGenerator, SolidParticle, SolidParticleSystem, StandardMaterial, Texture, TransformNode, Vector3 } from "@babylonjs/core";
 
@@ -163,7 +164,7 @@ function resetEnemy(enemy: Mesh, type: any) {
     enemy.material = material;
     const color = material.albedoColor;
 
-    const prt = appendParticles(enemy, {
+    const prt = appendParticles(`${enemy.name}-particle`, enemy, {
         color1: Color4.FromColor3(color, 0.5),
         color2: Color4.FromColor3(color, 0.5),
         color3: Color4.FromColor3(color, 0.5),
@@ -233,7 +234,7 @@ function enemyDamageModelEffect(enemy: Mesh) {
                     restitution: 0.1, friction: 0.1
                 }
             });
-            const prt = appendParticles(m, {
+            const prt = appendParticles(`${m.name}-particle`, m, {
                 color1: new Color4(0.1, 0.1, 0.1, 0.5),
                 color2: Color4.FromColor3(color_enemy, 0.8),
                 color3: new Color4(0.01, 0.01, 0.05, 0.7),
@@ -263,31 +264,3 @@ function enemyDamageModelEffect(enemy: Mesh) {
     gameObjectDispose(enemy);
 }
 
-function appendParticles(mesh: Mesh, options: {
-    color1: Color4, color2: Color4, color3: Color4,
-    capacity: number, emitRate: number, max_size: number, updateSpeed: number,
-    emmitBox: Vector3, lifeTime: number, gravityY: number
-}, scene: Scene) {
-    const prt = new ParticleSystem("ball-particle", 300, scene);
-    prt.emitter = mesh;
-    prt.particleTexture = new Texture("public/sprites/dirt_02.png");
-    prt.maxEmitPower = 0.3;
-    prt.minEmitPower = 0.1;
-    prt.emitRate = options.emitRate;
-    prt.color1 = options.color1;
-    prt.color2 = options.color2;
-    prt.colorDead = options.color3;
-    prt.maxLifeTime = options.lifeTime;
-    prt.minLifeTime = 0.1;
-    prt.minAngularSpeed = 1;
-    prt.maxSize = options.max_size;
-    prt.minSize = 0.1;
-    prt.maxEmitBox = options.emmitBox;
-    prt.minEmitBox = options.emmitBox.multiply(new Vector3(-1, -1, -1));
-    prt.updateSpeed = options.updateSpeed;
-    prt.direction1 = new Vector3(0, 1, 0);
-    prt.direction2 = new Vector3(0, 1, 0);
-    prt.gravity = new Vector3(0, options.gravityY, 0);
-    prt.disposeOnStop = true;
-    return prt;
-}

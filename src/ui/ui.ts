@@ -9,8 +9,9 @@ import {
     StandardMaterial, Texture, Tools, TransformNode, UniversalCamera, Vector3
 } from "@babylonjs/core";
 import { backSetOpaq_0 } from "./html/ui_components";
-import { loadShieldYarModel } from "@/utils/loaderGlbFiles";
 import { clearFocusItem, getItemOnPointerDown, menuItemOnPointerMove, spinMenu } from "./spin_menu";
+import { spinMenu2 } from "./spin2";
+
 
 export function UIScene() {
     const window_size = getInnerWindow();
@@ -26,19 +27,27 @@ export function UIScene() {
     const light = new HemisphericLight("ui-light", new Vector3(0, 1, 0), scene);
     light.diffuse = new Color3(0.5, 0.5, 0.5);
     light.specular = new Color3(0, 0, 0);
-    light.intensity = 5;
+    light.intensity = 0.1;
 
-    const spot = new SpotLight("spot-1", new Vector3(0, 20, 0), new Vector3(0, -1, 0), Tools.ToRadians(90), 30, scene);
+    const spot = new SpotLight("spot-1", new Vector3(0, 30, 0), new Vector3(0, -1, 0), Tools.ToRadians(60), 30, scene);
     spot.diffuse = new Color3(1, 1, 1);
-    spot.specular = new Color3(1, 1, 1);
-    spot.intensity = 0.7;
+    spot.specular = new Color3(0, 0, 0);
+    spot.intensity = 0.9;
     spot.shadowEnabled = true;
 
     sceneBuilder(scene);
-    const hr = hero(scene);
-    light.includedOnlyMeshes = [hr];
 
-    loader(scene);
+    // const global_tn = new TransformNode("hero-global-tn", scene);
+    // // const hero_tn = hero(scene);
+    // // light.includedOnlyMeshes = hero_tn.getChildMeshes();
+    // const loader_tn = loader(scene);
+
+    // // hero_tn.setParent(global_tn);
+    // loader_tn.setParent(global_tn);
+
+    // global_tn.position.z = 0;
+    // global_tn.scaling = new Vector3(0.9, 0.9, 0.9);
+
 
     scene.onReadyObservable.add(() => {
         onReady(scene);
@@ -46,38 +55,39 @@ export function UIScene() {
 
     let isSpinMenu = false;
     scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
-        const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
+        // const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
 
-        if (!isSpinMenu) {
-            if (pic.pickedMesh.name.includes(`menu-item-`)) {
-                if (pic.pickedMesh.name.includes(`Center`)) {
-                    getItemOnPointerDown(pic.pickedMesh.name, pic.pickedPoint.x);
-                }
-            }
-            isSpinMenu = true;
-            setTimeout(() => {
-                isSpinMenu = false;
-            }, 600)
-        }
+        // if (!isSpinMenu) {
+        //     if (pic.pickedMesh.name.includes(`menu-item-`)) {
+        //         if (pic.pickedMesh.name.includes(`Center`)) {
+        //             getItemOnPointerDown(pic.pickedMesh.name, pic.pickedPoint.x);
+        //         }
+        //     }
+        //     isSpinMenu = true;
+        //     setTimeout(() => {
+        //         isSpinMenu = false;
+        //     }, 600)
+        // }
 
     }
     scene.onPointerMove = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
-        const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
-        if (pic.pickedMesh.name.includes(`menu-item-`)) {
-            if (pic.pickedMesh.name.includes(`Center`)) {
-                menuItemOnPointerMove(pic.pickedMesh.name, pic.pickedPoint);
-            }
-        } else {
-            clearFocusItem();
-        }
+        // const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
+        // if (pic.pickedMesh.name.includes(`menu-item-`)) {
+        //     if (pic.pickedMesh.name.includes(`Center`)) {
+        //         menuItemOnPointerMove(pic.pickedMesh.name, pic.pickedPoint);
+        //     }
+        // } else {
+        //     clearFocusItem();
+        // }
     }
     UISTATE.Scene = scene;
 }
 //------------------------------------------------------>
 function onReady(scene: Scene) {
     backSetOpaq_0();
-    shield(new Vector3(0, 1, -12), scene);
-    spinMenu(new Vector3(0, 0, 0), scene);
+    // shield(new Vector3(0, 1, -12), scene);
+    spinMenu2(scene);
+    //spinMenu(new Vector3(0, 0, 0), scene);
 }
 function sceneBuilder(scene: Scene) {
     const window_size = getInnerWindow();
@@ -91,14 +101,14 @@ function sceneBuilder(scene: Scene) {
 function loader(scene: Scene) {
     const tn = new TransformNode('loader-tn', scene);
 
-    const ball = ballLoader(scene, new Color3(1, 0.3, 0.1), new Vector3(-6, 0, 0));
+    const ball = ballLoader(scene, new Color3(1, 0.3, 0.1), new Vector3(-UISTATE.view.spotBallDiameter, 0, 0));
     ball.setParent(tn);
     const spot = spotBall(scene, new Color3(0.9, 0.5, 0.2), new Color3(0.6, 0.2, 0.25), new Vector3(-3, 10, 0));
     spot.parent = ball;
     const particle = particleBall(scene, ball, new Color4(0.9, 0.1, 0.1, 0.5), new Color4(0.9, 0.5, 0.1, 0.7));
     particle.start();
 
-    const ball2 = ballLoader(scene, new Color3(0.1, 0.1, 1), new Vector3(6, 0, 0));
+    const ball2 = ballLoader(scene, new Color3(0.1, 0.1, 1), new Vector3(UISTATE.view.spotBallDiameter, 0, 0));
     ball2.setParent(tn);
     const spot2 = spotBall(scene, new Color3(0.2, 0.5, 0.9), new Color3(0.25, 0.2, 0.6), new Vector3(3, 10, 0));
     spot2.parent = ball2;
@@ -122,6 +132,7 @@ function loader(scene: Scene) {
     tn.animations.push(anim);
 
     scene.beginAnimation(tn, 0, 120, true, 1);
+    return tn;
 }
 function ballLoader(scene: Scene, diffuse: Color3, position: Vector3): Mesh {
     const ball = MeshBuilder.CreateSphere('loader-ball', { diameter: 1 }, scene);
@@ -134,7 +145,7 @@ function ballLoader(scene: Scene, diffuse: Color3, position: Vector3): Mesh {
     return ball;
 }
 function spotBall(scene: Scene, diffuse: Color3, specular: Color3, position: Vector3) {
-    const spot = new SpotLight("spot-ball2", position, new Vector3(0, -1, 0), Tools.ToRadians(80), 10, scene);
+    const spot = new SpotLight("spot-ball2", position, new Vector3(0, -1, 0), Tools.ToRadians(60), 30, scene);
     spot.diffuse = diffuse;
     spot.specular = specular;
     spot.intensity = 0.8;
@@ -173,7 +184,8 @@ function hero(scene: Scene) {
     hero.rotation.x = Tools.ToRadians(-45);
     hero.rotation.y = Tools.ToRadians(45);
     tn.position.y = 5;
-    tn.scaling = new Vector3(1.5, 1.5, 1.5);
+    tn.position.z = 0;
+    tn.scaling = new Vector3(1.2, 1.2, 1.2);
 
     const material = new StandardMaterial("hero-mat", scene);
     material.diffuseTexture = new Texture("public/hero/lava_d.jpg");
@@ -198,7 +210,7 @@ function hero(scene: Scene) {
 
     scene.beginAnimation(tn, 0, 120, true, 1);
 
-    return hero;
+    return tn;
 }
 function shield(position: Vector3, scene: Scene) {
     const tn = new TransformNode("shield-tn", scene);

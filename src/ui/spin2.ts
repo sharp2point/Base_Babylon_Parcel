@@ -1,0 +1,354 @@
+import { ASSETS } from "@/game_state/assets/state";
+import { loadMenuItemModel } from "@/utils/loaderGlbFiles";
+import {
+    Color3, DynamicTexture, Engine, Mesh,
+    MeshBuilder, MeshUVSpaceRenderer, Plane,
+    Scene, StandardMaterial, Texture, Tools,
+    Vector3, Vector4, Animation,
+    AssetContainer,
+    TransformNode,
+    RegisterMaterialPlugin,
+    IPointerEvent,
+    PickingInfo,
+    PointerEventTypes,
+    Scalar
+} from "@babylonjs/core";
+
+const ITEM_MODELS = {
+    border: null as Mesh,
+    center: null,
+    level: null,
+    numbers: new Map<string, Mesh>()
+}
+const SPINMENU = {
+    count: 6,
+    radius: 14,
+    position: new Vector3(0, 0, 18),
+    angle: 0,
+    angleDelta: 0,
+    focusItem: null,
+    items: new Map<number, TransformNode>(),
+    scaleDeterminant: 0.8,
+}
+
+export async function spinMenu2(scene: Scene) {
+    let isPointerDown = false;
+    let initPointDown: Vector3 = null;
+
+    const menu = await buildMenu(SPINMENU.position, SPINMENU.radius, SPINMENU.count, scene) as TransformNode;
+
+    setMenuIndex(0, menu, scene);
+
+    scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
+        if (pic.pickedMesh.name.includes("moveHandler")) {
+            if (!isPointerDown) {
+                isPointerDown = true;
+                initPointDown = pic.pickedPoint;
+            } else {
+                console.log("Double Click");
+                isPointerDown = false;
+            }
+        }
+    }
+    scene.onPointerMove = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        if (isPointerDown) {
+            const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
+            const delta = initPointDown.x - pic.pickedPoint.x
+            if (Math.abs(delta) > 5) {
+                if (delta > 0) {
+                    console.log("Next");
+                    rotateToNextPosition(menu, scene)
+                } else {
+                    console.log("Prev");
+                    rotateToPrevPosition(menu, scene)
+                }
+                isPointerDown = false;
+            }
+        }
+    }
+    scene.onPointerUp = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        if (isPointerDown) {
+            setTimeout(() => {
+                isPointerDown = false;
+            }, 300);
+        }
+    }
+}
+
+function setItemPosition(item: Mesh | TransformNode, position: Vector3) {
+    item.position = position
+    return item;
+}
+function setItemMaterial(item: Mesh, options: { diffuse: Color3, alpha?: number }, scene: Scene) {
+    const material = new StandardMaterial("cil-mt", scene);
+    material.diffuseColor = options.diffuse;
+    material.specularColor = new Color3(0.1, 0, 0);
+    material.backFaceCulling = true;
+    material.alpha = options.alpha ?? 1;
+    item.material = material;
+    return item
+}
+function initDiffuseTexture(scene: Scene) {
+    const texture_d = new Texture("public/sprites/decal.webp", scene, true, false);
+    texture_d.hasAlpha = true;
+    texture_d.uScale = -1;
+    return texture_d;
+}
+function appendAnimation(host: Mesh | TransformNode, scene: Scene) {
+    const keys = [
+        {
+            frame: 0,
+            value: 0,
+        },
+        {
+            frame: 120,
+            value: Tools.ToRadians(359)
+        }
+    ];
+    const anim = new Animation("anim", "rotation.y", 20, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE, false);
+    anim.setKeys(keys);
+    host.animations.push(anim);
+}
+//---------------------------------------------------------------
+function initGeometryItemFromModels(name: string, options: { index: number }, scene: Scene) {
+    const tn = new TransformNode(`${name}-${options.index}`, scene);
+
+    const border = ITEM_MODELS.border.clone("border");
+    border.isVisible = true;
+    border.isEnabled(true);
+
+    const center = ITEM_MODELS.center.clone("center");
+    center.isVisible = true;
+    center.isEnabled(true);
+
+
+    const level = ITEM_MODELS.level.clone("level");
+    level.isVisible = true;
+    level.isEnabled(true);
+
+    const number = ITEM_MODELS.numbers.get(`number-${options.index}`).clone(`number-${options.index}`);
+    number.isVisible = true;
+    number.isEnabled(true);
+
+    const moveHandler = ITEM_MODELS.center.clone("moveHandler");
+    moveHandler.isVisible = true;
+    moveHandler.isEnabled(true);
+
+    center.scaling = new Vector3(0.7, 0.2, 0.7);
+    moveHandler.scaling = new Vector3(1.2, 0.2, 1.2);
+    moveHandler.position.y = 0.3;
+
+    number.rotation.y = Tools.ToRadians(180);
+    number.position.z = 0.9
+    level.rotation.y = Tools.ToRadians(0);
+    level.position.z = -1.7;
+
+    border.setParent(tn);
+    center.setParent(tn);
+    level.setParent(tn);
+    number.setParent(tn);
+    moveHandler.setParent(tn);
+
+    setItemMaterial(border, { diffuse: new Color3(0.5, 0.3, 0.2) }, scene);
+    setItemMaterial(center, { diffuse: new Color3(0.1, 0.1, 0.1) }, scene);
+    setItemMaterial(level, { diffuse: new Color3(0.9, 0.9, 0.9) }, scene);
+    setItemMaterial(number, { diffuse: new Color3(0.7, 0.7, 0.7) }, scene);
+    setItemMaterial(moveHandler, { diffuse: new Color3(0.01, 0.01, 0.01), alpha: 0.05 }, scene);
+
+    tn.scalingDeterminant = 1.5;
+    return tn;
+}
+async function loadItemGeometry(name: string, options: { index: number }, scene: Scene) {
+    return new Promise((resolve) => {
+        loadMenuItemModel(scene).then(() => {
+            const container: AssetContainer = ASSETS.containers3D.get("menu_item");
+            const instance = container.instantiateModelsToScene((name) => name);
+            const models = instance.rootNodes[0].getChildMeshes();
+
+            models.forEach((model: Mesh) => {
+                model.isVisible = false;
+                model.isEnabled(false);
+
+                switch (model.name) {
+                    case "Border": {
+                        ITEM_MODELS.border = model;
+                        break;
+                    }
+                    case "Center": {
+                        ITEM_MODELS.center = model;
+                        break;
+                    }
+                    case "Level": {
+                        ITEM_MODELS.level = model;
+                        break;
+                    }
+                    case "number-0":
+                    case "number-1":
+                    case "number-2":
+                    case "number-3":
+                    case "number-4":
+                    case "number-5":
+                    case "number-6":
+                    case "number-7":
+                    case "number-8":
+                    case "number-9": {
+                        ITEM_MODELS.numbers.set(model.name, model);
+                        break;
+                    }
+                    default: {
+                        console.log("switch default");
+                        break;
+                    }
+                }
+            });
+        }).then(() => {
+            const tn = initGeometryItemFromModels(name, { index: options.index }, scene);
+            tn.position = new Vector3(0, 14, 0);
+            resolve(tn);
+        })
+    });
+}
+async function menuItem(name: string, options: { index: number, angle: number }, scene: Scene) {
+    return new Promise<TransformNode>((resolve) => {
+        loadItemGeometry(name, { index: options.index }, scene).then((tn: TransformNode) => {
+            tn["meta"] = {
+                name: name,
+                index: options.index,
+                angle: options.angle
+            }
+            resolve(tn);
+        });
+    });
+}
+function buildMenu(position: Vector3, radius: number, count: number, scene: Scene) {
+
+    const tn = new TransformNode("menu-tn", scene);
+
+    SPINMENU.angle = 360 / count;
+    SPINMENU.angleDelta = SPINMENU.angle * 1.5;
+
+    const promises = new Array<Promise<TransformNode>>();
+
+    [...Array(count).keys()].forEach((val) => {
+        promises.push(menuItem(`item-${val}`, { index: val, angle: (SPINMENU.angle) * val + SPINMENU.angleDelta }, scene));
+    });
+
+    return new Promise((resolve) => {
+        Promise.all(promises).then((res) => {
+            res.forEach((item: TransformNode, index) => {
+                SPINMENU.items.set(index, item);
+                item.scalingDeterminant = SPINMENU.scaleDeterminant;
+                item.setParent(tn);
+                setItemPosition(item as TransformNode, new Vector3(
+                    Math.cos(Tools.ToRadians(SPINMENU.angle * index)) * radius,
+                    0,
+                    Math.sin(Tools.ToRadians(SPINMENU.angle * index)) * radius,
+                ));
+            });
+            tn.rotation.y = Tools.ToRadians(SPINMENU.angleDelta);
+            tn.position = position;
+            resolve(tn);
+        });
+    })
+
+}
+//-Rotate Menu ----------------------------------------
+function setMenuIndex(index: number, menu: TransformNode, scene: Scene) {
+    // const angle = Tools.ToRadians(index * (SPINMENU.angle) + SPINMENU.angleDelta);
+    const item = SPINMENU.items.get(index);
+    const preItem = SPINMENU.focusItem;
+
+    item.rotation.y = Tools.ToRadians(-item["meta"].angle);
+
+    let angle = Tools.ToRadians(item["meta"].angle);
+
+
+
+    console.log(item["meta"].angle)
+    const rotateAnim = rotateMenuAnimation(menu, angle);
+    scene.beginAnimation(menu, 0, 120, false, 1, () => {
+        scene.removeAnimation(rotateAnim);
+    })
+
+    const posAnim = positionYItemAnimation(item)
+    const scaleAnim = scaleUpItemAnimation(item);
+    scene.beginAnimation(item, 0, 60, false, 2, () => {
+        scene.removeAnimation(posAnim);
+        scene.removeAnimation(scaleAnim);
+    });
+
+    if (preItem) {
+        const posOldAnim = positionYItemAnimation(preItem);
+        const scaleOldAnim = scaleUpItemAnimation(preItem);
+        scene.beginAnimation(preItem, 60, 0, false, 1, () => {
+            scene.removeAnimation(posOldAnim);
+            scene.removeAnimation(scaleOldAnim);
+        });
+    }
+
+    SPINMENU.focusItem = item;
+}
+function rotateToNextPosition(menu: TransformNode, scene: Scene) {
+    let index = (SPINMENU.focusItem ? SPINMENU.focusItem["meta"].index : 0) + 1;
+    index = index >= SPINMENU.count ? 0 : index;
+    setMenuIndex(index, menu, scene)
+}
+function rotateToPrevPosition(menu: TransformNode, scene: Scene) {
+    let index = (SPINMENU.focusItem ? SPINMENU.focusItem["meta"].index : 0) - 1;
+    index = index < 0 ? (SPINMENU.count - 1) : index;
+    setMenuIndex(index, menu, scene)
+}
+//- Animations ------------------------------------------
+
+function rotateMenuAnimation(item: TransformNode, angle: number) {
+    const startAngl = item.rotation.clone();
+    const keys = [
+        {
+            frame: 0,
+            value: startAngl.y,
+        },
+        {
+            frame: 120,
+            value: angle
+        }
+    ];
+    const anim = new Animation("rotate-menu-anim", "rotation.y", 120, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT, false);
+    anim.setKeys(keys);
+    item.animations.push(anim);
+    return anim;
+}
+function scaleUpItemAnimation(item: TransformNode) {
+    const keys = [
+        {
+            frame: 0,
+            value: SPINMENU.scaleDeterminant,
+        },
+        {
+            frame: 60,
+            value: 1.5
+        }
+    ];
+    const anim = new Animation("scale-menu-anim", "scalingDeterminant", 60, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT, false);
+    anim.setKeys(keys);
+    item.animations.push(anim);
+    return anim;
+}
+function positionYItemAnimation(item: TransformNode) {
+    const startPos = item.position.clone()
+    const endPos = startPos.add(new Vector3(0, 1, 0))
+    const keys = [
+        {
+            frame: 0,
+            value: startPos,
+        },
+        {
+            frame: 60,
+            value: endPos
+        }
+    ];
+    const anim = new Animation("posY-menuanim", "position", 60, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CONSTANT, false);
+    anim.setKeys(keys);
+    item.animations.push(anim);
+    return anim;
+}

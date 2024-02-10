@@ -9,7 +9,7 @@ export function clampToBoxShieldPosition(position: Vector3, shield: TransformNod
         const old_position = shield.position;
         shield.position = Vector3.Lerp(old_position, new_position, amount);
     } catch (err) {
-        console.error("CLAMP ERROR")
+        //console.error("CLAMP ERROR")
     }
 }
 export function gameObjectDispose(enemy: Mesh) {
@@ -21,10 +21,10 @@ export function gameObjectDispose(enemy: Mesh) {
     }
     enemy.dispose();
 }
-export function isAllEnemiesDie(){
+export function isAllEnemiesDie() {
     return (GameState.enemyNodes()).getChildren().length > 0 ? false : true;
 }
-export function disposeEnemies(){
+export function disposeEnemies() {
     if (GameState.damageNodes().length > 0) {
         GameState.damageNodes().forEach(tn => {
             tn.getChildren().forEach(obj => {

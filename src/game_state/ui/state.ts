@@ -9,5 +9,8 @@ export const UISTATE = {
     Scoreboard: {
         timer: null,
         score: null
+    },
+    view: {
+        spotBallDiameter: 5,
     }
 }

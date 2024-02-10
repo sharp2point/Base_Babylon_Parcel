@@ -1,16 +1,17 @@
 import { GameState } from "@/game_state/game_state";
+import { appendParticles } from "@/utils/clear_utils";
 import {
-    Animation, Color3, DynamicTexture,
+    Animation, CSG, Color3, Color4, DynamicTexture,
+    HemisphericLight,
     ICanvasRenderingContext, Mesh, MeshBuilder,
-    Scene, StandardMaterial, Tools, TransformNode, Vector3
+    Scene, StandardMaterial, Texture, Tools, TransformNode, Vector3
 } from "@babylonjs/core";
 
 const SPINMENUSTATE = {
     positions: 8, // колличество пунктов меню
-    diameter: 7, // диаметр меню
-    item_size: { // размер пунктов меню
-        width: 4,
-        height: 4
+    diameter: 8, // диаметр меню
+    item_size: { // размер пунктов меню        
+        scale: 1.1,
     },
     angle: null, // угол между пунктами меню 360/колличество пунктов
     node: null, // узел трансформации меню
@@ -19,11 +20,11 @@ const SPINMENUSTATE = {
     prefix_item: `menu-item-`, // префикс имён пунктов меню
     deltaZ: 90, // угол доворота меню по оси Z 
     select_place: 1.1, // зона выбора пункта меню (при клике/наведению) мышью
-    menu_y_position: 5,
+    menu_y_position: 6,
     focus_item: null,
     colors: {
-        standart: "rgba(20,20,150,0.6)",
-        focus: "rgba(120,100,10,0.6)"
+        standart: "rgba(20,20,150,0.4)",
+        focus: "rgba(120,100,10,0.4)"
     }
 }
 
@@ -31,7 +32,8 @@ export function spinMenu(position: Vector3, scene: Scene) {
     SPINMENUSTATE.angle = 360 / SPINMENUSTATE.positions;
     SPINMENUSTATE.node = new TransformNode("menu-rotate-tn", scene);
     //--------------------------------------------------------->        
-    const base = initMenuItemFromNativeElements(scene);
+    // const base = initMenuItemFromNativeElements(scene);
+    const base = initMenuItemFromOvalElements(scene);
 
     [...Array(SPINMENUSTATE.positions).keys()].forEach((i) => {
         const name = `${SPINMENUSTATE.prefix_item}${i}`;
@@ -125,9 +127,6 @@ function newItemMenu(base: TransformNode, options: { name: string, rotation: num
     const itm = base.clone(options.name, null, false);
     itm.rotation.z += options.rotation;
     itm.position = options.position;
-    const center = itm.getChildMeshes().filter((mesh) => mesh.name.includes("Center"))[0];
-    center.isVisible = true;
-    center.isEnabled(true);
     return itm;
 }
 function initMenuItemFromNativeElements(scene: Scene) {
@@ -138,6 +137,57 @@ function initMenuItemFromNativeElements(scene: Scene) {
     m.isEnabled(false);
     m.setParent(tn);
     tn.scaling = new Vector3(1.1, 1.1, 1.1)
+    return tn;
+}
+function initMenuItemFromOvalElements(scene: Scene) {
+    // const light = new HemisphericLight("ui-light", new Vector3(0, -1, 0), scene);
+    // light.diffuse = new Color3(0.5, 0.5, 0.5);
+    // light.specular = new Color3(0, 0, 0);
+    // light.intensity = 18;
+    const tn = new TransformNode("item-tn", scene);
+
+    const outCyl = MeshBuilder.CreateCylinder("out-cyl", { height: 0.5, diameter: 4, tessellation: 32, subdivisions: 4 }, scene);
+    const inCyl = MeshBuilder.CreateCylinder("in-cyl", { height: 0.5, diameter: 3.5, tessellation: 32, subdivisions: 4 }, scene);
+    const center = MeshBuilder.CreateCylinder("Center", { height: 0.2, diameter: 3, tessellation: 64, subdivisions: 4 }, scene);
+
+    const outCSG = CSG.FromMesh(outCyl);
+    const inCSG = CSG.FromMesh(inCyl);
+
+    const material = new StandardMaterial("item-border-mt", scene);
+    material.diffuseColor = new Color3(0.1, 0.1, 0.1);
+    material.bumpTexture = new Texture("public/menu/i_n.webp", scene);
+    material.maxSimultaneousLights = 10;
+
+    const compose = (outCSG.subtract(inCSG).toMesh("border", material, scene, false));
+    compose.rotation.z = Tools.ToRadians(90);
+    compose.material = material;
+
+    // const prt = appendParticles(`${compose.name}-particle`, compose, {
+    //     color1: new Color4(0.5, 0.5, 0.05, 0.5),
+    //     color2: new Color4(0.5, 0.3, 0.05, 0.9),
+    //     color3: new Color4(0.01, 0.05, 0.05, 0.5),
+    //     capacity: 20000, emitRate: 300, max_size: 1.2, updateSpeed: 0.01,
+    //     emmitBox: new Vector3(1, 1, 1), lifeTime: 1, gravityY: 1.5
+    // }, scene);
+    // prt.start();
+
+    const material_center = new StandardMaterial("round-menu-mt", scene);
+    material_center.diffuseColor = new Color3(0.7, 0.7, 0.3);
+    material_center.bumpTexture = new Texture("public/menu/itm_n.jpg", scene);
+    material_center.maxSimultaneousLights = 10;
+
+    center.material = material_center;
+
+    center.rotation.z = Tools.ToRadians(90);
+
+    outCyl.dispose();
+    inCyl.dispose();
+    center.setParent(tn);
+    compose.setParent(tn);
+
+    // light.includedOnlyMeshes = [center, compose];
+
+    tn.scaling = new Vector3(SPINMENUSTATE.item_size.scale, SPINMENUSTATE.item_size.scale, SPINMENUSTATE.item_size.scale);
     return tn;
 }
 //-- DynamicTexture Work ----------------------------->
@@ -168,23 +218,23 @@ function formatTextCtx(text: string, font_size: number, position: { x: number, y
     ctx.restore();
 }
 function appendTextItemMenu(item: TransformNode, text: string, scene: Scene) {
-    const texture_width = 512;
-    const texture_height = 512;
-    const font_size = 70;
+    // const texture_width = 512;
+    // const texture_height = 512;
+    // const font_size = 70;
 
-    const txt = new DynamicTexture(`${item.name}-txt`, { width: texture_width, height: texture_height }, scene);
-    txt.hasAlpha = true;
+    // const txt = new DynamicTexture(`${item.name}-txt`, { width: texture_width, height: texture_height }, scene);
+    // txt.hasAlpha = true;
 
-    redrawText(`${item["meta"].level}`, { back_color: SPINMENUSTATE.colors.standart, result: item["meta"].result }, txt);
+    // redrawText(`${item["meta"].level}`, { back_color: SPINMENUSTATE.colors.standart, result: item["meta"].result }, txt);
 
-    const material = new StandardMaterial("round-menu-mt", scene);
-    material.diffuseColor = new Color3(1, 1, 1);
-    material.diffuseTexture = txt;
-    material.alpha = 1;
-    const text_mesh = item.getChildMeshes().filter((m) => m.name.includes("Center"))[0];
-    if (text_mesh && text_mesh instanceof Mesh) {
-        text_mesh.material = material;
-    }
+    // const material = new StandardMaterial("round-menu-mt", scene);
+    // material.diffuseColor = new Color3(0.3, 0.3, 0.3);
+    // material.bumpTexture = new Texture("public/menu/itm_n.jpg", scene);
+
+    // const text_mesh = item.getChildMeshes().filter((m) => m.name.includes("Center"))[0];
+    // if (text_mesh && text_mesh instanceof Mesh) {
+    //     text_mesh.material = material;
+    // }
 }
 //-- POINTER Event --------------------------------------->
 function movePointerItem(item_object: { item: TransformNode, angle: number, level: number, result: string }) {
