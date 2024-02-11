@@ -22,12 +22,12 @@ const ITEM_MODELS = {
 const SPINMENU = {
     count: 6,
     radius: 14,
-    position: new Vector3(0, 0, 18),
+    position: new Vector3(0, 0, 15),
     angle: 0,
     angleDelta: 0,
     focusItem: null,
     items: new Map<number, TransformNode>(),
-    scaleDeterminant: 0.8,
+    scaleDeterminant: 1,
 }
 
 export async function spinMenu2(scene: Scene) {
@@ -254,13 +254,30 @@ function buildMenu(position: Vector3, radius: number, count: number, scene: Scen
 }
 //-Rotate Menu ----------------------------------------
 function setMenuIndex(index: number, menu: TransformNode, scene: Scene) {
-    // const angle = Tools.ToRadians(index * (SPINMENU.angle) + SPINMENU.angleDelta);
     const item = SPINMENU.items.get(index);
     const preItem = SPINMENU.focusItem;
 
     item.rotation.y = Tools.ToRadians(-item["meta"].angle);
 
     let angle = Tools.ToRadians(item["meta"].angle);
+
+    if (preItem) {
+        //390 -> 90, 90 -> 390
+        if (preItem["meta"].angle === 390 && item["meta"].angle === 90) {
+            menu.rotation.y = Tools.ToRadians(30);
+        }
+        if (preItem["meta"].angle === 90 && item["meta"].angle === 390) {
+            menu.rotation.y = Tools.ToRadians(450);
+        }
+        //------------------------------------------------------------
+
+        if (preItem["meta"].angle === 90 && item["meta"].angle === 390) {
+            console.log("Circle Error 90-->390")
+        }
+
+        console.log(preItem["meta"].angle, " --> ", item["meta"].angle);
+    }
+
 
     const rotateAnim = rotateMenuAnimation(menu, angle);
     scene.beginAnimation(menu, 0, 120, false, 1, () => {
@@ -344,7 +361,7 @@ function scaleUpItemAnimation(item: TransformNode) {
 }
 function positionYItemAnimation(item: TransformNode) {
     const startPos = item.position.clone()
-    const endPos = startPos.add(new Vector3(0, 1, 0))
+    const endPos = startPos.add(new Vector3(0, 0, 0))
     const keys = [
         {
             frame: 0,

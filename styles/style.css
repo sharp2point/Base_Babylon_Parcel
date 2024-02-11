@@ -135,15 +135,58 @@
                     height: 40px;
                     padding: 5px;
             
-                    .left-menu-button,
-                    .right-menu-button {
-                        width: 100px;
+                    .menu-button,
+                    .menu-button {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        width: 110px;
                         height: 20px;
-                        color: antiquewhite;
+                        color: rgb(131, 120, 106);
                         background: transparent;
                         border: none;
-                        font-size: 2rem;
+                        font-size: 1.2rem;
                         pointer-events: all;
+                        text-align: center;
+                                           
+                    }
+                    .menu-button:hover{
+                        color: rgb(12, 247, 255);
+                        text-shadow: 0 0 10px rgb(233, 254, 255),0 0 20px rgb(197, 253, 255);
+                        animation: menu-button-color 0.3s linear;
+                    }
+                    .menu-button:hover::before{
+                        left:0rem;
+                        border-color:rgb(231, 254, 255);
+                    }
+                    .menu-button:hover::after{
+                        left:-0.3rem;
+                        border-color:rgb(227, 254, 255);
+                    }
+                    
+                    .left-menu-button::before{ 
+                        content:"";
+                        background: transparent;
+                        position:relative;
+                        width:20px;
+                        height: 20px;                       
+                        left:0.3rem;
+                        top:-0.1rem;
+                        border-left:3px solid rgb(131, 120, 106);
+                        border-top:3px solid rgb(131, 120, 106);
+                        transform: rotateZ(-45deg);
+                    }
+                    .right-menu-button::after{  
+                        content:"";
+                        background: transparent;
+                        position:relative;
+                        width:20px;
+                        height: 20px;                      
+                        left: -0.5rem;  
+                        top:-0.1rem;                     
+                        border-right:3px solid rgb(131, 120, 106);
+                        border-bottom:3px solid rgb(131, 120, 106);
+                        transform: rotateZ(-45deg);
                     }
                 }
             
@@ -213,6 +256,15 @@
     100% {
         background-color: rgba(0, 0, 0, 0);
     }
+}
+@keyframes menu-button-color {
+    0%{
+        color: rgb(131, 120, 106);
+    }
+    100%{
+        color: rgb(12, 247, 255);
+    }
+    
 }
 .hide{
     pointer-events: none;

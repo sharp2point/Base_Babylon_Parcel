@@ -93,11 +93,13 @@ function spinMenuButtons(parent: HTMLElement) {
 
     const leftButton = document.createElement("button");
     leftButton.classList.add("left-menu-button");
-    leftButton.innerText = "<<<";
+    leftButton.classList.add("menu-button");
+    leftButton.innerText = "PREV";
 
     const rightButton = document.createElement("button");
     rightButton.classList.add("right-menu-button");
-    rightButton.innerText = ">>>";
+    rightButton.classList.add("menu-button");
+    rightButton.innerText = "NEXT";
 
     buttonPlace.appendChild(leftButton);
     buttonPlace.appendChild(rightButton);
