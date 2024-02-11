@@ -6,11 +6,20 @@ import { UISTATE } from "./ui/state";
 import { Observable, Observer, Scene } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
 import { resultRedraw } from "@/ui/spin_menu";
-import { showSpinMenuButtons } from "@/ui/html/ui_components";
+import { redrawResult, showDescription, showResult, showSpinMenuButtons } from "@/ui/html/ui_components";
+import { getResultsIDB, saveResultIDB } from "@/DB/indexdb";
+import { GameResult } from "@/DB/sheme";
 
 export const GameState = function _GameState() {
 };
 GameState.state = {
+    lang: "ru",
+    indexDB: {
+        db: null as IDBDatabase,
+        name: "NovaArcanoid",
+        version: 1,
+        store: "resultStore"
+    },
     gameState: 10,
     isDragShield: false,
     isBallStart: false,
@@ -85,6 +94,8 @@ GameState.shieldBody = () => GameState.state.gameObjects.shield_body;
 GameState.points = () => GameState.state.gameObjects.points;
 GameState.playerProgress = (): Map<number, number> => GameState.state.playerProgress;
 GameState.UI = () => GameState.state.ui;
+GameState.IDB = (): IDBDatabase => GameState.state.indexDB.db;
+GameState.IDBobject = () => GameState.state.indexDB;
 //----------------------------------------------------------------------->
 
 GameState.changeGameState = (state: number) => {
@@ -104,6 +115,14 @@ GameState.changeGameState = (state: number) => {
         case GameState.state.signals.GAME_OTHER_BALL: {
             GameState.state.stopRunTimer();
             console.log("GAME_OTHER_BALL");
+            saveResultIDB({
+                date: Date.now(),
+                part: 1,
+                level: GameState.state.level,
+                isWin: false,
+                score: GameState.playerProgress().get(GameState.state.level),
+                time: GameState.state.levelTime,
+            })
             gameNotify(GameState.state.signals.GAME_OTHER_BALL, {
 
             }, 3000).then(() => {
@@ -116,6 +135,14 @@ GameState.changeGameState = (state: number) => {
         case GameState.state.signals.LEVEL_WIN: {
             GameState.state.stopRunTimer();
             console.log("LEVEL_WIN");
+            saveResultIDB({
+                date: Date.now(),
+                part: 1,
+                level: GameState.state.level,
+                isWin: true,
+                score: GameState.playerProgress().get(GameState.state.level),
+                time: GameState.state.levelTime,
+            });
             gameNotify(GameState.state.signals.LEVEL_WIN, {
 
             }, 3000).then(() => {
@@ -153,6 +180,8 @@ GameState.levelRun = (level: number) => { // level -> binding from spin menu
     GameState.state.level = level;
     GameState.playerProgress().set(level, 0);
     GameState.changeGameState(GameState.state.signals.GAME_RUN);
+    showDescription(false);
+    showResult(false);
     showScoreboard(true);
     showSpinMenuButtons(false);
     setTimeout(() => {
@@ -166,12 +195,30 @@ GameState.menuRun = () => {
     //resultRedraw(GameState.state.level, GameState.playerProgress().get(GameState.state.level))
     GameState.changeGameState(GameState.state.signals.MENU_OPEN);
     showScoreboard(false);
+    showDescription(true);
+    getResultsIDB().then((data: Array<GameResult>) => {
+        const res = data.filter((obj) => GameState.state.level === obj.level);
+        let max = res[0];
+        for (let i = 1; i < res.length; i++) {
+            if (max.score < res[i].score) {
+                max = res[i];
+            }
+        }
+        if (max) {
+            redrawResult(max.isWin, max.score);
+        } else {
+            redrawResult(false, 0);
+        }
+        showResult(true);
+    });
     showSpinMenuButtons(true);
     setTimeout(() => {
         (UISTATE.Scene as Scene).attachControl();
     }, 600);
 }
+
 //---------------------------------------------------
+
 
 function showScoreboard(isShow: boolean) {
     const scoreboard = document.querySelector(".scoreboard");
@@ -188,6 +235,7 @@ export function runTimer() {
         if (count <= 0) {
             count = 60;
             sec += 1;
+            GameState.state.levelTime = sec;
             renderTime(sec);
         }
     });
@@ -200,6 +248,3 @@ function stopTimer(obser$: Observer<Scene>) {
 }
 const renderPoints = (points: number) => (UISTATE.Scoreboard.score as HTMLElement).innerText = `${points}`.padStart(4, '0');
 const renderTime = (seconds: number) => (UISTATE.Scoreboard.timer as HTMLElement).innerText = `${seconds}`.padStart(4, '0');
-
-
-

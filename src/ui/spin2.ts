@@ -11,7 +11,9 @@ import {
     PickingInfo,
     PointerEventTypes,
 } from "@babylonjs/core";
-import { showSpinMenuButtons } from "./html/ui_components";
+import { redrawLevelDescription, redrawResult, showDescription, showResult, showSpinMenuButtons } from "./html/ui_components";
+import { getResultsIDB } from "@/DB/indexdb";
+import { GameResult } from "@/DB/sheme";
 
 const ITEM_MODELS = {
     border: null as Mesh,
@@ -28,6 +30,7 @@ const SPINMENU = {
     focusItem: null,
     items: new Map<number, TransformNode>(),
     scaleDeterminant: 1,
+    scaleDeterminantMax: 1.5,
 }
 
 export async function spinMenu2(scene: Scene) {
@@ -37,8 +40,25 @@ export async function spinMenu2(scene: Scene) {
     const menu = await buildMenu(SPINMENU.position, SPINMENU.radius, SPINMENU.count, scene) as TransformNode;
 
     setMenuIndex(0, menu, scene);
+    getResultsIDB().then((data: Array<GameResult>) => {
+        const res = data.filter((obj) => SPINMENU.focusItem["meta"].index === obj.level);
+        let max = res[0];
+        for (let i = 1; i < res.length; i++) {
+            if (max.score < res[i].score) {
+                max = res[i];
+            }
+        }
+        if (max) {
+            redrawResult(max.isWin, max.score);
+        } else {
+            redrawResult(false, 0);
+        }
+        showResult(true);
+    });
 
-    appendHtmlButtons(menu, scene);
+    redrawLevelDescription(1, 0, GameState.state.lang);
+    showDescription(true);
+    appendEventsHtmlButtons(menu, scene);
 
     scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
@@ -269,18 +289,10 @@ function setMenuIndex(index: number, menu: TransformNode, scene: Scene) {
         if (preItem["meta"].angle === 90 && item["meta"].angle === 390) {
             menu.rotation.y = Tools.ToRadians(450);
         }
-        //------------------------------------------------------------
-
-        if (preItem["meta"].angle === 90 && item["meta"].angle === 390) {
-            console.log("Circle Error 90-->390")
-        }
-
-        console.log(preItem["meta"].angle, " --> ", item["meta"].angle);
     }
 
-
     const rotateAnim = rotateMenuAnimation(menu, angle);
-    scene.beginAnimation(menu, 0, 120, false, 1, () => {
+    scene.beginAnimation(menu, 0, 120, false, 2, () => {
         scene.removeAnimation(rotateAnim);
     })
 
@@ -294,12 +306,27 @@ function setMenuIndex(index: number, menu: TransformNode, scene: Scene) {
     if (preItem) {
         const posOldAnim = positionYItemAnimation(preItem);
         const scaleOldAnim = scaleUpItemAnimation(preItem);
-        scene.beginAnimation(preItem, 60, 0, false, 1, () => {
+        scene.beginAnimation(preItem, 60, 0, false, 2, () => {
             scene.removeAnimation(posOldAnim);
             scene.removeAnimation(scaleOldAnim);
         });
     }
-
+    redrawLevelDescription(1, index, "ru");
+    getResultsIDB().then((data: Array<GameResult>) => {
+        const res = data.filter((obj) => SPINMENU.focusItem["meta"].index === obj.level);
+        let max = res[0];
+        for (let i = 1; i < res.length; i++) {
+            if (max.score < res[i].score) {
+                max = res[i];
+            }
+        }
+        if (max) {
+            redrawResult(max.isWin, max.score);
+        } else {
+            redrawResult(false, 0);
+        }
+        showResult(true);
+    });
     SPINMENU.focusItem = item;
 }
 function rotateToNextPosition(menu: TransformNode, scene: Scene) {
@@ -312,7 +339,7 @@ function rotateToPrevPosition(menu: TransformNode, scene: Scene) {
     index = index < 0 ? (SPINMENU.count - 1) : index;
     setMenuIndex(index, menu, scene)
 }
-function appendHtmlButtons(menu: TransformNode, scene: Scene) {
+function appendEventsHtmlButtons(menu: TransformNode, scene: Scene) {
     const leftButton = document.querySelector(".left-menu-button");
     const rightButton = document.querySelector(".right-menu-button");
 
@@ -351,7 +378,7 @@ function scaleUpItemAnimation(item: TransformNode) {
         },
         {
             frame: 60,
-            value: 1.5
+            value: SPINMENU.scaleDeterminantMax
         }
     ];
     const anim = new Animation("scale-menu-anim", "scalingDeterminant", 60, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT, false);

@@ -1,3 +1,4 @@
+import { LEVELSDESCRIPT } from "@/game_state/levels_descript";
 import { UISTATE } from "@/game_state/ui/state";
 
 export function backSetOpaq_0() {
@@ -11,11 +12,14 @@ function uiHtmlComponents() {
     const place: HTMLElement = document.querySelector("#ui-place");
     const ui = UI(place);
     scoreBoard(ui);
+    levelDescription(ui);
+    showDescription(false);
     const floor = downBlock(ui);
+    resultBlock(floor);
+    showResult(false);
     spinMenuButtons(floor);
     showSpinMenuButtons(false)
     textBlock(floor);
-
     preloader(place);
 }
 function UI(parent: HTMLElement) {
@@ -122,6 +126,69 @@ function downBlock(parent: HTMLElement) {
     block.classList.add("down-block");
     parent.appendChild(block);
     return block
+}
+function levelDescription(parent: HTMLElement) {
+    const place = document.createElement("div");
+    place.classList.add("level-description");
+    place.innerHTML = `
+        <h2 class="level-desc-part">Part</h1>
+        <h1 class="level-desc-header">Header</h1>
+        <p class="level-desc-description">Description</p>
+    `;
+    parent.appendChild(place);
+    return place;
+}
+function resultBlock(parent: HTMLElement) {
+    const place = document.createElement('div');
+    place.classList.add('result-place');
+    place.innerHTML = `
+        <h3 class="result-place-header">лучший результат:</h3>
+        <div class="result-place-result">
+            <img class="result-win" src="public/icons/close.png"></img>
+            <div class="result-score">0000</div>
+        </div>
+    `;
+    parent.appendChild(place);
+    return place;
+}
+export function redrawResult(isWin: boolean, score: number) {
+    const win: HTMLImageElement = document.querySelector(".result-win");
+    const resultScore = document.querySelector(".result-score");
+    isWin ?
+        win.src = "public/icons/crown.png" :
+        win.src = "public/icons/close.png";
+    resultScore.textContent = `${score}`.padStart(4, '0');
+}
+export function showResult(isShow: boolean) {
+    const element = document.querySelector(".result-place");
+    isShow ? element.classList.remove("hide") : element.classList.add("hide");
+}
+export function redrawLevelDescription(part: number, level: number, lang: string) {
+    let description = null;
+    switch (lang) {
+        case "ru": {
+            description = LEVELSDESCRIPT.parts[part].ru;
+            break;
+        }
+        case "eng": {
+            description = LEVELSDESCRIPT.parts[part].eng;
+            break;
+        }
+        default: {
+            throw new Error("Language Error");
+            break;
+        }
+    }
+    const parthead = document.querySelector(".level-desc-part");
+    const header = document.querySelector(".level-desc-header");
+    const desc = document.querySelector(".level-desc-description");
+    parthead.textContent = description.description;
+    header.textContent = description[level].header;
+    desc.textContent = description[level].description;
+}
+export function showDescription(isShow: boolean) {
+    const element = document.querySelector(".level-description");
+    isShow ? element.classList.remove("hide") : element.classList.add("hide");
 }
 //----------------------------------------------->
 uiHtmlComponents();

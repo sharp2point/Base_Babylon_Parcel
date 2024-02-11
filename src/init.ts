@@ -9,6 +9,7 @@ import { getScreenAspect, loadAssets } from "./utils/clear_utils";
 import { loadDamageEnemyModel, loadEnemyModel } from "./utils/loaderGlbFiles";
 import { cameraSettings } from "./utils/utility";
 import { createEnemyMaterial } from "./objects/enemy/enemy";
+import { openIndexDB } from "./DB/indexdb";
 
 async function initCore() {
     const physics = await havok.default();
@@ -36,11 +37,12 @@ window.addEventListener('load', async () => {
         loadDamageEnemyModel(AGAME.Scene);
         createEnemyMaterial(AGAME.Scene);
         //-------------------------------------->
-        //endUIPreloader();
+        openIndexDB();
+        
         //--------------------------------------->
-       
+
         AGAME.Engine.runRenderLoop(() => {
-            if (!AGAME.RenderLock && UISTATE.RenderLock) { 
+            if (!AGAME.RenderLock && UISTATE.RenderLock) {
 
                 AGAME.Scene.render();
             } else if (!UISTATE.RenderLock && AGAME.RenderLock) {

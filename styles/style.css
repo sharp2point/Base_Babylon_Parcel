@@ -119,13 +119,78 @@
             }
 
         }
+        .level-description{
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap:1rem;
+            top:100px;
+            width: 300px;
+            min-height: 200px;
+            background: transparent;
+            color:white;
+            font:1.2rem "Arial", sans-serif;
 
+            .level-desc-part{
+                color: rgb(116, 116, 116);
+                font-size: 1rem;
+            }
+            .level-desc-header{
+                letter-spacing: 0.15rem;
+                font-weight: bold;
+                color: rgb(163, 113, 39);
+                font-size: 2rem;   
+                text-align: center;
+                margin-top: -1rem;;         
+            }
+            .level-desc-description{
+                font-style: italic;
+                font-size: 1.1rem;
+                text-align: center;
+                color: rgb(143, 142, 142);
+            }
+        }
         .down-block{
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
             align-items: center;
             gap:2rem;
+
+            .result-place{
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 0.5rem;
+                width:200px;
+                padding: 5px;
+                font:lighter 0.7rem "Arial",sans-serif;
+                margin-bottom: -2rem;
+
+                .result-place-header{
+                    color:rgb(133, 133, 133);
+
+                }
+                .result-place-result{
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap:1rem;
+
+                    .result-win{
+                        width:20px;
+                        height: 20px;
+                    }
+                    .result-score{
+                        color:rgb(250, 132, 64);
+                        font:bold 2rem "Arial",sans-serif;
+                    }
+                }
+            }
             
             .menu-buttons-place {
                     display: flex;
@@ -188,9 +253,9 @@
                         border-bottom:3px solid rgb(131, 120, 106);
                         transform: rotateZ(-45deg);
                     }
-                }
+            }
             
-                .ui-text-block {
+            .ui-text-block {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -215,9 +280,9 @@
                         font: 1.8rem, "Impact" sans-serif;
                         line-height: 1.0rem;
                     }
-                }
             }
         }
+    }
         
     .html-back-opaq-0{
         animation: animation-back-opaq 1s;
