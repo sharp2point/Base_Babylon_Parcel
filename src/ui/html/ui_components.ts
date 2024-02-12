@@ -12,6 +12,7 @@ function uiHtmlComponents() {
     const place: HTMLElement = document.querySelector("#ui-place");
     const ui = UI(place);
     scoreBoard(ui);
+    settingsUIBlock(ui);
     levelDescription(ui);
     showDescription(false);
     const floor = downBlock(ui);
@@ -189,6 +190,15 @@ export function redrawLevelDescription(part: number, level: number, lang: string
 export function showDescription(isShow: boolean) {
     const element = document.querySelector(".level-description");
     isShow ? element.classList.remove("hide") : element.classList.add("hide");
+}
+function settingsUIBlock(parent: HTMLElement) {
+    const place = document.createElement('div');
+    place.classList.add("settings-block");
+    place.innerHTML = `
+        <input type="image" class="fullscreen-button" alt="Full Screen" src="public/icons/fullscreen.png" />
+    `;
+
+    parent.appendChild(place);
 }
 //----------------------------------------------->
 uiHtmlComponents();

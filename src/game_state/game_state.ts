@@ -13,6 +13,7 @@ import { GameResult } from "@/DB/sheme";
 export const GameState = function _GameState() {
 };
 GameState.state = {
+    isFullScreen: false,
     lang: "ru",
     indexDB: {
         db: null as IDBDatabase,

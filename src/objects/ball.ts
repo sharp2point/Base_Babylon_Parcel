@@ -60,7 +60,7 @@ function ballPhysicsActivate() {
     const physics = GameState.ball().getPhysicsBody() as PhysicsBody
     physics.setMotionType(PhysicsMotionType.DYNAMIC)
     physics.applyImpulse(new Vector3(0, 0, 200), GameState.ball().getAbsolutePosition());
-    physics.applyForce(new Vector3(0, 0, 5000), GameState.ball().getAbsolutePosition());
+    physics.applyForce(new Vector3(0, 0, 2000), GameState.ball().getAbsolutePosition());
 }
 export function resetBall() {
     GameState.state.isResetBall = true;

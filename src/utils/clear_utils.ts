@@ -1,3 +1,4 @@
+import { GameState } from "@/game_state/game_state";
 import { Color4, Mesh, ParticleSystem, Scene, Texture, Vector3 } from "@babylonjs/core";
 
 export function initGameTimeout() {
@@ -25,7 +26,7 @@ export function getInnerWindow() {
         height: window.innerHeight
     }
 }
-export function appendParticles(name:string,mesh: Mesh, options: {
+export function appendParticles(name: string, mesh: Mesh, options: {
     color1: Color4, color2: Color4, color3: Color4,
     capacity: number, emitRate: number, max_size: number, updateSpeed: number,
     emmitBox: Vector3, lifeTime: number, gravityY: number
@@ -52,4 +53,26 @@ export function appendParticles(name:string,mesh: Mesh, options: {
     prt.gravity = new Vector3(0, options.gravityY, 0);
     prt.disposeOnStop = true;
     return prt;
+}
+export function appendEventFullScreenButton() {
+    const fullScreenButton: HTMLImageElement = document.querySelector(".fullscreen-button");
+    fullScreenButton.addEventListener('click', () => {
+        if (document.fullscreenEnabled) {
+            if (!GameState.state.isFullScreen) {
+                GameState.state.isFullScreen = true;
+                fullScreenButton.src = "public/icons/fullscreen_exit.png";
+                if (document.body.requestFullscreen) {
+                    document.body.requestFullscreen();
+                }
+            } else {
+                GameState.state.isFullScreen = false;
+                fullScreenButton.src = "public/icons/fullscreen.png";
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+
+        }
+    })
+
 }

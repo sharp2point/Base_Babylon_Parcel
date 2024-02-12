@@ -2,7 +2,7 @@ import { ASSETS } from "@/game_state/assets/state";
 import { GameState } from "@/game_state/game_state";
 import { appendParticles } from "@/utils/clear_utils";
 import { gameObjectDispose } from "@/utils/utility";
-import { AssetContainer, Color3, Color4, HighlightLayer, Mesh, MeshBuilder, PBRBaseMaterial, PBRMaterial, ParticleSystem, PhysicsBody, PhysicsHelper, PhysicsMotionType, PhysicsRadialImpulseFalloff, PhysicsShapeConvexHull, PointColor, PointLight, Scalar, Scene, ShadowGenerator, SolidParticle, SolidParticleSystem, StandardMaterial, Texture, TransformNode, Vector3 } from "@babylonjs/core";
+import { AssetContainer, Color3, Color4, HighlightLayer, Mesh, MeshBuilder, PBRBaseMaterial, PBRMaterial, ParticleSystem, PhysicsBody, PhysicsHelper, PhysicsMotionType, PhysicsRadialImpulseFalloff, PhysicsShapeConvexHull, PointColor, PointLight, Scalar, Scene, ShadowGenerator, SolidParticle, SolidParticleSystem, StandardMaterial, Texture, TransformNode, Vector3, setAndStartTimer } from "@babylonjs/core";
 
 export const ENEMYTYPES = {
     simple10: {
@@ -243,13 +243,21 @@ function enemyDamageModelEffect(enemy: Mesh) {
             }, GameState.scene());
             prt.start();
             //---------------------------------------
-            setTimeout(() => {
-                prt.dispose();
-                setTimeout(() => {
-                    m.onBeforeRenderObservable.clear();
-                    m.dispose()
-                }, Scalar.RandomRange(1000, 5000));
-            }, Scalar.RandomRange(500, 5000));
+            setAndStartTimer({
+                timeout: Scalar.RandomRange(1000, 5000),
+                contextObservable: GameState.scene().onBeforeRenderObservable,
+                onEnded: () => {
+                    prt.dispose();
+                    setAndStartTimer({
+                        timeout: Scalar.RandomRange(1000, 5000),
+                        contextObservable: GameState.scene().onBeforeRenderObservable,
+                        onEnded: () => {
+                            m.dispose();
+                        }
+                    })
+                }
+            });
+            
             //------------------------------------------------------------------
             m.onBeforeRenderObservable.add(() => {
                 if (m.position.y < -0.5) {
@@ -263,4 +271,3 @@ function enemyDamageModelEffect(enemy: Mesh) {
     });
     gameObjectDispose(enemy);
 }
-
