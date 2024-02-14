@@ -10,10 +10,17 @@ import {
     IPointerEvent,
     PickingInfo,
     PointerEventTypes,
+    Ray,
+    RayHelper,
+    Color4,
+    ParticleSystem,
 } from "@babylonjs/core";
+import { FireProceduralTexture } from "@babylonjs/procedural-textures";
 import { redrawLevelDescription, redrawResult, showDescription, showResult, showSpinMenuButtons } from "./html/ui_components";
 import { getResultsIDB } from "@/DB/indexdb";
 import { GameResult } from "@/DB/sheme";
+import { UISTATE } from "@/game_state/ui/state";
+import { appendParticles } from "@/utils/clear_utils";
 
 const ITEM_MODELS = {
     border: null as Mesh,
@@ -29,13 +36,28 @@ const SPINMENU = {
     angleDelta: 0,
     focusItem: null,
     items: new Map<number, TransformNode>(),
-    scaleDeterminant: 1,
+    scaleDeterminant: 0.6,
     scaleDeterminantMax: 1.5,
+    isFocusItemHover: false,
+    isLeaveMenu: true,
+    hoverMaterial: null,
+    standardMaterial: null,
+    hoverParticles: null as ParticleSystem
 }
 
 export async function spinMenu2(scene: Scene) {
     let isPointerDown = false;
     let initPointDown: Vector3 = null;
+
+    SPINMENU.standardMaterial = new StandardMaterial("standard-item-mt", scene);
+    SPINMENU.standardMaterial.diffuse = new Color3(0.2, 0.2, 0.2);
+
+    var fireTexture = new FireProceduralTexture("fireTex", 256, scene);
+    SPINMENU.hoverMaterial = new StandardMaterial("hover-item-mt", scene)
+    SPINMENU.hoverMaterial.diffuseTexture = fireTexture;
+    SPINMENU.hoverMaterial.opacityTexture = fireTexture;
+
+
 
     const menu = await buildMenu(SPINMENU.position, SPINMENU.radius, SPINMENU.count, scene) as TransformNode;
 
@@ -73,9 +95,11 @@ export async function spinMenu2(scene: Scene) {
         }
     }
     scene.onPointerMove = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        hoverItemAction(scene)
         if (isPointerDown) {
             const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
             const delta = initPointDown.x - pic.pickedPoint.x
+
             if (Math.abs(delta) > 5) {
                 if (delta > 0) {
                     rotateToNextPosition(menu, scene)
@@ -94,7 +118,35 @@ export async function spinMenu2(scene: Scene) {
         }
     }
 }
-
+function hoverItemAction(scene: Scene) {
+    const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
+    if (pic.pickedMesh) {
+        if (pic.pickedMesh.name === "moveHandler") {
+            const center = SPINMENU.focusItem.getChildMeshes().filter(m => m.name === "center")[0] as Mesh;
+            if (!SPINMENU.isFocusItemHover) {
+                SPINMENU.isFocusItemHover = true;
+                SPINMENU.isLeaveMenu = false;
+                // center.material = SPINMENU.hoverMaterial;
+                SPINMENU.hoverParticles = appendParticles(`${SPINMENU.focusItem.name}-particles`, center, {
+                    color1: new Color4(0.4, 0.4, 0.1, 0.5), color2: new Color4(0.5, 0.3, 0.3, 0.3), color3: new Color4(0.9, 0.2, 0.2, 1),
+                    capacity: 3000, emitRate: 1000, max_size: 0.9, updateSpeed: 0.05, emmitBox: new Vector3(3, 0, 3),
+                    lifeTime: 5, gravityY: 1, isLocal: true, sphere: {
+                        radius: 3.5, range: 1,
+                    }
+                }, scene);
+                SPINMENU.hoverParticles.start();
+            }
+        } else {
+            if (!SPINMENU.isLeaveMenu) {
+                const center = SPINMENU.focusItem.getChildMeshes().filter(m => m.name === "center")[0] as Mesh;
+                SPINMENU.hoverParticles.stop();
+                //center.material = SPINMENU.standardMaterial;
+                SPINMENU.isFocusItemHover = false;
+                SPINMENU.isLeaveMenu = true;
+            }
+        }
+    }
+}
 function setItemPosition(item: Mesh | TransformNode, position: Vector3) {
     item.position = position
     return item;
@@ -102,8 +154,13 @@ function setItemPosition(item: Mesh | TransformNode, position: Vector3) {
 function setItemMaterial(item: Mesh, options: { diffuse: Color3, alpha?: number }, scene: Scene) {
     const material = new StandardMaterial("cil-mt", scene);
     material.diffuseColor = options.diffuse;
-    material.specularColor = new Color3(0.1, 0, 0);
-    material.backFaceCulling = true;
+    material.specularColor = new Color3(0.3, 0.4, 1);
+    material.ambientColor = new Color3(0.01, 0.02, 0.1);
+    material.roughness = 0;
+    material.specularPower = 0.5;
+    material.twoSidedLighting = true;
+
+    //material.backFaceCulling = true;
     material.alpha = options.alpha ?? 1;
     item.material = material;
     return item
@@ -154,14 +211,18 @@ function initGeometryItemFromModels(name: string, options: { index: number }, sc
     moveHandler.isVisible = true;
     moveHandler.isEnabled(true);
 
-    center.scaling = new Vector3(0.7, 0.2, 0.7);
-    moveHandler.scaling = new Vector3(1.2, 0.2, 1.2);
-    moveHandler.position.y = 0.3;
+    center.scaling = new Vector3(0.9, 0.2, 0.9);
+    moveHandler.scaling = new Vector3(1.1, 0.1, 1.1);
+    moveHandler.position.y = 2;
+    moveHandler.position.z += 1.3;
 
     number.rotation.y = Tools.ToRadians(180);
     number.position.z = 0.9
     level.rotation.y = Tools.ToRadians(0);
-    level.position.z = -1.7;
+    level.position = new Vector3(0, 1.4, -0.5);
+    center.position.y = 0;
+    border.position.y = 0.3;
+    number.position = new Vector3(0, 1.1, 1.7);
 
     border.setParent(tn);
     center.setParent(tn);
@@ -170,12 +231,13 @@ function initGeometryItemFromModels(name: string, options: { index: number }, sc
     moveHandler.setParent(tn);
 
     setItemMaterial(border, { diffuse: new Color3(0.5, 0.3, 0.2) }, scene);
-    setItemMaterial(center, { diffuse: new Color3(0.1, 0.1, 0.1) }, scene);
+    setItemMaterial(center, { diffuse: new Color3(0.2, 0.2, 0.2), alpha: 0.1 }, scene);
     setItemMaterial(level, { diffuse: new Color3(0.9, 0.9, 0.9) }, scene);
     setItemMaterial(number, { diffuse: new Color3(0.7, 0.7, 0.7) }, scene);
-    setItemMaterial(moveHandler, { diffuse: new Color3(0.01, 0.01, 0.01), alpha: 0.05 }, scene);
+    setItemMaterial(moveHandler, { diffuse: new Color3(0.1, 0.01, 0.01), alpha: 0.0 }, scene);
 
     tn.scalingDeterminant = 1.5;
+    tn.position.y = 1;
     return tn;
 }
 async function loadItemGeometry(name: string, options: { index: number }, scene: Scene) {

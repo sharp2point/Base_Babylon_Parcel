@@ -5,7 +5,6 @@ import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
 import { Observable, Observer, Scene } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
-import { resultRedraw } from "@/ui/spin_menu";
 import { redrawResult, showDescription, showResult, showSpinMenuButtons } from "@/ui/html/ui_components";
 import { getResultsIDB, saveResultIDB } from "@/DB/indexdb";
 import { GameResult } from "@/DB/sheme";

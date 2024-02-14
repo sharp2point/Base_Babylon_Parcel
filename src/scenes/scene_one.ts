@@ -18,6 +18,7 @@ import {
 export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     const scene = initScene(gravity, physicsEngine);
     const camera = addCamera(scene);
+
     const [hemiLight, dirLight, shadowGenArray] = [...addLights(scene)];
 
     GameState.state.gameObjects.globalTransformNode = new TransformNode("global-transform-node", scene);

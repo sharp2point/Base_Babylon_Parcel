@@ -5,7 +5,7 @@ import { ASSETS } from "./game_state/assets/state";
 import { AGAME } from "./game_state/main/state";
 import { GameState } from "./game_state/game_state";
 import { UISTATE } from "./game_state/ui/state";
-import { appendEventFullScreenButton, getScreenAspect, loadAssets } from "./utils/clear_utils";
+import { appendEventFullScreenButton, getScreenAspect, getTypeUserDevice, loadAssets } from "./utils/clear_utils";
 import { loadDamageEnemyModel, loadEnemyModel } from "./utils/loaderGlbFiles";
 import { cameraSettings } from "./utils/utility";
 import { createEnemyMaterial } from "./objects/enemy/enemy";
@@ -22,6 +22,7 @@ async function initCore() {
 }
 
 window.addEventListener('load', async () => {
+    getTypeUserDevice()
     AGAME.ScreenAspect = getScreenAspect();
     loadAssets(ASSETS.sprites);
     AGAME.RenderLock = true;
