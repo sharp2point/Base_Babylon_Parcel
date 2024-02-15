@@ -1,3 +1,4 @@
+import { GameState } from "@/game_state/game_state";
 import { LEVELSDESCRIPT } from "@/game_state/levels_descript";
 import { UISTATE } from "@/game_state/ui/state";
 
@@ -194,11 +195,93 @@ export function showDescription(isShow: boolean) {
 function settingsUIBlock(parent: HTMLElement) {
     const place = document.createElement('div');
     place.classList.add("settings-block");
+    const lang = GameState.state.lang === "ru" ? "public/icons/russian.png" : "public/icons/english.png"
     place.innerHTML = `
-        <input type="image" class="fullscreen-button" alt="Full Screen" src="public/icons/fullscreen.png" />
+        <input type="image" class="fullscreen-button settings-button" alt="Full Screen" src="public/icons/fullscreen.png" />
+        <input type="image" class="lang-button settings-button" alt="Language Screen" src=${lang} />
     `;
 
     parent.appendChild(place);
+    appendEventFullScreenButton();
+    appendEventLanguageButton()
+}
+export function showSettingsUI(isShow: boolean) {
+    const element = document.querySelector(".settings-block");
+    isShow ? element.classList.remove("hide") : element.classList.add("hide");
+}
+export function appendEventFullScreenButton() {
+    const button: HTMLImageElement = document.querySelector(".fullscreen-button");
+    button.addEventListener('click', () => {
+        if (document.fullscreenEnabled) {
+            if (!GameState.state.isFullScreen) {
+                GameState.state.isFullScreen = true;
+                button.src = "public/icons/fullscreen_exit.png";
+                if (document.body.requestFullscreen) {
+                    document.body.requestFullscreen();
+                }
+            } else {
+                GameState.state.isFullScreen = false;
+                button.src = "public/icons/fullscreen.png";
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+    })
+}
+export function appendEventLanguageButton() {
+    const button: HTMLImageElement = document.querySelector(".lang-button");
+    button.addEventListener('click', () => {
+        if (GameState.state.lang === "ru") {
+            GameState.state.lang = "eng";
+            button.src = "public/icons/english.png";
+            changeLocal("eng")
+        } else {
+            GameState.state.lang = "ru";
+            button.src = "public/icons/russian.png";
+            changeLocal("ru")
+        }
+    });
+
+}
+function changeLocal(local: string) {
+    const indie = document.querySelector(".ui-text-block");
+    const leftButton = document.querySelector(".left-menu-button") as HTMLElement;
+    const rightButton = document.querySelector(".right-menu-button") as HTMLElement;
+    const result = document.querySelector('.result-place');
+
+    switch (local) {
+        case "ru": {
+            indie.innerHTML = `<span class='text'>инди-проект <span class='text-name text'> SOLOBORUS </span> </span>                    
+                    <span class='text-year text'>2024 г.</span>`;
+            leftButton.innerText = "ВПЕРЕД";
+            rightButton.innerText = "НАЗАД";
+            result.innerHTML = `
+                <h3 class="result-place-header">лучший результат:</h3>
+                <div class="result-place-result">
+                    <img class="result-win" src="public/icons/close.png"></img>
+                    <div class="result-score">0000</div>
+                </div>
+            `;
+            redrawLevelDescription(1, GameState.state.level, "ru")
+            break;
+        }
+        case "eng": {
+            indie.innerHTML = `<span class='text'>indie-project <span class='text-name text'> SOLOBORUS </span> </span>                    
+                    <span class='text-year text'>2024 y.</span>`;
+            leftButton.innerText = "PREV";
+            rightButton.innerText = "NEXT";
+            result.innerHTML = `
+                <h3 class="result-place-header">best results:</h3>
+                <div class="result-place-result">
+                    <img class="result-win" src="public/icons/close.png"></img>
+                    <div class="result-score">0000</div>
+                </div>
+            `;
+            redrawLevelDescription(1, GameState.state.level, "eng")
+            break;
+        }
+    }
 }
 //----------------------------------------------->
 uiHtmlComponents();

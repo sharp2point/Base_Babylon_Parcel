@@ -64,38 +64,17 @@ export function appendParticles(name: string, mesh: Mesh, options: {
 
     return prt;
 }
-export function appendEventFullScreenButton() {
-    const fullScreenButton: HTMLImageElement = document.querySelector(".fullscreen-button");
-    fullScreenButton.addEventListener('click', () => {
-        if (document.fullscreenEnabled) {
-            if (!GameState.state.isFullScreen) {
-                GameState.state.isFullScreen = true;
-                fullScreenButton.src = "public/icons/fullscreen_exit.png";
-                if (document.body.requestFullscreen) {
-                    document.body.requestFullscreen();
-                }
-            } else {
-                GameState.state.isFullScreen = false;
-                fullScreenButton.src = "public/icons/fullscreen.png";
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
 
-        }
-    })
-
-}
 export function getTypeUserDevice() {
     // console.log("---- USER DEVICE ----")
     // console.log(window.navigator);
     // console.log(window.navigator.maxTouchPoints);
-    // console.log(window.navigator.language)
+    console.log(window.navigator.language)
     // if (window.navigator.userAgentData) {
     //     console.log(window.navigator.userAgentData.platform)
     //     console.log(window.navigator.userAgentData.mobile)
     // }
-
+    GameState.state.lang = window.navigator.language
     // console.log(navigator.userAgent);
     // console.log("---- USER DEVICE ----")
 }

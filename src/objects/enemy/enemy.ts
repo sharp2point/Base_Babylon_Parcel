@@ -262,7 +262,7 @@ function enemyDamageModelEffect(enemy: Mesh) {
             m.onBeforeRenderObservable.add(() => {
                 if (m.position.y < -0.5) {
                     prt.dispose();
-                    m.onBeforeRenderObservable.clear();
+                    //m.onBeforeRenderObservable.clear();
                     m.dispose();
                 }
             })

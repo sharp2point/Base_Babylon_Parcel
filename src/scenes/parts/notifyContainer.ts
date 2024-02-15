@@ -34,13 +34,22 @@ export function gameNotify(state: number, options: {
 function youWin2D() {
     const win = document.createElement('div');
     win.classList.add("notify-win");
-    win.innerHTML = `<p>You Win !</p>`;
+    if (GameState.state.lang === "ru") {
+        win.innerHTML = `<p>Уровень Пройден!</p>`;
+    } else if (GameState.state.lang === "ru") {
+        win.innerHTML = `<p>You Win !</p>`;
+    }
+    
     return win;
 }
 function gameOther2D() {
     const res = document.createElement('div');
     res.classList.add("notify-game-other");
-    res.innerHTML = `<p>Game Other</p>`;
+    if (GameState.state.lang === "ru") {
+        res.innerHTML = `<p>Поражение</p>`;
+    } else if (GameState.state.lang === "ru") {
+        res.innerHTML = `<p>Game Other</p>`;
+    }
     return res;
 }
 const notyfyContainer = () => {

@@ -158,11 +158,11 @@ function handAnimateSteps(hand: PIXI.Sprite, app: PIXI.Application<PIXI.ICanvas>
     })
 }
 function closeTeach(app: PIXI.Application<PIXI.ICanvas>) {
-    const teachPlace = document.querySelector("#teach-place")
-    teachPlace.classList.add("hide");
     try {
         app.destroy(true, true);
     } catch {
         console.error("PIXI DESTROY ERROR")
     }
+    const teachPlace = document.querySelector("#teach-place")
+    teachPlace.classList.add("hide");    
 }

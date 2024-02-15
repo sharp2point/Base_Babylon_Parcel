@@ -5,7 +5,7 @@ import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
 import { Observable, Observer, Scene } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
-import { redrawResult, showDescription, showResult, showSpinMenuButtons } from "@/ui/html/ui_components";
+import { redrawResult, showDescription, showResult, showSettingsUI, showSpinMenuButtons } from "@/ui/html/ui_components";
 import { getResultsIDB, saveResultIDB } from "@/DB/indexdb";
 import { GameResult } from "@/DB/sheme";
 
@@ -180,6 +180,7 @@ GameState.levelRun = (level: number) => { // level -> binding from spin menu
     GameState.state.level = level;
     GameState.playerProgress().set(level, 0);
     GameState.changeGameState(GameState.state.signals.GAME_RUN);
+    showSettingsUI(false);
     showDescription(false);
     showResult(false);
     showScoreboard(true);
@@ -194,6 +195,7 @@ GameState.menuRun = () => {
     UISTATE.RenderLock = false;
     //resultRedraw(GameState.state.level, GameState.playerProgress().get(GameState.state.level))
     GameState.changeGameState(GameState.state.signals.MENU_OPEN);
+    showSettingsUI(true);
     showScoreboard(false);
     showDescription(true);
     getResultsIDB().then((data: Array<GameResult>) => {
@@ -218,7 +220,6 @@ GameState.menuRun = () => {
 }
 
 //---------------------------------------------------
-
 
 function showScoreboard(isShow: boolean) {
     const scoreboard = document.querySelector(".scoreboard");
