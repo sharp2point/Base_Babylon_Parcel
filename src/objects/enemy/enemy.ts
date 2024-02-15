@@ -235,38 +235,22 @@ function enemyDamageModelEffect(enemy: Mesh) {
                 }
             });
             const prt = appendParticles(`${m.name}-particle`, m, {
-                color1: new Color4(0.1, 0.1, 0.1, 0.5),
+                color1: new Color4(0.5, 0.4, 0.0, 0.5),
                 color2: Color4.FromColor3(color_enemy, 0.8),
-                color3: new Color4(0.01, 0.01, 0.05, 0.7),
-                capacity: 600, emitRate: 200, max_size: 0.5, updateSpeed: 0.05,
-                emmitBox: new Vector3(0.3, 0.3, 0.3), lifeTime: 2, gravityY: 0.5
+                color3: new Color4(0.00, 0.00, 0.00, 0.7),
+                capacity: 400, emitRate: 200, max_size: 0.4, updateSpeed: 0.05,
+                emmitBox: new Vector3(0.3, 0.3, 0.3), lifeTime: 3, gravityY: 1
             }, GameState.scene());
             prt.start();
             //---------------------------------------
             setAndStartTimer({
-                timeout: Scalar.RandomRange(1000, 5000),
+                timeout: Scalar.RandomRange(3000, 7000),
                 contextObservable: GameState.scene().onBeforeRenderObservable,
                 onEnded: () => {
-                    prt.dispose();
-                    setAndStartTimer({
-                        timeout: Scalar.RandomRange(1000, 5000),
-                        contextObservable: GameState.scene().onBeforeRenderObservable,
-                        onEnded: () => {
-                            m.dispose();
-                        }
-                    })
-                }
-            });
-            
-            //------------------------------------------------------------------
-            m.onBeforeRenderObservable.add(() => {
-                if (m.position.y < -0.5) {
-                    prt.dispose();
-                    //m.onBeforeRenderObservable.clear();
+                    prt.stop();
                     m.dispose();
                 }
-            })
-
+            });
         }
     });
     gameObjectDispose(enemy);
