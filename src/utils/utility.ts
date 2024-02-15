@@ -57,7 +57,7 @@ export function debugPhysicsInfo(scene: Scene) {
     // }
 }
 export function cameraSettings(aspect: number) {
-    console.log("AP: ", aspect);
+    // console.log("AP: ", aspect);
     const camera = GameState.camera() as UniversalCamera;
     if (aspect < 0.45) {
         camera.position = new Vector3(0, 16.0, 0);

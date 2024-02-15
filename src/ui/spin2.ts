@@ -28,7 +28,8 @@ const ITEM_MODELS = {
     level: null,
     numbers: new Map<string, Mesh>()
 }
-const SPINMENU = {
+export const SPINMENU = {
+    nodeMenu: null,
     count: 6,
     radius: 14,
     position: new Vector3(0, 0, 15),
@@ -57,11 +58,9 @@ export async function spinMenu2(scene: Scene) {
     SPINMENU.hoverMaterial.diffuseTexture = fireTexture;
     SPINMENU.hoverMaterial.opacityTexture = fireTexture;
 
+    SPINMENU.nodeMenu = await buildMenu(SPINMENU.position, SPINMENU.radius, SPINMENU.count, scene) as TransformNode;
 
-
-    const menu = await buildMenu(SPINMENU.position, SPINMENU.radius, SPINMENU.count, scene) as TransformNode;
-
-    setMenuIndex(0, menu, scene);
+    setMenuIndex(0, SPINMENU.nodeMenu, scene);
     getResultsIDB().then((data: Array<GameResult>) => {
         const res = data.filter((obj) => SPINMENU.focusItem["meta"].index === obj.level);
         let max = res[0];
@@ -80,7 +79,7 @@ export async function spinMenu2(scene: Scene) {
 
     redrawLevelDescription(1, 0, GameState.state.lang);
     showDescription(true);
-    appendEventsHtmlButtons(menu, scene);
+    appendEventsHtmlButtons(SPINMENU.nodeMenu, scene);
 
     scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
@@ -102,9 +101,9 @@ export async function spinMenu2(scene: Scene) {
 
             if (Math.abs(delta) > 5) {
                 if (delta > 0) {
-                    rotateToNextPosition(menu, scene)
+                    rotateToNextPosition(SPINMENU.nodeMenu, scene)
                 } else {
-                    rotateToPrevPosition(menu, scene)
+                    rotateToPrevPosition(SPINMENU.nodeMenu, scene)
                 }
                 isPointerDown = false;
             }
@@ -391,12 +390,12 @@ function setMenuIndex(index: number, menu: TransformNode, scene: Scene) {
     });
     SPINMENU.focusItem = item;
 }
-function rotateToNextPosition(menu: TransformNode, scene: Scene) {
+export function rotateToNextPosition(menu: TransformNode, scene: Scene) {
     let index = (SPINMENU.focusItem ? SPINMENU.focusItem["meta"].index : 0) + 1;
     index = index >= SPINMENU.count ? 0 : index;
     setMenuIndex(index, menu, scene)
 }
-function rotateToPrevPosition(menu: TransformNode, scene: Scene) {
+export function rotateToPrevPosition(menu: TransformNode, scene: Scene) {
     let index = (SPINMENU.focusItem ? SPINMENU.focusItem["meta"].index : 0) - 1;
     index = index < 0 ? (SPINMENU.count - 1) : index;
     setMenuIndex(index, menu, scene)

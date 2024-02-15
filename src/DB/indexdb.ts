@@ -5,13 +5,13 @@ import { GameResult } from "./sheme";
 export function openIndexDB() {
     const req = window.indexedDB.open(GameState.state.indexDB.name, GameState.state.indexDB.version);
     req.onsuccess = (event) => {
-        console.log("IndexDB success")
+        // console.log("IndexDB success")
     }
     req.onerror = (event) => {
         //console.error("IndexDB error:", event.target.errorCode);
     }
     req.onupgradeneeded = (event) => {
-        console.log("IndexDB upgrade")
+        // console.log("IndexDB upgrade")
         const db = event.target.result as IDBDatabase;
         const store = db.createObjectStore(GameState.IDBobject().store, { autoIncrement: true });
         store.createIndex("level", "level", { unique: false });
@@ -25,7 +25,7 @@ export function saveResultIDB(object: GameResult) {
         const store = db.transaction(GameState.IDBobject().store, "readwrite").objectStore(GameState.IDBobject().store);
 
         store.transaction.oncomplete = (event) => {
-            console.log("Transaction complete")
+            // console.log("Transaction complete")
         }
         store.transaction.onerror = (event) => {
             //console.error("Transaction error: ", event.type.errorCode);
@@ -49,7 +49,7 @@ export function getResultsIDB() {
                     cur.continue();
                 } else {
                     res(values);
-                    console.log("Cursor completed")
+                    // console.log("Cursor completed")
                 }
             }
         }

@@ -12,5 +12,5 @@ export const UISTATE = {
     },
     view: {
         spotBallDiameter: 5,
-    }
+    },
 }

@@ -87,15 +87,15 @@ export function appendEventFullScreenButton() {
 
 }
 export function getTypeUserDevice() {
-    console.log("---- USER DEVICE ----")
-    console.log(window.navigator);
-    console.log(window.navigator.maxTouchPoints);
+    // console.log("---- USER DEVICE ----")
+    // console.log(window.navigator);
+    // console.log(window.navigator.maxTouchPoints);
     // console.log(window.navigator.language)
     // if (window.navigator.userAgentData) {
     //     console.log(window.navigator.userAgentData.platform)
     //     console.log(window.navigator.userAgentData.mobile)
     // }
 
-    console.log(navigator.userAgent);
-    console.log("---- USER DEVICE ----")
+    // console.log(navigator.userAgent);
+    // console.log("---- USER DEVICE ----")
 }
