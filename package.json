@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "parcel ",
-    "build": "parcel build --no-source-maps --no-cache --public-url public/"
+    "build": "parcel build --no-source-maps --no-cache --public-url public/",
+    "build:hoist": "parcel build --no-source-maps --no-scope-hoist --no-cache --public-url public/"
   },
   "staticFiles": {
     "staticPath": "public",
