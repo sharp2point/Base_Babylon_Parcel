@@ -1,26 +1,8 @@
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+@import url("base.css");
+@import url("preloader.css");
+@import url("ui.css");
+@import url("utils.css");
+@import url("media_queryes.css");
 
-#app{
-    background: black;
-    width: 100vw;
-    height: 100svh;
-}
 
-/*------------------------------------------------*/
-.score-board{
-    position: absolute;
-    top:0;
-    border: 1px solid rgba(100, 100, 100, 0.5);
-    background: rgba(0,0,0,0);
-}
-/*------------------------------------------------*/
-
-.hide{
-    pointer-events: none;
-    visibility: hidden;
-    display: none;
-}
+ 

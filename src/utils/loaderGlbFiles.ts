@@ -1,4 +1,6 @@
+import { ASSETS } from "@/game_state/assets/state";
 import { GameState } from "@/game_state/game_state";
+import { UISTATE } from "@/game_state/ui/state";
 import { Vector3, Mesh, SceneLoader, Scene, InstantiatedEntries, AssetContainer } from "@babylonjs/core";
 import "@babylonjs/loaders";
 
@@ -30,12 +32,46 @@ function instateMesh(nameMesh: string, assetContainer: AssetContainer) {
   return mesh;
 }
 //---------------------------------------------------------------------->
-export function load3DModels() {
-  loadDamageEnemyModel();
-}
-function loadDamageEnemyModel() {
-  loadModel(`public/models/`, `damage.glb`, GameState.state.gameObjects.scene).then((container) => {
-    GameState.state.assets.containers3D.set("enemy_damage", container as AssetContainer);
+export function loadEnemyModel(scene: Scene) {
+  loadModel(`public/models/`, `cristal_one.glb`, scene).then((container) => {
+    ASSETS.containers3D.set("cristal", container as AssetContainer);
   })
+}
+export function loadDamageEnemyModel(scene: Scene) {
+  loadModel(`public/models/`, `damage.glb`, scene).then((container) => {
+    ASSETS.containers3D.set("enemy_damage", container as AssetContainer);
+  })
+}
+export function loadMenuItemModel(scene: Scene) {
+  return new Promise((res) => {
+    loadModel(`public/models/menu/`, `menuItem.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("menu_item", container as AssetContainer);
+      res(true);
+    });
+  });
+}
+export function loadMenuItem2Model(scene: Scene) {
+  return new Promise((res) => {
+    loadModel(`public/models/`, `menuItem2.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("menu_item", container as AssetContainer);
+      res(true);
+    });
+  });
+}
+export function loadShieldYarModel(scene: Scene) {
+  return new Promise((res) => {
+    loadModel(`public/models/`, `shield_yar.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("shield_yar", container as AssetContainer);
+      res(true);
+    });
+  });
+}
+export function loadShieldYarPartModel(scene: Scene) {
+  return new Promise((res) => {
+    loadModel(`public/models/`, `shield_yar_prt.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("shield_yar_prt", container as AssetContainer);
+      res(true);
+    });
+  });
 }
 export { loadToAssetContainer, mergeMeshes, loadModel, instateMesh };

@@ -1,0 +1,29 @@
+@media (max-width:400px) {
+    .ui-text-block {
+        margin-bottom: 1rem;
+
+        .text {
+            font: 1rem sans-serif;
+        }
+
+        .text-name {
+            font: 1.2rem, "Impact" sans-serif;
+        }
+    }
+}
+
+@media (max-width:350px) {
+    .scoreboard {
+        width: 100% !important;
+
+        .icon {
+            width: 35px !important;
+            height: 35px !important;
+        }
+
+        .score-ui,
+        .timer-ui {
+            font: bold 3rem "Arial", sans-serif !important;
+        }
+    }
+}

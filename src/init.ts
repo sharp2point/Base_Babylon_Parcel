@@ -1,69 +1,68 @@
-import { AGAME, GameState } from "./game_state/game_state";
-import { hideScoreBoard, initPIXI } from "./pixi/pixi_ui";
-import { load3DModels } from "./utils/loaderGlbFiles";
+import { Engine, HavokPlugin, Vector3 } from "@babylonjs/core";
+import * as havok from "@babylonjs/havok";
+// import { Inspector } from "@babylonjs/inspector";
+import { ASSETS } from "./game_state/assets/state";
+import { AGAME } from "./game_state/main/state";
+import { GameState } from "./game_state/game_state";
+import { UISTATE } from "./game_state/ui/state";
+import { getScreenAspect, getTypeUserDevice, loadAssets } from "./utils/clear_utils";
+import { loadDamageEnemyModel, loadEnemyModel } from "./utils/loaderGlbFiles";
 import { cameraSettings } from "./utils/utility";
+import { createEnemyMaterial } from "./objects/enemy/enemy";
+import { openIndexDB } from "./DB/indexdb";
+import { initTeach } from "./teach/teach";
 
 async function initCore() {
-    const { Engine, HavokPlugin, Vector3 } = await import("@babylonjs/core");
-    const havok = await import("@babylonjs/havok");
     const physics = await havok.default();
     AGAME.HVK = new HavokPlugin(true, physics);
     AGAME.Canvas = document.querySelector('#app');
-    AGAME.Engine = new Engine(AGAME.Canvas, true);
+    AGAME.Engine = new Engine(AGAME.Canvas, true, { xrCompatible: false }, true);
     AGAME.Gravity = new Vector3(0, -9.81, 0);
-}
-function getScreenAspect() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const aspect = width / height;
-    AGAME.ScreenAspect = aspect;
-}
-function loadAssets() {
-    const img = new Image(256, 256);
-    img.src = "public/sprites/points10.webp";
-    img.onload = () => {
-        GameState.sprites().set("points10", img);
-    }
-}
-
-function initGameTimeout() {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(true);
-        }, 4000);
-    });
+    UISTATE.Canvas = AGAME.Canvas;
+    UISTATE.Engine = AGAME.Engine;
 }
 
 window.addEventListener('load', async () => {
-    getScreenAspect();
-    GameState.loadHtmlUI();
-    await initGameTimeout();
+    getTypeUserDevice()
+    AGAME.ScreenAspect = getScreenAspect();
+    loadAssets(ASSETS.sprites);
+    AGAME.RenderLock = true;
+    UISTATE.RenderLock = false;
+
     initCore().then(async () => {
-        loadAssets();
+
+        const { UIScene } = await import("./ui/ui");
         const { sceneOne } = await import("./scenes/scene_one");
-        AGAME.Scene = sceneOne(AGAME.Gravity, AGAME.HVK);
-        cameraSettings();
-        load3DModels();
-        GameState.hidePreLoader();
+        UIScene();
+        sceneOne(AGAME.Gravity, AGAME.HVK);
+        cameraSettings(AGAME.ScreenAspect);
+        loadEnemyModel(AGAME.Scene);
+        loadDamageEnemyModel(AGAME.Scene);
+        createEnemyMaterial(AGAME.Scene);
         //-------------------------------------->
-        initPIXI();
-        hideScoreBoard();
+        openIndexDB();
         //--------------------------------------->
+        initTeach(document.querySelector("#teach-place"));
+        //-------------------------------------->
 
         AGAME.Engine.runRenderLoop(() => {
-            if (!AGAME.RenderLock) {
+            if (!AGAME.RenderLock && UISTATE.RenderLock) {
+
                 AGAME.Scene.render();
+            } else if (!UISTATE.RenderLock && AGAME.RenderLock) {
+                UISTATE.Scene.render();
             }
         });
-    })
+    });
 });
 window.addEventListener('resize', () => {
+    AGAME.ScreenAspect = getScreenAspect();
     if (AGAME.Engine) {
         AGAME.Engine.resize();
-        getScreenAspect();
+        UISTATE.Engine.resize();
     }
     if (GameState.camera()) {
-        cameraSettings();
+        cameraSettings(AGAME.ScreenAspect);
     }
 });
 window.addEventListener("keydown", (ev) => {

@@ -6,12 +6,12 @@
     <title>babylon parcel template</title> 
     <link rel="icon" href="./public/favicon.ico">
     <link rel="stylesheet" href="./styles/style.css">
-    <script type="module" src="./src/scenes/html_ui/play_button/play_button.ts"></script>
-    <script type="module" src="./src/scenes/html_ui/Preloader/Preloader.ts"></script>
-    <script type="module" src="./src/scenes/html_ui/init_screen/init_screen.ts"></script>
+    <script type="module" src="./src/ui/html/ui_components.ts"></script>
 </head>
-<body>
-    <canvas id="app"></canvas>
+<body>    
+    <canvas id="app" allow="fullscreen"></canvas>
+    <div id="ui-place"></div>
+    <div id="teach-place"></div>
     <script type="module" src="./src/init.ts"></script>
 </body>
 </html>

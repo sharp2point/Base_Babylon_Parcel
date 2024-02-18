@@ -1,31 +1,34 @@
+import { createMap } from "@/level_builder/level_builder";
 import { resetBall } from "@/objects/ball";
-import { addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
-import { drawScoreBoard, hideScoreBoard, showScoreBoard } from "@/pixi/pixi_ui";
-import { gameObjectDispose } from "@/utils/utility";
-import { AssetContainer, Camera, Mesh, PhysicsHelper, Scene, Tools, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
-
-
-export const AGAME = {
-    HavokPhysics: null,
-    HVK: null,
-    PIXI: null,
-    Canvas: null,
-    Engine: null,
-    Gravity: null,
-    Scene: null,
-    ScreenAspect: null,
-    RenderLock: true,
-}
+import { disposeEnemies } from "@/utils/utility";
+import { AGAME } from "./main/state";
+import { UISTATE } from "./ui/state";
+import { Observable, Observer, Scene } from "@babylonjs/core";
+import { gameNotify } from "@/scenes/parts/notifyContainer";
+import { redrawResult, showDescription, showResult, showSettingsUI, showSpinMenuButtons } from "@/ui/html/ui_components";
+import { getResultsIDB, saveResultIDB } from "@/DB/indexdb";
+import { GameResult } from "@/DB/sheme";
 
 export const GameState = function _GameState() {
 };
 GameState.state = {
+    isFullScreen: false,
+    lang: "ru",
+    indexDB: {
+        db: null as IDBDatabase,
+        name: "NovaArcanoid",
+        version: 1,
+        store: "resultStore"
+    },
     gameState: 10,
     isDragShield: false,
     isBallStart: false,
-    level: 1,
+    isResetBall: false,
+    level: 0,
     levelTimeHandler: null,
     levelTime: 0,
+    enemyLight: null,
+    stopRunTimer: null,
     dragBox: {
         up: -5,
         down: -10.0,
@@ -36,7 +39,8 @@ GameState.state = {
         globalTransformNode: null,
         worldNode: null,
         ball: null,
-        shield: null,
+        shield_node: null,
+        shield_body: null,
         scene: null,
         shadow: null,
         physicsHelper: null,
@@ -66,10 +70,6 @@ GameState.state = {
         GAME_OTHER_BALL: 400,
         GAME_OTHER_TIME: 420,
     },
-    assets: {
-        sprites: new Map<string, HTMLImageElement>(),
-        containers3D: new Map<string, AssetContainer>()
-    },
     ui: {
         init_screen: null,
         score_board: {
@@ -82,216 +82,170 @@ GameState.state = {
     playerProgress: new Map<number, number>()
 };
 //---- ACCSESSORS---------------------------->
-GameState.scene = (): Scene => GameState.state.gameObjects.scene;
-GameState.GTN = (): TransformNode => GameState.state.gameObjects.globalTransformNode;
-GameState.camera = (): Camera => GameState.state.gameObjects.camera;
+GameState.scene = () => GameState.state.gameObjects.scene;
+GameState.camera = () => GameState.state.gameObjects.camera;
 GameState.gameBox = () => GameState.state.sizes.gameBox;
-GameState.physicsHelper = (): PhysicsHelper => GameState.state.gameObjects.physicsHelper;
-GameState.enemyNodes = (): TransformNode => GameState.state.gameObjects.enemyNodes;
-GameState.damageNodes = (): Array<TransformNode> => GameState.state.gameObjects.damageNodes;
+GameState.enemyNodes = () => GameState.state.gameObjects.enemyNodes;
+GameState.damageNodes = () => GameState.state.gameObjects.damageNodes;
 GameState.gameState = (): number => GameState.state.gameState;
-GameState.ball = (): Mesh => GameState.state.gameObjects.ball;
-GameState.points = (): Mesh => GameState.state.gameObjects.points;
-GameState.sprites = (): Map<string, HTMLImageElement> => GameState.state.assets.sprites;
+GameState.ball = () => GameState.state.gameObjects.ball;
+GameState.shieldNode = () => GameState.state.gameObjects.shield_node;
+GameState.shieldBody = () => GameState.state.gameObjects.shield_body;
+GameState.points = () => GameState.state.gameObjects.points;
 GameState.playerProgress = (): Map<number, number> => GameState.state.playerProgress;
 GameState.UI = () => GameState.state.ui;
+GameState.IDB = (): IDBDatabase => GameState.state.indexDB.db;
+GameState.IDBobject = () => GameState.state.indexDB;
 //----------------------------------------------------------------------->
 
 GameState.changeGameState = (state: number) => {
     GameState.state.gameState = state;
-    GameState.signalReaction();
-};
-GameState.signalReaction = () => {
     switch (GameState.gameState()) {
+        case GameState.state.signals.MENU_OPEN: {
+            console.log("MENUOPEN");
+            break;
+        }
         case GameState.state.signals.GAME_RUN: {
             console.log("GAMERUN");
-            drawScoreBoard('SCORE: 0');
-            GameState.pipe(
-                [
-                    GameState.clearLevelTime,
-                    GameState.hideInitUI,
-                    GameState.resetScene,
-                    showScoreBoard,
-                    GameState.initLevelTime,
-                ]
-            );
-
+            GameState.resetScene();
+            createMap(GameState.state.enemyLight);
+            GameState.state.stopRunTimer = runTimer();
             break;
         }
         case GameState.state.signals.GAME_OTHER_BALL: {
+            GameState.state.stopRunTimer();
             console.log("GAME_OTHER_BALL");
-            GameState.pipe(
-                [
-                    GameState.clearLevelTime,
-                    hideScoreBoard,
-                    GameState.showInitUI
-                ]
-            );
+            saveResultIDB({
+                date: Date.now(),
+                part: 1,
+                level: GameState.state.level,
+                isWin: false,
+                score: GameState.playerProgress().get(GameState.state.level),
+                time: GameState.state.levelTime,
+            })
+            gameNotify(GameState.state.signals.GAME_OTHER_BALL, {
+
+            }, 3000).then(() => {
+                GameState.resetScene();
+                GameState.menuRun();
+            });
+
             break;
         }
         case GameState.state.signals.LEVEL_WIN: {
-            console.log("LEVEL_WIN")
-            GameState.pipe(
-                [
-                    GameState.nextLevel,
-                    GameState.clearLevelTime,
+            GameState.state.stopRunTimer();
+            console.log("LEVEL_WIN");
+            saveResultIDB({
+                date: Date.now(),
+                part: 1,
+                level: GameState.state.level,
+                isWin: true,
+                score: GameState.playerProgress().get(GameState.state.level),
+                time: GameState.state.levelTime,
+            });
+            gameNotify(GameState.state.signals.LEVEL_WIN, {
 
-                    hideScoreBoard,
-                    GameState.showInitUI
-                ]
-            )
+            }, 3000).then(() => {
+                GameState.resetScene();
+                GameState.menuRun();
+            });
+
             break;
-        }
-    }
-}
-GameState.createMap = (level: number) => {
-    GameState.state.gameObjects.enemyNodes = new TransformNode("enemies-node", GameState.state.gameObjects.scene);
-
-    const gap = GameState.state.sizes.enemy;
-    const maps = {
-        1: [
-            [0, 0, 1, 0, 0, 0, 1, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        ],
-        2: [
-            [0, 1, 0, 0, 0, 0, 0, 1, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0],
-            [0, 0, 0, 1, 0, 1, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0],
-        ],
-        3: [
-            [0, 1, 0, 1, 0, 1, 0, 1, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 1, 0, 1, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 1, 0, 1, 0, 1, 0, 0],
-        ],
-        4: [
-            [0, 1, 0, 1, 0, 1, 0, 1, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 1, 0, 1, 0, 1, 0, 1, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 1, 0, 1, 0, 1, 0, 1, 0],
-        ],
-        5: [
-            [0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-            [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
-            [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1],
-            [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
-            [1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
-            [1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1],
-            [0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1],
-            [0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1],
-
-        ],
-    };
-    const deltaX = maps[level][0].length / 2
-    for (let i = 0; i < maps[level].length; i++) {
-        for (let j = 0; j < maps[level][i].length; j++) {
-            switch (maps[level][i][j]) {
-                case 1: {
-                    const name = `enemy-bloc-${j + 9 * i}`;
-                    const emesh = enemy(name, new Vector3(j * gap, GameState.state.sizes.enemy, i * gap).
-                        add(new Vector3(-(deltaX), 0, GameState.gameBox().height / 2 - 10)),
-                        GameState.state.gameObjects.enemyNodes);
-                    addShadowToEnemy(GameState.state.gameObjects.shadow, name);
-                    break;
-                }
-            }
         }
     }
 };
 GameState.resetScene = () => {
-    GameState.state.isBallStart = false;
+    renderTime(0);
+    renderPoints(0);
     resetBall();
-    GameState.disposeEnemies();
-    GameState.playerProgress().set(GameState.state.level, 0);
-    setTimeout(() => {
-        GameState.createMap(GameState.state.level);
-    }, 500);
-}
-GameState.pipe = (fnArr: Array<Function>) => {
-    setTimeout(() => {
-        fnArr.forEach(fn => fn());
-    }, 500)
+    disposeEnemies();
+    GameState.state.isResetBall = false;
+    GameState.state.isBallStart = false;
 }
 //----------------------------------------------->
-GameState.isAllEnemiesDie = () => {
-    return (GameState.enemyNodes() as TransformNode).getChildren().length > 0 ? false : true;
-}
-GameState.disposeEnemies = () => {
-    if (GameState.damageNodes().length > 0) {
-        GameState.damageNodes().forEach(tn => {
-            tn.getChildren().forEach(obj => {
-                gameObjectDispose(obj as Mesh);
-            })
-        })
-    }
-    if (GameState.enemyNodes()?.getChildren() && GameState.enemyNodes().getChildren().length > 0) {
-        GameState.enemyNodes().getChildren().forEach(obj => {
-            gameObjectDispose(obj as Mesh);
-        })
-    }
 
-    (GameState.scene() as Scene).getMeshesById("enemy-cube").forEach(m => {
-        m.dispose();
-    })
-}
-GameState.calculatePoints = (enemy: Mesh) => {
+GameState.calculatePoints = (enemy) => {
     const meta = enemy["meta"];
     const key = GameState.state.level;
     if (GameState.playerProgress().has(key)) {
         const points = GameState.playerProgress().get(key) + meta.points
         GameState.playerProgress().set(key, points);
-        drawScoreBoard(`SCORE: ${points}`);
+        renderPoints(points);
     }
 }
-GameState.initLevelTime = () => {
-
+GameState.levelRun = (level: number) => { // level -> binding from spin menu
+    (UISTATE.Scene as Scene).detachControl();
+    AGAME.RenderLock = false;
+    UISTATE.RenderLock = true;
+    GameState.state.level = level;
+    GameState.playerProgress().set(level, 0);
+    GameState.changeGameState(GameState.state.signals.GAME_RUN);
+    showSettingsUI(false);
+    showDescription(false);
+    showResult(false);
+    showScoreboard(true);
+    showSpinMenuButtons(false);
+    setTimeout(() => {
+        (AGAME.Scene as Scene).attachControl();
+    }, 600);
 }
-GameState.clearLevelTime = () => {
-
-}
-GameState.nextLevel = () => {
-    GameState.state.level < 5 ?
-        GameState.state.level += 1 :
-        GameState.state.level = 1;
-}
-
-// HTML UI ---------------------------------->
-
-GameState.loadHtmlUI = () => {
-    GameState.UI().init_screen = document.createElement('init-screen');
-    document.body.appendChild(GameState.UI().init_screen);
-}
-GameState.hideInitUI = () => {
-    GameState.UI().init_screen.classList.add("hide");
-}
-GameState.showInitUI = () => {
-    GameState.UI().init_screen.setAttribute('attr-title', `Level: ${GameState.state.level}`);
-    GameState.UI().init_screen.classList.remove("hide");
+GameState.menuRun = () => {
+    (AGAME.Scene as Scene).detachControl();
     AGAME.RenderLock = true;
-    let progress = '';
-    GameState.playerProgress().forEach((v, k) => {
-        progress += `<div class="level"><span>level ${k}:</span><span>${v}</span> </div>`
+    UISTATE.RenderLock = false;
+    //resultRedraw(GameState.state.level, GameState.playerProgress().get(GameState.state.level))
+    GameState.changeGameState(GameState.state.signals.MENU_OPEN);
+    showSettingsUI(true);
+    showScoreboard(false);
+    showDescription(true);
+    getResultsIDB().then((data: Array<GameResult>) => {
+        const res = data.filter((obj) => GameState.state.level === obj.level);
+        let max = res[0];
+        for (let i = 1; i < res.length; i++) {
+            if (max.score < res[i].score) {
+                max = res[i];
+            }
+        }
+        if (max) {
+            redrawResult(max.isWin, max.score);
+        } else {
+            redrawResult(false, 0);
+        }
+        showResult(true);
     });
-}
-GameState.hidePreLoader = () => {
-    const pre_loader = document.querySelector('pre-loader');
-    const play_button = document.querySelector('play-button');
-    pre_loader.classList.add("hide");
-    play_button.classList.remove("hide");
-
-    GameState.UI().init_screen.setAttribute('attr-title', `Level: ${GameState.state.level}`);
-
-    play_button.addEventListener('click', () => {
-        GameState.hideInitUI();
-        GameState.changeGameState(GameState.state.signals.GAME_RUN);// GAME_RUN: 100
-        AGAME.RenderLock = false;
-    })
+    showSpinMenuButtons(true);
+    setTimeout(() => {
+        (UISTATE.Scene as Scene).attachControl();
+    }, 600);
 }
 
+//---------------------------------------------------
+
+function showScoreboard(isShow: boolean) {
+    const scoreboard = document.querySelector(".scoreboard");
+    isShow ?
+        scoreboard.classList.remove('hide') :
+        scoreboard.classList.add('hide');
+}
+export function runTimer() {
+    let count = 60;
+    let sec = 0;
+
+    const obser$ = (AGAME.Scene as Scene).onBeforeRenderObservable.add(() => {
+        count -= 1;
+        if (count <= 0) {
+            count = 60;
+            sec += 1;
+            GameState.state.levelTime = sec;
+            renderTime(sec);
+        }
+    });
+    return stopTimer(obser$)
+}
+function stopTimer(obser$: Observer<Scene>) {
+    return () => {
+        obser$.remove();
+    }
+}
+const renderPoints = (points: number) => (UISTATE.Scoreboard.score as HTMLElement).innerText = `${points}`.padStart(4, '0');
+const renderTime = (seconds: number) => (UISTATE.Scoreboard.timer as HTMLElement).innerText = `${seconds}`.padStart(4, '0');

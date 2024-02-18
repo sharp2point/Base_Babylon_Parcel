@@ -1,0 +1,44 @@
+.opaq-0 {
+    animation: animation-opaq 1s;
+}
+
+.opaq-1 {
+    animation: animation-opaq 1s reverse;
+}
+
+.hide {
+    pointer-events: none;
+    visibility: hidden;
+    display: none;
+}
+
+@keyframes animation-opaq {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes animation-back-opaq {
+    0% {
+        background-color: rgba(0, 0, 0, 1);
+    }
+
+    100% {
+        background-color: rgba(0, 0, 0, 0);
+    }
+}
+
+@keyframes menu-button-color {
+    0% {
+        color: rgb(131, 120, 106);
+    }
+
+    100% {
+        color: rgb(12, 247, 255);
+    }
+
+}

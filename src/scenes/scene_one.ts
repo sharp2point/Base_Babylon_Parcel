@@ -1,9 +1,10 @@
-import { AGAME, GameState } from "@/game_state/game_state";
+import { GameState } from "@/game_state/game_state";
+import { AGAME } from "@/game_state/main/state";
 import { addRun$, addShadowToBall, ballComposition, onRun$ } from "@/objects/ball";
 import { enemyCollideReaction } from "@/objects/enemy/enemy";
 import { initPoints, newPoints } from "@/objects/points/points";
 import { addPosition$, addShadowToShield, shildComposition } from "@/objects/shield";
-import { clampToBoxShieldPosition } from "@/utils/utility";
+import { clampToBoxShieldPosition, isAllEnemiesDie } from "@/utils/utility";
 import {
     Color3, Color4, DirectionalLight, EventState, HavokPlugin,
     HemisphericLight, IBasePhysicsCollisionEvent, IPointerEvent, Mesh,
@@ -17,58 +18,63 @@ import {
 export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     const scene = initScene(gravity, physicsEngine);
     const camera = addCamera(scene);
+
     const [hemiLight, dirLight, shadowGenArray] = [...addLights(scene)];
 
     GameState.state.gameObjects.globalTransformNode = new TransformNode("global-transform-node", scene);
     GameState.state.gameObjects.worldNode = createWorld(scene);
-    const [shield, shield_physics, shield_control_plane] = shildComposition(scene);
+    const [shield_node, shield_body, shield_control_plane] = shildComposition(scene);
     GameState.state.gameObjects.scene = scene;
     GameState.state.gameObjects.camera = camera;
     GameState.state.gameObjects.damageNodes = new Array<TransformNode>();
-    GameState.state.gameObjects.shield = shield;
+    GameState.state.gameObjects.shield_node = shield_node;
+    GameState.state.gameObjects.shield_body = shield_body;
     GameState.state.gameObjects.ball = ballComposition(scene);
     GameState.state.gameObjects.shadow = shadowGenArray;
     GameState.state.gameObjects.physicsHelper = new PhysicsHelper(scene);
     GameState.state.gameObjects.points = initPoints(scene);
     dragBoxLines();
     addShadowsToObjects(shadowGenArray, scene);
+    AGAME.Scene = scene;
 
-    (GameState.state.gameObjects.worldNode as TransformNode).scaling = new Vector3(2, 2, 2);
     //--------- OBSERVER -------->
-    addRun$();
     addPosition$(() => { });
-    //----------- EVENTS -------->
-    addSceneEvents(GameState.state.gameObjects.ball, shield, shield_physics, scene);
 
+    //----------- EVENTS -------->   
+    addSceneGameEvents();
+    (AGAME.Scene as Scene).onBeforeRenderObservable.add(() => {
+        ballJoinShield();
+        (AGAME.HVK as HavokPlugin).setTargetTransform(GameState.shieldBody().getPhysicsBody(), GameState.shieldNode().position, Quaternion.Identity());
+    });
     (AGAME.HVK as HavokPlugin).onCollisionObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
-        const collider = eventData.collider.transformNode;
-        const agCollider = eventData.collidedAgainst.transformNode;
-        if (agCollider.name === "shield" || collider.name === "shield") {
+        if (GameState.state.gameState === GameState.state.signals.GAME_RUN) {
+            const collider = eventData.collider.transformNode;
+            const agCollider = eventData.collidedAgainst.transformNode;
+            if (agCollider.name === "shield" || collider.name === "shield") {
 
-        } else if (agCollider.name.includes("enemy-bloc")) {
+            } else if (agCollider.name.includes("enemy-bloc")) {
 
+            }
         }
     });
     (AGAME.HVK as HavokPlugin).onCollisionEndedObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
-        const collider = eventData.collider.transformNode;
-        const agCollider = eventData.collidedAgainst.transformNode;
-        if (agCollider.name === "ball" || collider.name === "ball") {
-            const physics = GameState.ball().getPhysicsBody();
-            if (agCollider.name.includes("enemy-bloc")) {
-                enemyCollideReaction(agCollider as Mesh);
-                newPoints("10", agCollider.position);
-                GameState.calculatePoints(agCollider as Mesh);
-                if (GameState.isAllEnemiesDie()) {
-                    GameState.changeGameState(GameState.state.signals.LEVEL_WIN);
+        if (GameState.state.gameState === GameState.state.signals.GAME_RUN && !GameState.state.isResetBall) {
+            const collider = eventData.collider.transformNode;
+            const agCollider = eventData.collidedAgainst.transformNode;
+            if (agCollider.name === "ball" || collider.name === "ball") {
+                if (agCollider.name.includes("enemy-bloc")) {
+                    enemyCollideReaction(agCollider as Mesh);
+                    newPoints("10", agCollider.position);
+                    GameState.calculatePoints(agCollider as Mesh);
+                    if (isAllEnemiesDie()) {
+                        if (GameState.state.gameState !== GameState.state.signals.LEVEL_WIN) {
+                            GameState.changeGameState(GameState.state.signals.LEVEL_WIN);
+                        }
+                    }
                 }
             }
-            //physics.applyForce(physics.getLinearVelocity().scale(1.1), GameState.ball().getAbsolutePosition());
         }
     });
-    //----------------- DEBUG -------------->
-    //debugPhysicsInfo(scene);
-
-    return scene;
 }
 //--------------------------------->
 function initScene(gravity: Vector3, physicsEngine: HavokPlugin) {
@@ -87,22 +93,29 @@ function addCamera(scene: Scene) {
     return camera;
 }
 function addLights(scene: Scene): [HemisphericLight, DirectionalLight, Array<ShadowGenerator>] {
-    const hemiLight = new HemisphericLight("main-scene-hemilight", new Vector3(0, 1, 0), scene);
+    const hemiLight = new HemisphericLight("main-scene-hemilight", new Vector3(0, 1, -8), scene);
     hemiLight.diffuse = new Color3(1, 1, 1);
-    hemiLight.intensity = 0.2;
+    hemiLight.specular = new Color3(1, 1, 1);
+    hemiLight.intensity = 0.3;
 
-    const dirLight = new DirectionalLight("main-scene-dirlight", new Vector3(0, -1, -1), scene);
+    const hemiEnemyLight = new HemisphericLight("enemy-hemilight", new Vector3(0, 1, -8), GameState.scene());
+    hemiEnemyLight.diffuse = new Color3(1, 1, 1);
+    hemiEnemyLight.specular = new Color3(1, 1, 1);
+    hemiEnemyLight.intensity = 1;
+    GameState.state.enemyLight = hemiEnemyLight;
+
+    const dirLight = new DirectionalLight("main-scene-dirlight", new Vector3(0, -1, -5), scene);
     dirLight.position = new Vector3(0, 20, -20);
     dirLight.diffuse = new Color3(1, 1, 1);
     dirLight.specular = new Color3(0.25, 0.25, 0.2);
-    dirLight.intensity = 0.2;
+    dirLight.intensity = 0.1;
 
     const leftSpot = new SpotLight("left-scene-spot",
         new Vector3(-GameState.gameBox().width / 2 - 2, 6, GameState.gameBox().height / 2 + 2),
         new Vector3(0.5, -0.5, -0.5), Tools.ToRadians(50), 10, scene);
     leftSpot.diffuse = new Color3(0.9, 0.8, 0.7);
     leftSpot.specular = new Color3(0.3, 0.2, 0.3);
-    leftSpot.intensity = 0.7;
+    leftSpot.intensity = 0.9;
     leftSpot.shadowEnabled = true;
 
     const rightSpot = new SpotLight("right-scene-spot",
@@ -110,7 +123,7 @@ function addLights(scene: Scene): [HemisphericLight, DirectionalLight, Array<Sha
         new Vector3(-0.5, -0.5, -0.5), Tools.ToRadians(50), 10, scene);
     rightSpot.diffuse = new Color3(0.9, 0.8, 0.7);
     rightSpot.specular = new Color3(0.3, 0.2, 0.3);
-    rightSpot.intensity = 0.7;
+    rightSpot.intensity = 0.9;
     rightSpot.shadowEnabled = true;
 
     const shadowGen = new ShadowGenerator(1024, dirLight);
@@ -222,20 +235,16 @@ function addShadowsToObjects(generators: Array<ShadowGenerator>, scene: Scene) {
     addShadowToShield(generators, scene);
 }
 //---------------------------------->
-function addSceneEvents(ball: Mesh, shield: TransformNode, shield_physics: Mesh, scene: Scene) {
-    scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
-        pointerDownHandler(pickInfo, shield, scene);
+function addSceneGameEvents() {
+    AGAME.Scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        pointerDownHandler(pickInfo, GameState.shieldNode(), AGAME.Scene);
     };
-    scene.onPointerUp = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
-        pointerUpHandler(scene);
+    AGAME.Scene.onPointerUp = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        pointerUpHandler(AGAME.Scene);
     }
-    scene.onPointerMove = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
-        pointerMoveHandler(pickInfo, shield, scene);
+    AGAME.Scene.onPointerMove = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
+        pointerMoveHandler(pickInfo, GameState.shieldNode(), AGAME.Scene);
     }
-    scene.onBeforeRenderObservable.add(() => {
-        ballJoinShield();
-        (AGAME.HVK as HavokPlugin).setTargetTransform(shield_physics.getPhysicsBody(), shield.position, Quaternion.Identity())
-    });
 }
 function pointerDownHandler(pickInfo: PickingInfo, shield: TransformNode, scene: Scene) {
     const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
@@ -257,6 +266,9 @@ function pointerMoveHandler(pickInfo: PickingInfo, shield: TransformNode, scene:
 //--------------------------->
 function ballJoinShield() {
     if (!GameState.state.isBallStart) {
-        GameState.state.gameObjects.ball.getPhysicsBody().setTargetTransform(GameState.state.gameObjects.shield.position.clone().add(new Vector3(0, 0, 0.5)), Quaternion.Identity())
+        GameState.state.gameObjects.ball
+            .getPhysicsBody()
+            .setTargetTransform(GameState.shieldNode().position.clone()
+                .add(new Vector3(0, 0, 0.5)), Quaternion.Identity())
     }
 }
