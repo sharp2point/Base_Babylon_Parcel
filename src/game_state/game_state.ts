@@ -180,11 +180,11 @@ GameState.levelRun = (level: number) => { // level -> binding from spin menu
     GameState.state.level = level;
     GameState.playerProgress().set(level, 0);
     GameState.changeGameState(GameState.state.signals.GAME_RUN);
-    showSettingsUI(false);
-    showDescription(false);
-    showResult(false);
-    showScoreboard(true);
-    showSpinMenuButtons(false);
+    // showSettingsUI(false);
+    // showDescription(false);
+    // showResult(false);
+    // showScoreboard(true);
+    // showSpinMenuButtons(false);
     setTimeout(() => {
         (AGAME.Scene as Scene).attachControl();
     }, 600);
@@ -195,9 +195,9 @@ GameState.menuRun = () => {
     UISTATE.RenderLock = false;
     //resultRedraw(GameState.state.level, GameState.playerProgress().get(GameState.state.level))
     GameState.changeGameState(GameState.state.signals.MENU_OPEN);
-    showSettingsUI(true);
-    showScoreboard(false);
-    showDescription(true);
+    // showSettingsUI(true);
+    // showScoreboard(false);
+    // showDescription(true);
     getResultsIDB().then((data: Array<GameResult>) => {
         const res = data.filter((obj) => GameState.state.level === obj.level);
         let max = res[0];
@@ -207,13 +207,13 @@ GameState.menuRun = () => {
             }
         }
         if (max) {
-            redrawResult(max.isWin, max.score);
+            //redrawResult(max.isWin, max.score);
         } else {
-            redrawResult(false, 0);
+            //redrawResult(false, 0);
         }
-        showResult(true);
+        //showResult(true);
     });
-    showSpinMenuButtons(true);
+    //showSpinMenuButtons(true);
     setTimeout(() => {
         (UISTATE.Scene as Scene).attachControl();
     }, 600);

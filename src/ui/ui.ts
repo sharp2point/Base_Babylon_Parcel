@@ -40,7 +40,7 @@ export function UIScene() {
 //------------------------------------------------------>
 function onReady(scene: Scene) {
     spinMenu2(scene);
-    backSetOpaq_0();
+    // backSetOpaq_0();
     initTeach(document.querySelector("#teach-place"));
 }
 function sceneBuilder(scene: Scene) {

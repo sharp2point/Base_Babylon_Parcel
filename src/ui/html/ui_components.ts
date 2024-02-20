@@ -294,5 +294,5 @@ function changeLocal(local: string) {
     }
 }
 //----------------------------------------------->
-uiHtmlComponents();
+//uiHtmlComponents();
 

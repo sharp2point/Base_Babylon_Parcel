@@ -29,7 +29,6 @@ window.addEventListener('load', async () => {
     UISTATE.RenderLock = false;
 
     initCore().then(async () => {
-
         const { UIScene } = await import("./ui/ui");
         const { sceneOne } = await import("./scenes/scene_one");
         UIScene();

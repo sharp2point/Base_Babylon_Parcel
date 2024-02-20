@@ -64,16 +64,16 @@ export async function spinMenu2(scene: Scene) {
             }
         }
         if (max) {
-            redrawResult(max.isWin, max.score);
+            //redrawResult(max.isWin, max.score);
         } else {
-            redrawResult(false, 0);
+            //redrawResult(false, 0);
         }
-        showResult(true);
+        //showResult(true);
     });
 
-    redrawLevelDescription(1, 0, GameState.state.lang);
-    showDescription(true);
-    appendEventsHtmlButtons(SPINMENU.nodeMenu, scene);
+    //redrawLevelDescription(1, 0, GameState.state.lang);
+    //showDescription(true);
+    // appendEventsHtmlButtons(SPINMENU.nodeMenu, scene);
 
     scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
@@ -366,7 +366,7 @@ function setMenuIndex(index: number, menu: TransformNode, scene: Scene) {
             scene.removeAnimation(scaleOldAnim);
         });
     }
-    redrawLevelDescription(1, index, "ru");
+    //redrawLevelDescription(1, index, "ru");
     getResultsIDB().then((data: Array<GameResult>) => {
         const res = data.filter((obj) => SPINMENU.focusItem["meta"].index === obj.level);
         let max = res[0];
@@ -376,11 +376,11 @@ function setMenuIndex(index: number, menu: TransformNode, scene: Scene) {
             }
         }
         if (max) {
-            redrawResult(max.isWin, max.score);
+           // redrawResult(max.isWin, max.score);
         } else {
-            redrawResult(false, 0);
+           // redrawResult(false, 0);
         }
-        showResult(true);
+        //showResult(true);
     });
     SPINMENU.focusItem = item;
 }
@@ -394,18 +394,18 @@ export function rotateToPrevPosition(menu: TransformNode, scene: Scene) {
     index = index < 0 ? (SPINMENU.count - 1) : index;
     setMenuIndex(index, menu, scene)
 }
-function appendEventsHtmlButtons(menu: TransformNode, scene: Scene) {
-    const leftButton = document.querySelector(".left-menu-button");
-    const rightButton = document.querySelector(".right-menu-button");
+// function appendEventsHtmlButtons(menu: TransformNode, scene: Scene) {
+//     const leftButton = document.querySelector(".left-menu-button");
+//     const rightButton = document.querySelector(".right-menu-button");
 
-    leftButton.addEventListener("click", () => {
-        rotateToPrevPosition(menu, scene)
-    })
-    rightButton.addEventListener("click", () => {
-        rotateToNextPosition(menu, scene)
-    })
-    showSpinMenuButtons(true);
-}
+//     leftButton.addEventListener("click", () => {
+//         rotateToPrevPosition(menu, scene)
+//     })
+//     rightButton.addEventListener("click", () => {
+//         rotateToNextPosition(menu, scene)
+//     })
+//     //showSpinMenuButtons(true);
+// }
 //- Animations ------------------------------------------
 
 function rotateMenuAnimation(item: TransformNode, angle: number) {

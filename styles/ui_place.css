@@ -33,8 +33,6 @@
         pointer-events: none;
     }
 }
-
-
 .html-ui .down-block {
     display: flex;
     flex-direction: column;
