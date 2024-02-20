@@ -14,4 +14,5 @@ export const UISTATE = {
         spotBallDiameter: 5,
     },
     PIXI: null,
+    PixiUI: null
 }

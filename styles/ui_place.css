@@ -6,7 +6,7 @@
     top: 0;
     left: 0;
     z-index: 10;
-    pointer-events: none;
+    pointer-events: all;
 
     /* #ui-canvas {
         position: absolute;

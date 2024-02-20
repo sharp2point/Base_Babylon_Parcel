@@ -8,6 +8,7 @@ import {
 import { backSetOpaq_0 } from "./html/ui_components";
 import { spinMenu2 } from "./spin2";
 import { initTeach } from "@/teach/teach";
+import { initPixiUI } from "./pixi_ui/pixi_ui";
 
 export function UIScene() {
     const scene = new Scene(UISTATE.Engine);
@@ -40,6 +41,7 @@ export function UIScene() {
 //------------------------------------------------------>
 function onReady(scene: Scene) {
     spinMenu2(scene);
+    initPixiUI(document.querySelector("#ui-place"));
     // backSetOpaq_0();
     initTeach(document.querySelector("#teach-place"));
 }
