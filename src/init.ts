@@ -10,7 +10,6 @@ import { loadDamageEnemyModel, loadEnemyModel } from "./utils/loaderGlbFiles";
 import { cameraSettings } from "./utils/utility";
 import { createEnemyMaterial } from "./objects/enemy/enemy";
 import { openIndexDB } from "./DB/indexdb";
-import { initTeach } from "./teach/teach";
 
 async function initCore() {
     const physics = await havok.default();
@@ -42,8 +41,6 @@ window.addEventListener('load', async () => {
         //-------------------------------------->
         openIndexDB();
         //--------------------------------------->
-        initTeach(document.querySelector("#teach-place"));
-        //-------------------------------------->
 
         AGAME.Engine.runRenderLoop(() => {
             if (!AGAME.RenderLock && UISTATE.RenderLock) {

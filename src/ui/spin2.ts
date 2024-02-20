@@ -15,7 +15,6 @@ import {
     Color4,
     ParticleSystem,
 } from "@babylonjs/core";
-import { FireProceduralTexture } from "@babylonjs/procedural-textures";
 import { redrawLevelDescription, redrawResult, showDescription, showResult, showSpinMenuButtons } from "./html/ui_components";
 import { getResultsIDB } from "@/DB/indexdb";
 import { GameResult } from "@/DB/sheme";
@@ -52,11 +51,6 @@ export async function spinMenu2(scene: Scene) {
 
     SPINMENU.standardMaterial = new StandardMaterial("standard-item-mt", scene);
     SPINMENU.standardMaterial.diffuse = new Color3(0.2, 0.2, 0.2);
-
-    var fireTexture = new FireProceduralTexture("fireTex", 256, scene);
-    SPINMENU.hoverMaterial = new StandardMaterial("hover-item-mt", scene)
-    SPINMENU.hoverMaterial.diffuseTexture = fireTexture;
-    SPINMENU.hoverMaterial.opacityTexture = fireTexture;
 
     SPINMENU.nodeMenu = await buildMenu(SPINMENU.position, SPINMENU.radius, SPINMENU.count, scene) as TransformNode;
 

@@ -1,11 +1,13 @@
 import { UISTATE } from "@/game_state/ui/state";
 import { getInnerWindow } from "@/utils/clear_utils";
-import {Color3, Color4, HemisphericLight, MeshBuilder,
+import {
+    Color3, Color4, HemisphericLight, MeshBuilder,
     Scene, SpotLight, StandardMaterial,
     Tools, UniversalCamera, Vector3
 } from "@babylonjs/core";
 import { backSetOpaq_0 } from "./html/ui_components";
 import { spinMenu2 } from "./spin2";
+import { initTeach } from "@/teach/teach";
 
 export function UIScene() {
     const scene = new Scene(UISTATE.Engine);
@@ -32,13 +34,14 @@ export function UIScene() {
     scene.onReadyObservable.add(() => {
         onReady(scene);
     });
-    
+
     UISTATE.Scene = scene;
 }
 //------------------------------------------------------>
 function onReady(scene: Scene) {
-    backSetOpaq_0();
     spinMenu2(scene);
+    backSetOpaq_0();
+    initTeach(document.querySelector("#teach-place"));
 }
 function sceneBuilder(scene: Scene) {
     const window_size = getInnerWindow();

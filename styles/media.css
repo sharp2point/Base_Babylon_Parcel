@@ -1,4 +1,16 @@
-@media (max-width:400px) {
+/* 
+GOOD:
+     1280x800
+BAD: 
+    1024x600    
+*/
+@media (max-height:700px) {
+    .level-description{
+        top: 80px;
+        gap:0.8rem;
+    }
+}
+/* @media screen and (max-width:400px) {
     .ui-text-block {
         margin-bottom: 1rem;
 
@@ -12,7 +24,7 @@
     }
 }
 
-@media (max-width:350px) {
+@media screen and (max-width:350px) {
     .scoreboard {
         width: 100% !important;
 
@@ -26,4 +38,4 @@
             font: bold 3rem "Arial", sans-serif !important;
         }
     }
-}
+} */

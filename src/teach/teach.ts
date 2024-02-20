@@ -5,10 +5,8 @@ import * as PIXI from "pixi.js";
 export function initTeach(parent: HTMLElement) {
     const app = new PIXI.Application({ background: "#101010", backgroundAlpha: 0.5, resizeTo: window });
     parent.appendChild(app.view);
-    const close = addCloseSprite(app);
-
-    const hand = addHandSprite(app);
-    handAnimateSteps(hand, app)
+    showTeach(false);
+    UISTATE.PIXI = app;
     return app;
 }
 function addHandSprite(app: PIXI.Application<PIXI.ICanvas>) {
@@ -34,7 +32,7 @@ function addCloseSprite(app: PIXI.Application<PIXI.ICanvas>) {
     close.eventMode = "static";
     close.cursor = "pointer";
     close
-        .on('pointerup', () => closeTeach(app))
+        .on('pointerup', () => showTeach(false))
         .on('pointerenter', () => {
             close.width += 10;
             close.height += 10;
@@ -57,12 +55,17 @@ function addTapSprite(app: PIXI.Application<PIXI.ICanvas>) {
     tap.alpha = 0;
     return tap;
 }
-
-function handAnimateSteps(hand: PIXI.Sprite, app: PIXI.Application<PIXI.ICanvas>) {
+export function teachAnimateSteps(app: PIXI.Application<PIXI.ICanvas>) {
+    showTeach(true);
     let step = 0;
+    app.stage.removeChildren(0, app.stage.children.length);
+    const close = addCloseSprite(app);
+    const hand = addHandSprite(app);
     const tap = addTapSprite(app);
 
-    const step_one = app.ticker.add((delta) => {
+    app.ticker.start();
+
+    function stepOne(delta: number) {
         switch (step) {
             case 0: {
                 if (hand.y < app.screen.height / 2 - 50) {
@@ -76,12 +79,12 @@ function handAnimateSteps(hand: PIXI.Sprite, app: PIXI.Application<PIXI.ICanvas>
                 if (hand.x > app.screen.width / 2 - 100) {
                     hand.x -= 6 * delta;
                 } else {
-                    step_one.stop();
+                    app.ticker.stop();
                     step = 2;
                     setTimeout(() => {
                         rotateToPrevPosition(SPINMENU.nodeMenu, UISTATE.Scene);
                         setTimeout(() => {
-                            step_one.start();
+                            app.ticker.start();
                         }, 500);
                     }, 50);
                 }
@@ -94,12 +97,12 @@ function handAnimateSteps(hand: PIXI.Sprite, app: PIXI.Application<PIXI.ICanvas>
                     if (hand.x < app.screen.width / 2 + 100) {
                         hand.x += 6 * delta;
                     } else {
-                        step_one.stop();
+                        app.ticker.stop();
                         step = 3;
                         setTimeout(() => {
                             rotateToNextPosition(SPINMENU.nodeMenu, UISTATE.Scene);
                             setTimeout(() => {
-                                step_one.start();
+                                app.ticker.start();
                             }, 500);
                         }, 50);
                     }
@@ -150,19 +153,18 @@ function handAnimateSteps(hand: PIXI.Sprite, app: PIXI.Application<PIXI.ICanvas>
                 break;
             }
             case 6: {
-                app.ticker.destroy();
-                setTimeout(() => closeTeach(app), 600)
+                app.ticker.remove(stepOne);
+                app.ticker.stop();
+                setTimeout(() => showTeach(false), 600)
                 break;
             }
         }
-    })
-}
-function closeTeach(app: PIXI.Application<PIXI.ICanvas>) {
-    try {
-        app.destroy(true, true);
-    } catch {
-        console.error("PIXI DESTROY ERROR")
     }
-    const teachPlace = document.querySelector("#teach-place")
-    teachPlace.classList.add("hide");    
+    app.ticker.add(stepOne);
+}
+function showTeach(isShow: boolean) {
+    const teachPlace = document.querySelector("#teach-place");
+    isShow ?
+        teachPlace.classList.remove("hide") :
+        teachPlace.classList.add("hide");
 }

@@ -74,7 +74,7 @@ export function getTypeUserDevice() {
     //     console.log(window.navigator.userAgentData.platform)
     //     console.log(window.navigator.userAgentData.mobile)
     // }
-    GameState.state.lang = window.navigator.language
+    //GameState.state.lang = window.navigator.language
     // console.log(navigator.userAgent);
     // console.log("---- USER DEVICE ----")
 }

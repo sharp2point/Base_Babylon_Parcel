@@ -1,6 +1,7 @@
 import { GameState } from "@/game_state/game_state";
 import { LEVELSDESCRIPT } from "@/game_state/levels_descript";
 import { UISTATE } from "@/game_state/ui/state";
+import { teachAnimateSteps } from "@/teach/teach";
 
 export function backSetOpaq_0() {
     const place: HTMLElement = document.querySelector(".html-ui");
@@ -11,9 +12,9 @@ export function backSetOpaq_0() {
 
 function uiHtmlComponents() {
     const place: HTMLElement = document.querySelector("#ui-place");
+    preloader(place);
     const ui = UI(place);
     scoreBoard(ui);
-    settingsUIBlock(ui);
     levelDescription(ui);
     showDescription(false);
     const floor = downBlock(ui);
@@ -22,7 +23,8 @@ function uiHtmlComponents() {
     spinMenuButtons(floor);
     showSpinMenuButtons(false)
     textBlock(floor);
-    preloader(place);
+    settingsUIBlock(ui);
+
 }
 function UI(parent: HTMLElement) {
     const ui = document.createElement("div");
@@ -100,12 +102,12 @@ function spinMenuButtons(parent: HTMLElement) {
     const leftButton = document.createElement("button");
     leftButton.classList.add("left-menu-button");
     leftButton.classList.add("menu-button");
-    leftButton.innerText = "PREV";
+    leftButton.innerText = GameState.state.lang === "ru" ? "ВПЕРЁД" : "PREV";
 
     const rightButton = document.createElement("button");
     rightButton.classList.add("right-menu-button");
     rightButton.classList.add("menu-button");
-    rightButton.innerText = "NEXT";
+    rightButton.innerText = GameState.state.lang === "ru" ? "НАЗАД" : "NEXT";
 
     buttonPlace.appendChild(leftButton);
     buttonPlace.appendChild(rightButton);
@@ -198,12 +200,14 @@ function settingsUIBlock(parent: HTMLElement) {
     const lang = GameState.state.lang === "ru" ? "public/icons/russian.png" : "public/icons/english.png"
     place.innerHTML = `
         <input type="image" class="fullscreen-button settings-button" alt="Full Screen" src="public/icons/fullscreen.png" />
-        <input type="image" class="lang-button settings-button" alt="Language Screen" src=${lang} />
+        <input type="image" class="teach-button settings-button" alt="Teach" src="public/icons/education.png" />        
+        <input type="image" class="lang-button settings-button" alt="Language" src=${lang} />
     `;
 
     parent.appendChild(place);
     appendEventFullScreenButton();
-    appendEventLanguageButton()
+    appendEventLanguageButton();
+    appendEventTeachButton();
 }
 export function showSettingsUI(isShow: boolean) {
     const element = document.querySelector(".settings-block");
@@ -227,6 +231,12 @@ export function appendEventFullScreenButton() {
                 }
             }
         }
+    })
+}
+export function appendEventTeachButton() {
+    const button: HTMLImageElement = document.querySelector(".teach-button");
+    button.addEventListener('click', () => {
+        teachAnimateSteps(UISTATE.PIXI);
     })
 }
 export function appendEventLanguageButton() {
