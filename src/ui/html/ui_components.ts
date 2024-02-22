@@ -18,7 +18,7 @@ export function removePreloader() {
 function uiHtmlComponents() {
     const uiPlace = document.querySelector("#ui-place") as HTMLElement;
     UISTATE.UI.set("uiPlace", uiPlace);
-    UISTATE.UI.set("upMenu", document.querySelector(".up-menu"));
+    UISTATE.UI.set("header", document.querySelector(".header"));
     UISTATE.UI.set("footer", document.querySelector(".footer"));
 
     preloader(uiPlace);
@@ -46,7 +46,7 @@ function preloader(parent: HTMLElement) {
 // UP MENU ------------------------------------------
 
 function showMenuUI(isShow: boolean) {
-    const upmenu = UISTATE.UI.get("upMenu");
+    const upmenu = UISTATE.UI.get("header");
     const footer = UISTATE.UI.get("footer");
     if (isShow) {
         upmenu.classList.remove("hide");
@@ -57,7 +57,7 @@ function showMenuUI(isShow: boolean) {
     }
 }
 function appendEventListenerUpMenu() {
-    const upmenu = UISTATE.UI.get("upMenu");
+    const upmenu = UISTATE.UI.get("header");
     upmenu.addEventListener('click', (e) => {
         const target = e.target;
         if (target instanceof HTMLImageElement) {
