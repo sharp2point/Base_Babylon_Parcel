@@ -9,15 +9,13 @@ export function gameNotify(state: number, options: {
         case GameState.state.signals.LEVEL_WIN: {
             const notifyContainer = notyfyContainer();
             notifyContainer.appendChild(youWin2D());
-            const parent = parentUI();
-            parent.appendChild(notifyContainer);
+            document.body.appendChild(notifyContainer);
             break;
         }
         case GameState.state.signals.GAME_OTHER_BALL: {
             const notifyContainer = notyfyContainer();
             notifyContainer.appendChild(gameOther2D());
-            const parent = parentUI();
-            parent.appendChild(notifyContainer);
+            document.body.appendChild(notifyContainer);
             break;
         }
     }
@@ -39,7 +37,7 @@ function youWin2D() {
     } else if (GameState.state.lang === "ru") {
         win.innerHTML = `<p>You Win !</p>`;
     }
-    
+
     return win;
 }
 function gameOther2D() {
@@ -57,7 +55,6 @@ const notyfyContainer = () => {
     notifyContainer.classList.add("notyfy-container");
     return notifyContainer
 }
-const parentUI = () => document.querySelector(".html-ui");
 const destroyNotify = () => {
-    parentUI().removeChild(document.querySelector('.notyfy-container'));
+    document.body.removeChild(document.querySelector('.notyfy-container'));
 }

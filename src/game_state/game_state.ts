@@ -5,9 +5,10 @@ import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
 import { Observable, Observer, Scene } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
-import { redrawResult, showDescription, showResult, showSettingsUI, showSpinMenuButtons } from "@/ui/html/ui_components";
+import { showScoreboard, showUILayout } from "@/ui/html/ui_components";
 import { getResultsIDB, saveResultIDB } from "@/DB/indexdb";
 import { GameResult } from "@/DB/sheme";
+import Scoreboard from "@/ui/html/scoreboard";
 
 export const GameState = function _GameState() {
 };
@@ -70,15 +71,7 @@ GameState.state = {
         GAME_OTHER_BALL: 400,
         GAME_OTHER_TIME: 420,
     },
-    ui: {
-        init_screen: null,
-        score_board: {
-            size: {
-                width: 500,
-                height: 100,
-            }
-        }
-    },
+
     playerProgress: new Map<number, number>()
 };
 //---- ACCSESSORS---------------------------->
@@ -93,7 +86,6 @@ GameState.shieldNode = () => GameState.state.gameObjects.shield_node;
 GameState.shieldBody = () => GameState.state.gameObjects.shield_body;
 GameState.points = () => GameState.state.gameObjects.points;
 GameState.playerProgress = (): Map<number, number> => GameState.state.playerProgress;
-GameState.UI = () => GameState.state.ui;
 GameState.IDB = (): IDBDatabase => GameState.state.indexDB.db;
 GameState.IDBobject = () => GameState.state.indexDB;
 //----------------------------------------------------------------------->
@@ -180,11 +172,8 @@ GameState.levelRun = (level: number) => { // level -> binding from spin menu
     GameState.state.level = level;
     GameState.playerProgress().set(level, 0);
     GameState.changeGameState(GameState.state.signals.GAME_RUN);
-    // showSettingsUI(false);
-    // showDescription(false);
-    // showResult(false);
-    // showScoreboard(true);
-    // showSpinMenuButtons(false);
+    (UISTATE.UI.get("scoreboard") as Scoreboard).show = true;
+    showUILayout(false);
     setTimeout(() => {
         (AGAME.Scene as Scene).attachControl();
     }, 600);
@@ -193,11 +182,9 @@ GameState.menuRun = () => {
     (AGAME.Scene as Scene).detachControl();
     AGAME.RenderLock = true;
     UISTATE.RenderLock = false;
-    //resultRedraw(GameState.state.level, GameState.playerProgress().get(GameState.state.level))
     GameState.changeGameState(GameState.state.signals.MENU_OPEN);
-    // showSettingsUI(true);
-    // showScoreboard(false);
-    // showDescription(true);
+    (UISTATE.UI.get("scoreboard") as Scoreboard).show = false;
+    showUILayout(true);
     getResultsIDB().then((data: Array<GameResult>) => {
         const res = data.filter((obj) => GameState.state.level === obj.level);
         let max = res[0];
@@ -213,7 +200,6 @@ GameState.menuRun = () => {
         }
         //showResult(true);
     });
-    //showSpinMenuButtons(true);
     setTimeout(() => {
         (UISTATE.Scene as Scene).attachControl();
     }, 600);
@@ -221,12 +207,6 @@ GameState.menuRun = () => {
 
 //---------------------------------------------------
 
-function showScoreboard(isShow: boolean) {
-    const scoreboard = document.querySelector(".scoreboard");
-    isShow ?
-        scoreboard.classList.remove('hide') :
-        scoreboard.classList.add('hide');
-}
 export function runTimer() {
     let count = 60;
     let sec = 0;
@@ -247,5 +227,5 @@ function stopTimer(obser$: Observer<Scene>) {
         obser$.remove();
     }
 }
-const renderPoints = (points: number) => (UISTATE.Scoreboard.score as HTMLElement).innerText = `${points}`.padStart(4, '0');
-const renderTime = (seconds: number) => (UISTATE.Scoreboard.timer as HTMLElement).innerText = `${seconds}`.padStart(4, '0');
+const renderPoints = (points: number) => (UISTATE.UI.get("scoreboard") as Scoreboard).score = points;
+const renderTime = (seconds: number) => (UISTATE.UI.get("scoreboard") as Scoreboard).timer = seconds;

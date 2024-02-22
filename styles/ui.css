@@ -54,6 +54,7 @@
 }
 .content h2{
     font: 2rem "Arial";
+    letter-spacing: 0.2rem;
     color: rgb(130, 100, 50)
 }
 .content p {
