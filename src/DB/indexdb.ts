@@ -1,4 +1,4 @@
-import { GameState } from "@/game_state/game_state";
+import { GameState, redrawLevelProgress } from "@/game_state/game_state";
 import { GameResult } from "./sheme";
 
 
@@ -54,6 +54,18 @@ export function getResultsIDB() {
             }
         }
     })
+}
+export function getMaxProgressForLevel(level: number) {
+    getResultsIDB().then((data: Array<GameResult>) => {
+        const res = data.filter((obj) => level === obj.level);
+        let max = res[0];
+        for (let i = 1; i < res.length; i++) {
+            if (max.score < res[i].score) {
+                max = res[i];
+            }
+        }
+        max ? redrawLevelProgress(max) : redrawLevelProgress(null);
+    });
 }
 function openIDB(): IDBOpenDBRequest {
     return window.indexedDB.open(GameState.IDBobject().name, GameState.IDBobject().version);

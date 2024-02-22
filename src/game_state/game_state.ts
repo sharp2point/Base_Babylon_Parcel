@@ -3,12 +3,13 @@ import { resetBall } from "@/objects/ball";
 import { disposeEnemies } from "@/utils/utility";
 import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
-import { Observable, Observer, Scene } from "@babylonjs/core";
+import { Observer, Scene } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
-import { showScoreboard, showUILayout } from "@/ui/html/ui_components";
-import { getResultsIDB, saveResultIDB } from "@/DB/indexdb";
+import { showUILayout } from "@/ui/html/ui_components";
+import { getMaxProgressForLevel, getResultsIDB, saveResultIDB } from "@/DB/indexdb";
 import { GameResult } from "@/DB/sheme";
 import Scoreboard from "@/ui/html/scoreboard";
+import { Mesh } from "pixi.js";
 
 export const GameState = function _GameState() {
 };
@@ -156,7 +157,7 @@ GameState.resetScene = () => {
 }
 //----------------------------------------------->
 
-GameState.calculatePoints = (enemy) => {
+GameState.calculatePoints = (enemy: Mesh) => {
     const meta = enemy["meta"];
     const key = GameState.state.level;
     if (GameState.playerProgress().has(key)) {
@@ -185,28 +186,16 @@ GameState.menuRun = () => {
     GameState.changeGameState(GameState.state.signals.MENU_OPEN);
     (UISTATE.UI.get("scoreboard") as Scoreboard).show = false;
     showUILayout(true);
-    getResultsIDB().then((data: Array<GameResult>) => {
-        const res = data.filter((obj) => GameState.state.level === obj.level);
-        let max = res[0];
-        for (let i = 1; i < res.length; i++) {
-            if (max.score < res[i].score) {
-                max = res[i];
-            }
-        }
-        if (max) {
-            //redrawResult(max.isWin, max.score);
-        } else {
-            //redrawResult(false, 0);
-        }
-        //showResult(true);
-    });
+    getMaxProgressForLevel(GameState.state.level);
     setTimeout(() => {
         (UISTATE.Scene as Scene).attachControl();
     }, 600);
 }
 
 //---------------------------------------------------
+export function onRotateSpinMenu() {
 
+}
 export function runTimer() {
     let count = 60;
     let sec = 0;
@@ -229,3 +218,12 @@ function stopTimer(obser$: Observer<Scene>) {
 }
 const renderPoints = (points: number) => (UISTATE.UI.get("scoreboard") as Scoreboard).score = points;
 const renderTime = (seconds: number) => (UISTATE.UI.get("scoreboard") as Scoreboard).timer = seconds;
+export function redrawLevelProgress(data: GameResult) {
+    if (data) {
+        UISTATE.UI.get("progressScore").innerHTML = `${data.score}`.padStart(4, "0");
+        UISTATE.UI.get("progressTime").innerHTML = `${data.time}`.padStart(4, "0");
+    } else {
+        UISTATE.UI.get("progressScore").innerHTML = `0000`;
+        UISTATE.UI.get("progressTime").innerHTML = `0000`;
+    }
+}

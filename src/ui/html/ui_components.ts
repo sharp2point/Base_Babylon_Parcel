@@ -20,6 +20,8 @@ function uiHtmlComponents() {
     UISTATE.UI.set("uiPlace", uiPlace);
     UISTATE.UI.set("header", document.querySelector(".header"));
     UISTATE.UI.set("footer", document.querySelector(".footer"));
+    UISTATE.UI.set("progressTime", document.querySelector(".progress-time span"));
+    UISTATE.UI.set("progressScore", document.querySelector(".progress-score span"));
     UISTATE.UI.set("scoreboard", document.querySelector(".scoreboard"));
 
     preloader(uiPlace);

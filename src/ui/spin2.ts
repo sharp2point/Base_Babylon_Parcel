@@ -15,10 +15,7 @@ import {
     Color4,
     ParticleSystem,
 } from "@babylonjs/core";
-import { redrawLevelDescription, redrawResult, showDescription, showResult, showSpinMenuButtons } from "./html/ui_components";
-import { getResultsIDB } from "@/DB/indexdb";
-import { GameResult } from "@/DB/sheme";
-import { UISTATE } from "@/game_state/ui/state";
+import { getMaxProgressForLevel } from "@/DB/indexdb";
 import { appendParticles } from "@/utils/clear_utils";
 
 const ITEM_MODELS = {
@@ -55,25 +52,6 @@ export async function spinMenu2(scene: Scene) {
     SPINMENU.nodeMenu = await buildMenu(SPINMENU.position, SPINMENU.radius, SPINMENU.count, scene) as TransformNode;
 
     setMenuIndex(0, SPINMENU.nodeMenu, scene);
-    getResultsIDB().then((data: Array<GameResult>) => {
-        const res = data.filter((obj) => SPINMENU.focusItem["meta"].index === obj.level);
-        let max = res[0];
-        for (let i = 1; i < res.length; i++) {
-            if (max.score < res[i].score) {
-                max = res[i];
-            }
-        }
-        if (max) {
-            //redrawResult(max.isWin, max.score);
-        } else {
-            //redrawResult(false, 0);
-        }
-        //showResult(true);
-    });
-
-    //redrawLevelDescription(1, 0, GameState.state.lang);
-    //showDescription(true);
-    // appendEventsHtmlButtons(SPINMENU.nodeMenu, scene);
 
     scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
@@ -191,7 +169,6 @@ function initGeometryItemFromModels(name: string, options: { index: number }, sc
     center.isVisible = true;
     center.isEnabled(true);
 
-
     const level = ITEM_MODELS.level.clone("level");
     level.isVisible = true;
     level.isEnabled(true);
@@ -296,7 +273,6 @@ async function menuItem(name: string, options: { index: number, angle: number },
     });
 }
 function buildMenu(position: Vector3, radius: number, count: number, scene: Scene) {
-
     const tn = new TransformNode("menu-tn", scene);
 
     SPINMENU.angle = 360 / count;
@@ -366,23 +342,8 @@ function setMenuIndex(index: number, menu: TransformNode, scene: Scene) {
             scene.removeAnimation(scaleOldAnim);
         });
     }
-    //redrawLevelDescription(1, index, "ru");
-    getResultsIDB().then((data: Array<GameResult>) => {
-        const res = data.filter((obj) => SPINMENU.focusItem["meta"].index === obj.level);
-        let max = res[0];
-        for (let i = 1; i < res.length; i++) {
-            if (max.score < res[i].score) {
-                max = res[i];
-            }
-        }
-        if (max) {
-           // redrawResult(max.isWin, max.score);
-        } else {
-           // redrawResult(false, 0);
-        }
-        //showResult(true);
-    });
     SPINMENU.focusItem = item;
+    getMaxProgressForLevel(SPINMENU.focusItem["meta"].index);
 }
 export function rotateToNextPosition(menu: TransformNode, scene: Scene) {
     let index = (SPINMENU.focusItem ? SPINMENU.focusItem["meta"].index : 0) + 1;
@@ -394,18 +355,6 @@ export function rotateToPrevPosition(menu: TransformNode, scene: Scene) {
     index = index < 0 ? (SPINMENU.count - 1) : index;
     setMenuIndex(index, menu, scene)
 }
-// function appendEventsHtmlButtons(menu: TransformNode, scene: Scene) {
-//     const leftButton = document.querySelector(".left-menu-button");
-//     const rightButton = document.querySelector(".right-menu-button");
-
-//     leftButton.addEventListener("click", () => {
-//         rotateToPrevPosition(menu, scene)
-//     })
-//     rightButton.addEventListener("click", () => {
-//         rotateToNextPosition(menu, scene)
-//     })
-//     //showSpinMenuButtons(true);
-// }
 //- Animations ------------------------------------------
 
 function rotateMenuAnimation(item: TransformNode, angle: number) {
