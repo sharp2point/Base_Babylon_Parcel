@@ -1,4 +1,5 @@
 import { Engine } from "@babylonjs/core";
+import * as PIXI from "pixi.js";
 
 export const UISTATE = {
     Engine: null,
@@ -13,6 +14,6 @@ export const UISTATE = {
     view: {
         spotBallDiameter: 5,
     },
-    PIXI: null,
-    PixiUI: null
+    PIXI: null as PIXI.Application<PIXI.ICanvas>,
+    UI: new Map<string, HTMLElement>(),
 }

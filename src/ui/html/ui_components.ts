@@ -3,42 +3,28 @@ import { LEVELSDESCRIPT } from "@/game_state/levels_descript";
 import { UISTATE } from "@/game_state/ui/state";
 import { teachAnimateSteps } from "@/teach/teach";
 
-export function backSetOpaq_0() {
-    const place: HTMLElement = document.querySelector(".html-ui");
-    place.classList.add("html-back-opaq-0");
+export function removePreloader() {
     const preloader: HTMLElement = document.querySelector(".preload-container");
     preloader.parentNode.removeChild(preloader);
+
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            showMenuUI(true);
+            resolve(null);
+        }, 500)
+    })
 }
 
 function uiHtmlComponents() {
-    const place: HTMLElement = document.querySelector("#ui-place");
-    preloader(place);
-    const ui = UI(place);
-    scoreBoard(ui);
-    levelDescription(ui);
-    showDescription(false);
-    const floor = downBlock(ui);
-    resultBlock(floor);
-    showResult(false);
-    spinMenuButtons(floor);
-    showSpinMenuButtons(false)
-    textBlock(floor);
-    settingsUIBlock(ui);
+    const uiPlace = document.querySelector("#ui-place") as HTMLElement;
+    UISTATE.UI.set("uiPlace", uiPlace);
+    UISTATE.UI.set("upMenu", document.querySelector(".up-menu"));
+    UISTATE.UI.set("footer", document.querySelector(".footer"));
 
+    preloader(uiPlace);
+    appendEventListenerUpMenu();
 }
-function UI(parent: HTMLElement) {
-    const ui = document.createElement("div");
-    ui.classList.add("html-ui");
-    parent.appendChild(ui);
-    return ui;
-}
-function textBlock(parent: HTMLElement) {
-    const ui = document.createElement("div");
-    ui.classList.add("ui-text-block");
-    ui.innerHTML = `<span class='text'>инди-проект <span class='text-name text'> COLOBORUS </span> </span>                    
-                    <span class='text-year text'>2024 г.</span>`;
-    parent.appendChild(ui);
-}
+// PRELOADER ----------------------------------------
 function preloader(parent: HTMLElement) {
     const container = document.createElement("div");
     container.classList.add("preload-container");
@@ -56,6 +42,92 @@ function preloader(parent: HTMLElement) {
 
     parent.appendChild(container);
 }
+
+// UP MENU ------------------------------------------
+
+function showMenuUI(isShow: boolean) {
+    const upmenu = UISTATE.UI.get("upMenu");
+    const footer = UISTATE.UI.get("footer");
+    if (isShow) {
+        upmenu.classList.remove("hide");
+        footer.classList.remove("hide");
+    } else {
+        upmenu.classList.add("hide");
+        footer.classList.add("hide");
+    }
+}
+function appendEventListenerUpMenu() {
+    const upmenu = UISTATE.UI.get("upMenu");
+    upmenu.addEventListener('click', (e) => {
+        const target = e.target;
+        if (target instanceof HTMLImageElement) {
+            switch (target.dataset["button"]) {
+                case "fullscreen": {
+                    onFullscreenClickEvent(target);
+                    break;
+                }
+                case "teach": {
+                    onTeachClickEvent(target);
+                    break;
+                }
+                case "lang": {
+                    onLanguageClickEvent(target)
+                    break;
+                }
+                default: {
+                    throw new Error("Up Menu Error");
+                }
+            }
+        }
+
+    })
+}
+function onFullscreenClickEvent(image: HTMLImageElement) {
+    if (document.fullscreenEnabled) {
+        if (!GameState.state.isFullScreen) {
+            GameState.state.isFullScreen = true;
+            image.src = "public/icons/fullscreen_exit.png";
+            if (document.body.requestFullscreen) {
+                document.body.requestFullscreen();
+            }
+        } else {
+            GameState.state.isFullScreen = false;
+            image.src = "public/icons/fullscreen.png";
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+}
+function onTeachClickEvent(image: HTMLImageElement) {
+    teachAnimateSteps(UISTATE.PIXI);
+}
+function onLanguageClickEvent(image: HTMLImageElement) {
+    if (GameState.state.lang === "ru") {
+        GameState.state.lang = "eng";
+        image.src = "public/icons/english.png";
+        changeLocal("eng")
+    } else {
+        GameState.state.lang = "ru";
+        image.src = "public/icons/russian.png";
+        changeLocal("ru")
+    }
+}
+//--OLD------------------------------------
+
+
+
+
+
+
+function textBlock(parent: HTMLElement) {
+    const ui = document.createElement("div");
+    ui.classList.add("ui-text-block");
+    ui.innerHTML = `<span class='text'>инди-проект <span class='text-name text'> COLOBORUS </span> </span>                    
+                    <span class='text-year text'>2024 г.</span>`;
+    parent.appendChild(ui);
+}
+
 function scoreBoard(parent: HTMLElement) {
     const ui = document.createElement("div");
     ui.classList.add("scoreboard");
@@ -205,55 +277,12 @@ function settingsUIBlock(parent: HTMLElement) {
     `;
 
     parent.appendChild(place);
-    appendEventFullScreenButton();
-    appendEventLanguageButton();
-    appendEventTeachButton();
 }
 export function showSettingsUI(isShow: boolean) {
     const element = document.querySelector(".settings-block");
     isShow ? element.classList.remove("hide") : element.classList.add("hide");
 }
-export function appendEventFullScreenButton() {
-    const button: HTMLImageElement = document.querySelector(".fullscreen-button");
-    button.addEventListener('click', () => {
-        if (document.fullscreenEnabled) {
-            if (!GameState.state.isFullScreen) {
-                GameState.state.isFullScreen = true;
-                button.src = "public/icons/fullscreen_exit.png";
-                if (document.body.requestFullscreen) {
-                    document.body.requestFullscreen();
-                }
-            } else {
-                GameState.state.isFullScreen = false;
-                button.src = "public/icons/fullscreen.png";
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
-        }
-    })
-}
-export function appendEventTeachButton() {
-    const button: HTMLImageElement = document.querySelector(".teach-button");
-    button.addEventListener('click', () => {
-        teachAnimateSteps(UISTATE.PIXI);
-    })
-}
-export function appendEventLanguageButton() {
-    const button: HTMLImageElement = document.querySelector(".lang-button");
-    button.addEventListener('click', () => {
-        if (GameState.state.lang === "ru") {
-            GameState.state.lang = "eng";
-            button.src = "public/icons/english.png";
-            changeLocal("eng")
-        } else {
-            GameState.state.lang = "ru";
-            button.src = "public/icons/russian.png";
-            changeLocal("ru")
-        }
-    });
 
-}
 function changeLocal(local: string) {
     const indie = document.querySelector(".ui-text-block");
     const leftButton = document.querySelector(".left-menu-button") as HTMLElement;
@@ -294,5 +323,5 @@ function changeLocal(local: string) {
     }
 }
 //----------------------------------------------->
-//uiHtmlComponents();
+uiHtmlComponents();
 

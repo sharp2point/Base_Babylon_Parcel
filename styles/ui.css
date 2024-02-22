@@ -1,0 +1,217 @@
+#ui-place{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top:0;
+    left:0;
+    border:5px solid red;
+    background-color: transparent;
+    user-select: none;
+    pointer-events: none;
+}
+/* UPMENU ------------------------- */
+#ui-place .header{
+    display:flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    width:100%;
+    max-width: 250px;
+    border:1px solid red;
+}
+.header .up-menu{
+    display:flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width:100%;
+    max-width: 250px;
+    height:40px;
+    border:1px solid red;
+}
+.up-menu img{
+    width: 40px;
+    height: 40px;
+    margin:5px;
+    pointer-events: all;   
+    cursor: pointer; 
+}
+/* CONTENT */
+.header .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 250px;
+    height: 200px;
+    border: 1px solid red;
+}
+.content h2{
+    font: 2rem "Impact";
+    color: rgb(130, 100, 50)
+}
+.content p {
+    font: 1rem "Impact";
+    color: rgb(200, 200, 200)
+}
+/* FOOTER */
+
+#ui-place .footer{
+    display:flex;
+    flex-direction:column;
+    align-items: center;
+    width:100%;
+    max-width: 250px;
+    border:1px solid red;
+    margin-bottom: 0.5rem;
+}
+
+
+/* FOOTER PROGRESS */
+.footer .progress{
+    display:flex;
+    flex-direction:column;
+    align-items: center;
+    width: 100%;
+    height: 200px;
+    border:1px solid red;
+}
+.progress-view{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 80%;
+}
+.progress-view img{
+    width: 40px;
+    height: 40px;
+}
+.progress-view span {
+    font: bold 3rem "Impact";
+}
+.progress-score{
+    color: rgb(130,100,50);    
+    padding: 5px;
+}
+.progress-time {
+    color: rgb(130, 100, 50);
+    padding: 5px;
+}
+/* FOOTER COPYRIGHT */
+.footer .copyright{
+    display:flex;
+    flex-direction:row;
+    align-items: end;
+    justify-content: space-between;
+    width:70%;
+}
+.copyright a{
+    display:block ;
+    width: 2rem;
+    height: 2rem;
+    background-size: cover;
+    background-image: url("../public/icons/email.webp");
+}
+.copyright span.study{
+    font-weight: 900;
+    font-size: 1.2rem;
+    text-align: center;
+    line-height: 1.5rem;
+    color: rgb(230,100,100);
+}
+.copyright span.study::first-letter{
+    color: rgb(200, 200, 200);
+}
+.copyright span.year {
+    font-size: 1rem;
+    color: rgb(200, 200, 200);
+}
+
+/* MEDIA QUERYES */
+@media screen and (max-height: 860px ){
+    .footer .progress{
+        height: 150px;
+    }
+}
+@media screen and (max-height: 680px) {
+    .header .content {
+        height: 160px;
+    }
+    .footer .progress {
+        height: 130px;
+    }
+}
+@media screen and (max-height: 560px) {
+    .header .content {
+        height: 130px;
+    }
+    .footer .progress {
+        height: 110px;
+    }
+    .progress-view img{
+        width: 35px;
+        height: 35px;
+    }
+    .progress-view span {
+        font: bold 2.5rem "Impact";
+    }
+}
+@media screen and (max-height: 500px) {
+    .header .content {
+        height: 110px;
+    }
+    .footer .progress {
+        height: 80px;
+        flex-direction: row;
+        gap:1.5rem;
+    }
+    .progress-view{
+        width: 50%;
+    }
+    .progress-view img{
+        width: 30px;
+        height: 30px;
+    }
+    .progress-view span {
+        font: bold 2rem "Impact";
+    }
+}
+@media screen and (max-height: 400px) {
+    .header .content {
+        height: 90px;
+    }
+    .footer .progress {
+        height: 55px;
+    }
+}
+@media screen and (max-height: 350px) {
+    .header .content {
+        height: 70px;
+    }
+    .footer .progress {
+        height: 50px;
+    }
+}
+@media screen and (max-height: 320px) {
+    .header .content {
+        height: 50px;
+    }
+    .footer .progress {
+        height: 40px;
+    }
+}
+@media screen and (max-height: 255px) {
+    .header .content {
+       visibility: hidden;
+       display: none;
+    }
+    .footer .progress {
+       visibility: hidden;
+       display: none;
+    }
+}

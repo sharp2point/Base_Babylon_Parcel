@@ -27,6 +27,7 @@ window.addEventListener('load', async () => {
     loadAssets(ASSETS.sprites);
     AGAME.RenderLock = true;
     UISTATE.RenderLock = false;
+    
 
     initCore().then(async () => {
         const { UIScene } = await import("./ui/ui");
@@ -55,7 +56,6 @@ window.addEventListener('resize', () => {
     AGAME.ScreenAspect = getScreenAspect();
     if (AGAME.Engine) {
         AGAME.Engine.resize();
-        UISTATE.Engine.resize();
     }
     if (GameState.camera()) {
         cameraSettings(AGAME.ScreenAspect);

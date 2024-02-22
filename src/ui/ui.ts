@@ -5,10 +5,9 @@ import {
     Scene, SpotLight, StandardMaterial,
     Tools, UniversalCamera, Vector3
 } from "@babylonjs/core";
-import { backSetOpaq_0 } from "./html/ui_components";
+import { removePreloader } from "./html/ui_components";
 import { spinMenu2 } from "./spin2";
 import { initTeach } from "@/teach/teach";
-import { initPixiUI } from "./pixi_ui/pixi_ui";
 
 export function UIScene() {
     const scene = new Scene(UISTATE.Engine);
@@ -32,7 +31,7 @@ export function UIScene() {
 
     sceneBuilder(scene);
 
-    scene.onReadyObservable.add(() => {
+    scene.onReadyObservable.addOnce(() => {
         onReady(scene);
     });
 
@@ -40,10 +39,10 @@ export function UIScene() {
 }
 //------------------------------------------------------>
 function onReady(scene: Scene) {
-    spinMenu2(scene);
-    initPixiUI(document.querySelector("#ui-place"));
-    // backSetOpaq_0();
-    initTeach(document.querySelector("#teach-place"));
+    removePreloader().then(() => {
+        spinMenu2(scene);
+        initTeach(document.querySelector("#teach-place"));
+    });
 }
 function sceneBuilder(scene: Scene) {
     const window_size = getInnerWindow();
