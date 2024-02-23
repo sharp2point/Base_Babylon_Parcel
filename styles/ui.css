@@ -10,44 +10,18 @@
     left:0;    
     background-color: transparent;
     user-select: none;
-    pointer-events: none;    
-    /* border: 5px solid red; */
+    pointer-events: none;
 }
-/* UPMENU ------------------------- */
 #ui-place .header{
     display:flex;
     flex-direction: column;
-    justify-content: start;
+    justify-content: space-between;
     align-items: center;
     width:100%;
     max-width: 250px;
+    margin-top:1rem;
     /* border:1px solid red; */
 }
-/* CONTENT */
-.header .content {
-    display: flex;
-    flex-direction: column;
-    justify-content: end;
-    align-items: center;
-    gap:1rem;
-    width: 100%;
-    max-width: 250px;
-    height: 200px;
-    /* border: 1px solid red; */
-}
-.content h2{
-    font: 2rem "Arial";
-    letter-spacing: 0.2rem;
-    color: rgb(130, 100, 50)
-}
-.content p {
-    font: 1.1rem "Arial";
-    font-style: italic;
-    text-align: center;
-    color: rgb(200, 200, 200)
-}
-/* FOOTER */
-
 #ui-place .footer{
     display:flex;
     flex-direction:column;
@@ -59,63 +33,4 @@
     margin-bottom: 1rem;
 }
 
-/* MEDIA QUERYES */
-@media screen and (max-height: 860px ){
-    
-}
-@media screen and (max-height: 680px) {
-    .header .content {
-        height: 160px;
-    }    
-}
-@media screen and (max-height: 560px) {
-    .header .content {
-        height: 130px;
-    }    
-}
-@media screen and (max-height: 500px) {
-    .header .content {
-        height: 110px;
-    }
-    .content h2{
-        font-size: 1.9rem;
-    }
-    .content p{
-        font-size: 1rem;
-    }    
-}
-@media screen and (max-height: 400px) {
-    .header .content {
-        height: 90px;
-    }
-}
-@media screen and (max-height: 350px) {
-    .header .content {
-        height: 70px;
-        gap:0.5rem;
-    }
-    .content h2{
-        font-size: 1.8rem;
-    }
-    .content p{
-        font-size: 0.9rem;
-    }
-}
-@media screen and (max-height: 320px) {
-    .header .content {
-        height: 50px;
-    }
-    .content h2{
-        font-size: 1.8rem;
-    }
-    .content p{
-       visibility: hidden;
-       display: none;
-    }
-}
-@media screen and (max-height: 255px) {
-    .header .content {
-       visibility: hidden;
-       display: none;
-    }
-}
+

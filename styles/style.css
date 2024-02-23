@@ -2,7 +2,6 @@
 @import url("./ui.css");
 @import url("./preloader.css");
 @import url("./teach.css");
-@import url("./media.css");
 
 .html-back-opaq-0 {
     animation: animation-back-opaq 1s;
