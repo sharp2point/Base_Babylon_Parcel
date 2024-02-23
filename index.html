@@ -4,19 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>babylon parcel template</title> 
-    <script type="module" src="./src/ui/html/scoreboard.ts"></script>
+    <script type="module" src="./src/ui/html/upmenu.ts" defer></script>
+    <script type="module" src="./src/ui/html/scoreboard.ts" defer></script>
+    <script type="module" src="./src/ui/html/progressboard.ts" defer></script>
+    <script type="module" src="./src/ui/html/copyright.ts" defer></script>
     <link rel="icon" href="./public/favicon.ico">
     <link rel="stylesheet" href="./styles/style.css">
 </head>
 <body>    
     <canvas id="app" allow="fullscreen"></canvas>
     <div id="ui-place">
-        <div class="header hide">
-            <div class="up-menu">
-                <img data-button="fullscreen" src="./public/icons/fullscreen.png">
-                <img data-button="teach" src="./public/icons/education.png">
-                <img data-button="lang" src="./public/icons/russian.png">
-            </div>
+        <div class="header hide">           
+            <nice2jm-upmenu></nice2jm-upmenu>
             <div class="content">
                 <h2>Глава первая</h2>
                 <p>Путь в тысячу вёрст начинается с первого шага.</p>
@@ -24,19 +23,12 @@
         </div>
         
         <div class="footer hide">
-            <div class="progress">
-                <p class="progress-score progress-view"><img src="./public/icons/score.png"><span>0000</span></p>
-                <p class="progress-time progress-view"><img src="./public/icons/timer.png"><span>0000</span></p>
-            </div>
-            <div class="copyright">
-                <a href="mailto:sharppoint@yandex.ru"></a>
-                <span class="study">&copy;NICE2JM</span>
-                <span class="year">2024г.</span>
-            </div>
+            <nice2jm-progressboard></nice2jm-progressboard>            
+            <nice2jm-copyright></nice2jm-copyright>
         </div>
     </div>
     <div id="teach-place"></div>
-    <nice2jm-scoreboard />
+    <nice2jm-scoreboard ></nice2jm-scoreboard>
     <script type="module" src="./src/ui/html/ui_components.ts"></script>
     <script type="module" src="./src/init.ts"></script>
 </body>

@@ -1,5 +1,4 @@
 import { GameState } from "@/game_state/game_state";
-import { LEVELSDESCRIPT } from "@/game_state/levels_descript";
 import { UISTATE } from "@/game_state/ui/state";
 import { teachAnimateSteps } from "@/teach/teach";
 
@@ -20,8 +19,7 @@ function uiHtmlComponents() {
     UISTATE.UI.set("uiPlace", uiPlace);
     UISTATE.UI.set("header", document.querySelector(".header"));
     UISTATE.UI.set("footer", document.querySelector(".footer"));
-    UISTATE.UI.set("progressTime", document.querySelector(".progress-time span"));
-    UISTATE.UI.set("progressScore", document.querySelector(".progress-score span"));
+    UISTATE.UI.set("progress", document.querySelector(".progress"));
     UISTATE.UI.set("scoreboard", document.querySelector(".scoreboard"));
 
     preloader(uiPlace);

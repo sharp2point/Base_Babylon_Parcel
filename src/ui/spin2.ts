@@ -10,8 +10,6 @@ import {
     IPointerEvent,
     PickingInfo,
     PointerEventTypes,
-    Ray,
-    RayHelper,
     Color4,
     ParticleSystem,
 } from "@babylonjs/core";

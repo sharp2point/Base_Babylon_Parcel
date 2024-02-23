@@ -83,7 +83,7 @@ function htmlRender() {
                     color: rgb(130, 100, 50);
                     padding: 5px;
                 }
-            </style>
+            </style>    
     `
     return `${html}${style}`;
 }

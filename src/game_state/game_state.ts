@@ -6,10 +6,11 @@ import { UISTATE } from "./ui/state";
 import { Observer, Scene } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
 import { showUILayout } from "@/ui/html/ui_components";
-import { getMaxProgressForLevel, getResultsIDB, saveResultIDB } from "@/DB/indexdb";
+import { getMaxProgressForLevel, saveResultIDB } from "@/DB/indexdb";
 import { GameResult } from "@/DB/sheme";
 import Scoreboard from "@/ui/html/scoreboard";
 import { Mesh } from "pixi.js";
+import Progressboard from "@/ui/html/progressboard";
 
 export const GameState = function _GameState() {
 };
@@ -220,10 +221,10 @@ const renderPoints = (points: number) => (UISTATE.UI.get("scoreboard") as Scoreb
 const renderTime = (seconds: number) => (UISTATE.UI.get("scoreboard") as Scoreboard).timer = seconds;
 export function redrawLevelProgress(data: GameResult) {
     if (data) {
-        UISTATE.UI.get("progressScore").innerHTML = `${data.score}`.padStart(4, "0");
-        UISTATE.UI.get("progressTime").innerHTML = `${data.time}`.padStart(4, "0");
+        (UISTATE.UI.get("progress") as Progressboard).score = data.score;
+        (UISTATE.UI.get("progress") as Progressboard).timer = data.time;
     } else {
-        UISTATE.UI.get("progressScore").innerHTML = `0000`;
-        UISTATE.UI.get("progressTime").innerHTML = `0000`;
+        (UISTATE.UI.get("progress") as Progressboard).score = 0;
+        (UISTATE.UI.get("progress") as Progressboard).timer = 0;
     }
 }
