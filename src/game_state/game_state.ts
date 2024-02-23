@@ -3,7 +3,7 @@ import { resetBall } from "@/objects/ball";
 import { disposeEnemies } from "@/utils/utility";
 import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
-import { Observer, Scene } from "@babylonjs/core";
+import { Observer, Scene, TransformNode, UniversalCamera } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
 import { showUILayout } from "@/ui/html/ui_components";
 import { getMaxProgressForLevel, saveResultIDB } from "@/DB/indexdb";
@@ -57,7 +57,7 @@ GameState.state = {
         shield: { mass: 100, restitution: 0.5, friction: 0.1 },
         ground: { mass: 1000, restitution: 0.0, friction: 1 },
         wall: { mass: 1000, restitution: 0.5, friction: 0.0 },
-        enemy: { mass: 1000, restitution: 1, friction: 1 }
+        enemy: { mass: 1000, restitution: 0.1, friction: 1 }
     },
     sizes: {
         gameBox: { width: 18, height: 40 },
@@ -77,10 +77,9 @@ GameState.state = {
     playerProgress: new Map<number, number>()
 };
 //---- ACCSESSORS---------------------------->
-GameState.scene = () => GameState.state.gameObjects.scene;
-GameState.camera = () => GameState.state.gameObjects.camera;
+GameState.scene = (): Scene => GameState.state.gameObjects.scene;
+GameState.camera = (): UniversalCamera => GameState.state.gameObjects.camera;
 GameState.gameBox = () => GameState.state.sizes.gameBox;
-GameState.enemyNodes = () => GameState.state.gameObjects.enemyNodes;
 GameState.damageNodes = () => GameState.state.gameObjects.damageNodes;
 GameState.gameState = (): number => GameState.state.gameState;
 GameState.ball = () => GameState.state.gameObjects.ball;
@@ -90,6 +89,7 @@ GameState.points = () => GameState.state.gameObjects.points;
 GameState.playerProgress = (): Map<number, number> => GameState.state.playerProgress;
 GameState.IDB = (): IDBDatabase => GameState.state.indexDB.db;
 GameState.IDBobject = () => GameState.state.indexDB;
+GameState.EnemyNode = (): TransformNode => GameState.state.gameObjects.enemyNodes;
 //----------------------------------------------------------------------->
 
 GameState.changeGameState = (state: number) => {

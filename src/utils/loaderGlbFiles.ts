@@ -33,45 +33,35 @@ function instateMesh(nameMesh: string, assetContainer: AssetContainer) {
 }
 //---------------------------------------------------------------------->
 export function loadEnemyModel(scene: Scene) {
-  loadModel(`public/models/`, `cristal_one.glb`, scene).then((container) => {
-    ASSETS.containers3D.set("cristal", container as AssetContainer);
-  })
+  return new Promise((resolve) => {
+    loadModel(`public/models/`, `cristal_one.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("cristal", container as AssetContainer);
+      resolve(true);
+    });
+  });
 }
 export function loadDamageEnemyModel(scene: Scene) {
-  loadModel(`public/models/`, `damage.glb`, scene).then((container) => {
-    ASSETS.containers3D.set("enemy_damage", container as AssetContainer);
-  })
+  return new Promise((resolve) => {
+    loadModel(`public/models/`, `damage.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("enemy_damage", container as AssetContainer);
+      resolve(true);
+    });
+  });
 }
 export function loadMenuItemModel(scene: Scene) {
-  return new Promise((res) => {
-    loadModel(`public/models/menu/`, `menuItem.glb`, scene).then((container) => {
+  return new Promise((resolve) => {
+    loadModel(`public/models/`, `menuItem.glb`, scene).then((container) => {
       ASSETS.containers3D.set("menu_item", container as AssetContainer);
-      res(true);
+      resolve(true);
     });
   });
 }
-export function loadMenuItem2Model(scene: Scene) {
-  return new Promise((res) => {
-    loadModel(`public/models/`, `menuItem2.glb`, scene).then((container) => {
-      ASSETS.containers3D.set("menu_item", container as AssetContainer);
-      res(true);
-    });
-  });
-}
-export function loadShieldYarModel(scene: Scene) {
-  return new Promise((res) => {
-    loadModel(`public/models/`, `shield_yar.glb`, scene).then((container) => {
-      ASSETS.containers3D.set("shield_yar", container as AssetContainer);
-      res(true);
-    });
-  });
-}
-export function loadShieldYarPartModel(scene: Scene) {
-  return new Promise((res) => {
-    loadModel(`public/models/`, `shield_yar_prt.glb`, scene).then((container) => {
-      ASSETS.containers3D.set("shield_yar_prt", container as AssetContainer);
-      res(true);
-    });
+export function loadBuildModel(scene: Scene) {
+  return new Promise((resolve) => {
+    loadModel(`public/models/buildings/`, `sixBorder.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("build_six", container as AssetContainer);
+      resolve(true);
+    })
   });
 }
 export { loadToAssetContainer, mergeMeshes, loadModel, instateMesh };

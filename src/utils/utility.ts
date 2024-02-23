@@ -22,7 +22,7 @@ export function gameObjectDispose(enemy: Mesh) {
     enemy.dispose();
 }
 export function isAllEnemiesDie() {
-    return (GameState.enemyNodes()).getChildren().length > 0 ? false : true;
+    return (GameState.EnemyNode()).getChildren().length > 0 ? false : true;
 }
 export function disposeEnemies() {
     if (GameState.damageNodes().length > 0) {
@@ -32,8 +32,8 @@ export function disposeEnemies() {
             })
         })
     }
-    if (GameState.enemyNodes()?.getChildren() && GameState.enemyNodes().getChildren().length > 0) {
-        GameState.enemyNodes().getChildren().forEach(obj => {
+    if (GameState.EnemyNode()?.getChildren() && GameState.EnemyNode().getChildren().length > 0) {
+        GameState.EnemyNode().getChildren().forEach(obj => {
             gameObjectDispose(obj as Mesh);
         })
     }

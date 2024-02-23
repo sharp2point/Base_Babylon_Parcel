@@ -43,14 +43,6 @@ function preloader(parent: HTMLElement) {
 
     parent.appendChild(container);
 }
-// SCOREBOARD ---------------------------------------
-export function showScoreboard(isShow: boolean) {
-    // const layout = UISTATE.UI.get("scoreboard");
-    // isShow ?
-    //     layout.classList.remove("hide") :
-    //     layout.classList.add("hide");
-}
-// UP MENU ------------------------------------------
 
 export function showUILayout(isShow: boolean) {
     const layout = UISTATE.UI.get("uiPlace");
