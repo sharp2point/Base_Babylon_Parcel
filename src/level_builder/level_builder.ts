@@ -1,6 +1,6 @@
 import { GameState } from "@/game_state/game_state";
-import { HemisphericLight, Mesh, TransformNode, Vector3 } from "@babylonjs/core";
-import { addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
+import { HemisphericLight, Mesh, Scalar, Tools, TransformNode, Vector3 } from "@babylonjs/core";
+import { addBonus, addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
 import { animationGLBBlock } from "./blocks";
 import { LevelMaps } from "./maps/maps_node";
 import { BuildsMap } from "./maps/maps_building";
@@ -46,6 +46,8 @@ function createMapEnemy(level: number) {
                     addShadowToEnemy(GameState.state.gameObjects.shadow, name);
                     enemies.push(emesh);
                 }
+
+                appendEnemyBonus(emesh);
                 deltaY += 1.3;
                 count--;
             }
@@ -104,5 +106,30 @@ function enemySelector(name: string, options: { enemy_type: number, position: Ve
             return null;
         }
     }
+}
+function appendEnemyBonus(enemy: Mesh) {
+    const rnd = Math.trunc(Scalar.RandomRange(0, 4));
+    switch (rnd) {
+        case 1: {
+            addBonus(enemy, 100);
+            break;
+        }
+        case 2: {
+            addBonus(enemy, 200);
+            break;
+        }
+        case 3: {
+            addBonus(enemy, 300);
+            break;
+        }
+        case 4: {
+            addBonus(enemy, 400);
+            break;
+        }
+        default: {
+            //console.log("Zero bonus");
+        }
+    }
+
 }
 

@@ -19,6 +19,11 @@ export function gameObjectDispose(enemy: Mesh) {
         physics.shape.dispose();
         physics.dispose();
     }
+    enemy.getChildMeshes().forEach((el: Mesh) => {
+        if (el.name.includes("bonus")) {
+            el["meta"].action(el);
+        }
+    });
     enemy.dispose();
 }
 export function isAllEnemiesDie() {

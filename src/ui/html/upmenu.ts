@@ -41,7 +41,11 @@ function renderHTML() {
                 align-items: center;
                 width:100%;
                 max-width: 250px;
-                height:40px;
+                min-height:50px;
+                border-radius:0.5rem;
+                padding:1rem;
+                border:1px solid rgb(100,100,100);
+                background: rgba(50,40,60,0.5);
             }
             img{
                 width: 40px;
@@ -49,6 +53,19 @@ function renderHTML() {
                 margin:5px;
                 pointer-events: all;
                 cursor: pointer;
+                
+            }
+            img:hover{
+                animation: hoveranimate 300ms;
+                transform: scale(1.15);
+            }
+            @keyframes hoveranimate{
+                0%{
+                    transform: scale(0.8);
+                },
+                100%{
+                    transform: scale(1.2);
+                }
             }
         </style>
     `;
