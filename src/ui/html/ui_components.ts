@@ -1,6 +1,7 @@
 import { GameState } from "@/game_state/game_state";
 import { UISTATE } from "@/game_state/ui/state";
 import { teachAnimateSteps } from "@/teach/teach";
+import Upmenu from "./upmenu";
 
 export function removePreloader() {
     const preloader: HTMLElement = document.querySelector(".preload-container");
@@ -16,14 +17,16 @@ export function removePreloader() {
 
 function uiHtmlComponents() {
     const uiPlace = document.querySelector("#ui-place") as HTMLElement;
+    const upMenu = document.querySelector(".up-menu") as Upmenu;
     UISTATE.UI.set("uiPlace", uiPlace);
     UISTATE.UI.set("header", document.querySelector(".header"));
     UISTATE.UI.set("footer", document.querySelector(".footer"));
     UISTATE.UI.set("progress", document.querySelector(".progress"));
     UISTATE.UI.set("scoreboard", document.querySelector(".scoreboard"));
+    UISTATE.UI.set("upmenu", upMenu);
 
     preloader(uiPlace);
-    appendEventListenerUpMenu();
+    appendEventListenerUpMenu(upMenu);
 }
 // PRELOADER ----------------------------------------
 function preloader(parent: HTMLElement) {
@@ -61,31 +64,16 @@ function showMenuUI(isShow: boolean) {
         footer.classList.add("hide");
     }
 }
-function appendEventListenerUpMenu() {
-    const upmenu = UISTATE.UI.get("header");
-    upmenu.addEventListener('click', (e) => {
-        const target = e.target;
-        if (target instanceof HTMLImageElement) {
-            switch (target.dataset["button"]) {
-                case "fullscreen": {
-                    onFullscreenClickEvent(target);
-                    break;
-                }
-                case "teach": {
-                    onTeachClickEvent(target);
-                    break;
-                }
-                case "lang": {
-                    onLanguageClickEvent(target)
-                    break;
-                }
-                default: {
-                    throw new Error("Up Menu Error");
-                }
-            }
-        }
-
+function appendEventListenerUpMenu(menu: Upmenu) {
+    menu.fullscreenButton.addEventListener("click", () => {
+        onFullscreenClickEvent(menu.fullscreenButton);
+    });
+    menu.teachButton.addEventListener("click", () => {
+        onTeachClickEvent();
     })
+    menu.languageButton.addEventListener("click", () => {
+        onLanguageClickEvent(menu.languageButton);
+    });
 }
 function onFullscreenClickEvent(image: HTMLImageElement) {
     if (document.fullscreenEnabled) {
@@ -104,7 +92,7 @@ function onFullscreenClickEvent(image: HTMLImageElement) {
         }
     }
 }
-function onTeachClickEvent(image: HTMLImageElement) {
+function onTeachClickEvent() {
     teachAnimateSteps(UISTATE.PIXI);
 }
 function onLanguageClickEvent(image: HTMLImageElement) {

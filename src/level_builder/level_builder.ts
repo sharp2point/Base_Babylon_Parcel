@@ -1,8 +1,10 @@
 import { GameState } from "@/game_state/game_state";
 import { HemisphericLight, Mesh, TransformNode, Vector3 } from "@babylonjs/core";
-import { BuildsMap, EnemyPositionMap, LevelMaps } from "./levels";
 import { addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
 import { animationGLBBlock } from "./blocks";
+import { LevelMaps } from "./maps/maps_node";
+import { BuildsMap } from "./maps/maps_building";
+import { EnemyPositionMap } from "./maps/maps_posnode";
 
 // 311045 --> count_height: 3,type: 110,angle: 45
 
