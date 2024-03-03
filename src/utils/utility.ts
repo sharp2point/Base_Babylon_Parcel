@@ -1,5 +1,5 @@
 import { GameState } from "@/game_state/game_state";
-import { Mesh, PhysicsViewer, Scene, Tools, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
+import { Mesh, PhysicsViewer, Scalar, Scene, Tools, TransformNode, UniversalCamera, Vector3 } from "@babylonjs/core";
 
 export function clampToBoxShieldPosition(position: Vector3, shield: TransformNode, amount: number) {
     try {
@@ -21,6 +21,8 @@ export function gameObjectDispose(enemy: Mesh) {
     }
     enemy.getChildMeshes().forEach((el: Mesh) => {
         if (el.name.includes("bonus")) {
+            el.parent = null;
+            el.position = enemy.absolutePosition.clone();
             el["meta"].action(el);
         }
     });
@@ -45,6 +47,13 @@ export function disposeEnemies() {
 
     (GameState.scene() as Scene).getMeshesById("enemy-cube").forEach(m => {
         m.dispose();
+    })
+}
+export function disposeBonus() {
+    GameState.Bonuses().forEach((bonus: Mesh) => {
+        if (bonus instanceof Mesh) {
+            bonus.dispose();
+        }
     })
 }
 export function debugPhysicsInfo(scene: Scene) {
@@ -101,4 +110,7 @@ export function cameraSettings(aspect: number) {
         camera.target = Vector3.Zero();
         camera.fov = Tools.ToRadians(80);
     }
+}
+export function randomInt(min, max) {
+    return Math.abs(Scalar.RandomRange(min, max));
 }

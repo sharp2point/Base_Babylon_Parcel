@@ -146,10 +146,11 @@ export function enemyCollideReaction(enemy: Mesh) {
         enemyDamageModelEffect(enemy);
     }
 }
-export function addBonus(enemy: Mesh, type: number) {
-    const bn = bonus(type, GameState.scene());
+export function addBonus(enemy: Mesh, type: number, payload:number) {
+    const bn = bonus(type, {payload:payload}, GameState.scene());
     bn.setParent(enemy);
-    bn.position = new Vector3(0, 0, 0);   
+    bn.position = new Vector3(0, 0, 0); 
+    GameState.Bonuses().push(bn);
 }
 //------------------------------------------------------------------->
 function reTypeEnemy(enemy: Mesh) {
@@ -260,6 +261,5 @@ function enemyDamageModelEffect(enemy: Mesh) {
             }
         });
     });
-    console.log("A---->", enemy.getChildMeshes());
     gameObjectDispose(enemy);
 }

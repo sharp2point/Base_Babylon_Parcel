@@ -1,10 +1,11 @@
 import { GameState } from "@/game_state/game_state";
-import { HemisphericLight, Mesh, Scalar, Tools, TransformNode, Vector3 } from "@babylonjs/core";
+import { HemisphericLight, Mesh, Scalar, TransformNode, Vector3 } from "@babylonjs/core";
 import { addBonus, addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
 import { animationGLBBlock } from "./blocks";
 import { LevelMaps } from "./maps/maps_node";
 import { BuildsMap } from "./maps/maps_building";
 import { EnemyPositionMap } from "./maps/maps_posnode";
+import { randomInt } from "../utils/utility";
 
 // 311045 --> count_height: 3,type: 110,angle: 45
 
@@ -108,22 +109,22 @@ function enemySelector(name: string, options: { enemy_type: number, position: Ve
     }
 }
 function appendEnemyBonus(enemy: Mesh) {
-    const rnd = Math.trunc(Scalar.RandomRange(0, 4));
+    const rnd = Math.trunc(Scalar.RandomRange(0, 10));
     switch (rnd) {
         case 1: {
-            addBonus(enemy, 100);
+            addBonus(enemy, 100, 1);//bomb
             break;
         }
         case 2: {
-            addBonus(enemy, 200);
+            addBonus(enemy, 200, randomInt(5, 50));//coin
             break;
         }
         case 3: {
-            addBonus(enemy, 300);
+            addBonus(enemy, 300, randomInt(1, 3));//rocket
             break;
         }
         case 4: {
-            addBonus(enemy, 400);
+            addBonus(enemy, 400, randomInt(1, 5));//time
             break;
         }
         default: {
