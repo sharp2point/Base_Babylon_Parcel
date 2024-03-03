@@ -64,4 +64,12 @@ export function loadBuildModel(scene: Scene) {
     })
   });
 }
+export function loadBombEffectModel(scene: Scene) {
+  return new Promise((resolve) => {
+    loadModel(`public/models/effects/`, `bomb.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("bomb_effect", container as AssetContainer);
+      resolve(true);
+    })
+  });
+}
 export { loadToAssetContainer, mergeMeshes, loadModel, instateMesh };

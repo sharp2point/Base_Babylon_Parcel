@@ -51,6 +51,11 @@ export function enemy(name: string, options: { type: number, position: Vector3, 
         }
     });
     const enm = resetEnemy(enemy, options.type);
+    enm.onBeforeRenderObservable.add(() => {
+        if (enm.position.y < -0.5) {
+            gameObjectDispose(enm);
+        }
+    })
     return enm;
 }
 export function createEnemyMaterial(scene: Scene) {
@@ -146,10 +151,10 @@ export function enemyCollideReaction(enemy: Mesh) {
         enemyDamageModelEffect(enemy);
     }
 }
-export function addBonus(enemy: Mesh, type: number, payload:number) {
-    const bn = bonus(type, {payload:payload}, GameState.scene());
+export function addBonus(enemy: Mesh, type: number, payload: number) {
+    const bn = bonus(type, { payload: payload }, GameState.scene());
     bn.setParent(enemy);
-    bn.position = new Vector3(0, 0, 0); 
+    bn.position = new Vector3(0, 0, 0);
     GameState.Bonuses().push(bn);
 }
 //------------------------------------------------------------------->

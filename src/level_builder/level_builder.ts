@@ -109,7 +109,7 @@ function enemySelector(name: string, options: { enemy_type: number, position: Ve
     }
 }
 function appendEnemyBonus(enemy: Mesh) {
-    const rnd = Math.trunc(Scalar.RandomRange(0, 10));
+    const rnd = Math.trunc(Scalar.RandomRange(0, 5));
     switch (rnd) {
         case 1: {
             addBonus(enemy, 100, 1);//bomb

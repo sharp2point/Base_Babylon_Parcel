@@ -1,9 +1,9 @@
 import { createMap } from "@/level_builder/level_builder";
 import { resetBall } from "@/objects/ball";
-import { disposeBonus, disposeEnemies } from "@/utils/utility";
+import { disposeBonus, disposeEffects, disposeEnemies } from "@/utils/utility";
 import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
-import {Mesh, Observer, Scene, TransformNode, UniversalCamera } from "@babylonjs/core";
+import { Mesh, Observer, Scene, TransformNode, UniversalCamera } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
 import { showUILayout } from "@/ui/html/ui_components";
 import { getMaxProgressForLevel, saveResultIDB } from "@/DB/indexdb";
@@ -51,6 +51,7 @@ GameState.state = {
         camera: null,
         points: null,
         bonuses: new Array<Mesh>(),
+        effects: new Array<Mesh>()
     },
     physicsMaterial: {
         ball: { mass: 10, restitution: 1, friction: 0.1 },
@@ -91,6 +92,7 @@ GameState.IDB = (): IDBDatabase => GameState.state.indexDB.db;
 GameState.IDBobject = () => GameState.state.indexDB;
 GameState.EnemyNode = (): TransformNode => GameState.state.gameObjects.enemyNodes;
 GameState.Bonuses = (): Array<Mesh> => GameState.state.gameObjects.bonuses;
+GameState.Effects = (): Array<Mesh> => GameState.state.gameObjects.effects;
 //----------------------------------------------------------------------->
 
 GameState.changeGameState = (state: number) => {
@@ -155,6 +157,7 @@ GameState.resetScene = () => {
     resetBall();
     disposeEnemies();
     disposeBonus();
+    disposeEffects();
     GameState.state.isResetBall = false;
     GameState.state.isBallStart = false;
 }

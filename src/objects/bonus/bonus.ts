@@ -3,6 +3,7 @@ import {
     MeshBuilder, Scene, StandardMaterial,
     Texture, Tools, Animation, Mesh
 } from "@babylonjs/core";
+import { bombEffect } from "./effects/bomb";
 
 const BONUSTYPE = {
     100: {
@@ -50,7 +51,8 @@ export function bonus(type: number, options: { payload: number }, scene: Scene) 
 
 function bombAction(bonus: Mesh) {
     actionAnimation(bonus);
-    console.log("Bomb Action Run:", bonus["meta"].payload)
+    bombEffect(bonus.absolutePosition);
+    console.log("Bomb Action Run:",bonus["meta"].payload)
 }
 function rocketAction(bonus: Mesh) {
     actionAnimation(bonus);
@@ -71,7 +73,7 @@ function actionAnimation(bonus: Mesh) {
         { frame: 0, value: start },
         { frame: 120, value: start + 10 },
     ];
-    const anim = new Animation(`bonus-anim`, "position.y", 60, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT, false);
+    const anim = new Animation(`bonus-anim`, "position.y", 40, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT, false);
     anim.setKeys(keys);
     bonus.animations.push(anim);
 
@@ -79,11 +81,11 @@ function actionAnimation(bonus: Mesh) {
         { frame: 0, value: 0 },
         { frame: 120, value: Tools.ToRadians(360) },
     ];
-    const animr = new Animation(`bonus-anim`, "rotation.y", 60, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT, false);
+    const animr = new Animation(`bonus-anim`, "rotation.y", 40, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT, false);
     animr.setKeys(keysr);
     bonus.animations.push(animr);
 
-    GameState.scene().beginAnimation(bonus, 0, 120, false, 3, () => {
+    GameState.scene().beginAnimation(bonus, 0, 120, false, 2, () => {
         bonus.dispose();
     })
 }

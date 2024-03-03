@@ -56,6 +56,15 @@ export function disposeBonus() {
         }
     })
 }
+export function disposeEffects() {
+    GameState.Effects().forEach((effect: Mesh) => {
+        if (effect instanceof Mesh) {
+            console.log("Dispose NOT Effects")
+            // effect.physicsBody.dispose();
+            effect.dispose();
+        }
+    })
+}
 export function debugPhysicsInfo(scene: Scene) {
     const pv = new PhysicsViewer();
     const ball = scene.getMeshByName("ball");
@@ -111,6 +120,6 @@ export function cameraSettings(aspect: number) {
         camera.fov = Tools.ToRadians(80);
     }
 }
-export function randomInt(min, max) {
-    return Math.abs(Scalar.RandomRange(min, max));
+export function randomInt(min: number, max: number) {
+    return Math.trunc(Scalar.RandomRange(min, max));
 }

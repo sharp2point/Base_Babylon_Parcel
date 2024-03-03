@@ -6,7 +6,7 @@ import { AGAME } from "./game_state/main/state";
 import { GameState } from "./game_state/game_state";
 import { UISTATE } from "./game_state/ui/state";
 import { getScreenAspect, getTypeUserDevice, loadAssets } from "./utils/clear_utils";
-import { loadBuildModel, loadDamageEnemyModel, loadEnemyModel, loadMenuItemModel } from "./utils/loaderGlbFiles";
+import { loadBombEffectModel, loadBuildModel, loadDamageEnemyModel, loadEnemyModel, loadMenuItemModel } from "./utils/loaderGlbFiles";
 import { cameraSettings } from "./utils/utility";
 import { createEnemyMaterial } from "./objects/enemy/enemy";
 import { openIndexDB } from "./DB/indexdb";
@@ -42,7 +42,8 @@ window.addEventListener('load', async () => {
                 loadMenuItemModel(AGAME.Scene),
                 loadEnemyModel(AGAME.Scene),
                 loadBuildModel(AGAME.Scene),
-                loadDamageEnemyModel(AGAME.Scene)
+                loadDamageEnemyModel(AGAME.Scene),
+                loadBombEffectModel(AGAME.Scene),
             ]
         )
         models.then((res) => {
