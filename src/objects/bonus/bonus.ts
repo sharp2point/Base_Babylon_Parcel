@@ -1,9 +1,11 @@
 import { GameState } from "@/game_state/game_state";
 import {
     MeshBuilder, Scene, StandardMaterial,
-    Texture, Tools, Animation, Mesh
+    Texture, Tools, Animation, Mesh,
+    Vector3
 } from "@babylonjs/core";
 import { bombEffect } from "./effects/bomb";
+import { rocketEffect } from "./effects/rocket";
 
 const BONUSTYPE = {
     100: {
@@ -52,10 +54,13 @@ export function bonus(type: number, options: { payload: number }, scene: Scene) 
 function bombAction(bonus: Mesh) {
     actionAnimation(bonus);
     bombEffect(bonus.absolutePosition);
-    console.log("Bomb Action Run:",bonus["meta"].payload)
+    console.log("Bomb Action Run:", bonus["meta"].payload)
 }
 function rocketAction(bonus: Mesh) {
     actionAnimation(bonus);
+    rocketEffect(new Vector3(-5, 2, -20));
+    rocketEffect(new Vector3(0, 2, -20));
+    rocketEffect(new Vector3(5, 2, -20));
     console.log("Rocket Action Run", bonus["meta"].payload)
 }
 function timeAction(bonus: Mesh) {

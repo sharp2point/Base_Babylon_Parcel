@@ -6,7 +6,7 @@ import { AGAME } from "./game_state/main/state";
 import { GameState } from "./game_state/game_state";
 import { UISTATE } from "./game_state/ui/state";
 import { getScreenAspect, getTypeUserDevice, loadAssets } from "./utils/clear_utils";
-import { loadBombEffectModel, loadBuildModel, loadDamageEnemyModel, loadEnemyModel, loadMenuItemModel } from "./utils/loaderGlbFiles";
+import { loadBombEffectModel, loadBuildModel, loadDamageEnemyModel, loadEnemyModel, loadMenuItemModel, loadRocketEffectModel } from "./utils/loaderGlbFiles";
 import { cameraSettings } from "./utils/utility";
 import { createEnemyMaterial } from "./objects/enemy/enemy";
 import { openIndexDB } from "./DB/indexdb";
@@ -35,18 +35,16 @@ window.addEventListener('load', async () => {
         sceneOne(AGAME.Gravity, AGAME.HVK);
         cameraSettings(AGAME.ScreenAspect);
 
-        console.log("PreLOad model");
-
-        const models = Promise.all(
+        Promise.all(
             [
                 loadMenuItemModel(AGAME.Scene),
                 loadEnemyModel(AGAME.Scene),
                 loadBuildModel(AGAME.Scene),
                 loadDamageEnemyModel(AGAME.Scene),
                 loadBombEffectModel(AGAME.Scene),
+                loadRocketEffectModel(AGAME.Scene),
             ]
-        )
-        models.then((res) => {
+        ).then((res) => {
             console.log("Loading Models: ", res);
         }).catch((err) => {
             console.log("Error Models: ", err);

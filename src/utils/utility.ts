@@ -59,8 +59,6 @@ export function disposeBonus() {
 export function disposeEffects() {
     GameState.Effects().forEach((effect: Mesh) => {
         if (effect instanceof Mesh) {
-            console.log("Dispose NOT Effects")
-            // effect.physicsBody.dispose();
             effect.dispose();
         }
     })

@@ -1,7 +1,6 @@
 import { ASSETS } from "@/game_state/assets/state";
 import { GameState } from "@/game_state/game_state";
 import { AssetContainer, Color4, Mesh, Texture, ParticleSystem, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Tools, Vector3 } from "@babylonjs/core";
-import { } from "pixi.js";
 
 const BOMBSTATE = {
     mass: 5000,
