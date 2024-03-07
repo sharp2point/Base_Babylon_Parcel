@@ -2,14 +2,15 @@ import { UISTATE } from "@/game_state/ui/state";
 import { SPINMENU, rotateToNextPosition, rotateToPrevPosition } from "@/ui/spin2";
 import * as PIXI from "pixi.js";
 
-export function initTeach(parent: HTMLElement) {
-    const app = new PIXI.Application({ background: "#101010", backgroundAlpha: 0.5, resizeTo: window });
-    parent.appendChild(app.view);
+export async function initTeach(parent: HTMLElement) {
+    const app = new PIXI.Application();
+    await app.init({ background: "#101010", backgroundAlpha: 0.5, resizeTo: window })
+    parent.appendChild(app.canvas);
     showTeach(false);
     UISTATE.PIXI = app;
     return app;
 }
-function addHandSprite(app: PIXI.Application<PIXI.ICanvas>) {
+function addHandSprite(app: PIXI.Application) {
     const hand = PIXI.Sprite.from("public/icons/hand.webp");
     hand.width = 60;
     hand.height = 60;
@@ -20,7 +21,7 @@ function addHandSprite(app: PIXI.Application<PIXI.ICanvas>) {
 
     return hand;
 }
-function addCloseSprite(app: PIXI.Application<PIXI.ICanvas>) {
+function addCloseSprite(app: PIXI.Application) {
     const close = PIXI.Sprite.from("public/icons/close.webp");
     close.width = 60;
     close.height = 60;
@@ -44,7 +45,7 @@ function addCloseSprite(app: PIXI.Application<PIXI.ICanvas>) {
 
     return close;
 }
-function addTapSprite(app: PIXI.Application<PIXI.ICanvas>) {
+function addTapSprite(app: PIXI.Application) {
     const tap = PIXI.Sprite.from("public/icons/tap.webp");
     tap.width = 50;
     tap.height = 50;
@@ -55,7 +56,7 @@ function addTapSprite(app: PIXI.Application<PIXI.ICanvas>) {
     tap.alpha = 0;
     return tap;
 }
-export function teachAnimateSteps(app: PIXI.Application<PIXI.ICanvas>) {
+export function teachAnimateSteps(app: PIXI.Application) {
     showTeach(true);
     let step = 0;
     app.stage.removeChildren(0, app.stage.children.length);
@@ -65,7 +66,7 @@ export function teachAnimateSteps(app: PIXI.Application<PIXI.ICanvas>) {
 
     app.ticker.start();
 
-    function stepOne(delta: number) {
+    function stepOne(delta: any) {
         switch (step) {
             case 0: {
                 if (hand.y < app.screen.height / 2 - 50) {

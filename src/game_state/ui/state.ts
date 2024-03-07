@@ -14,6 +14,6 @@ export const UISTATE = {
     view: {
         spotBallDiameter: 5,
     },
-    PIXI: null as PIXI.Application<PIXI.ICanvas>,
+    PIXI: null as PIXI.Application<PIXI.Renderer>,
     UI: new Map<string, HTMLElement>(),
 }

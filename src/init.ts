@@ -1,6 +1,6 @@
 import { Engine, HavokPlugin, Vector3 } from "@babylonjs/core";
 import * as havok from "@babylonjs/havok";
-// import { Inspector } from "@babylonjs/inspector";
+import { Inspector } from "@babylonjs/inspector";
 import { ASSETS } from "./game_state/assets/state";
 import { AGAME } from "./game_state/main/state";
 import { GameState } from "./game_state/game_state";
@@ -75,10 +75,10 @@ window.addEventListener('resize', () => {
 });
 window.addEventListener("keydown", (ev) => {
     if (ev.key === 'i' && ev.altKey) {
-        // if (Inspector.IsVisible) {
-        //     Inspector.Hide();
-        // } else {
-        //     Inspector.Show(AGAME.Scene, { embedMode: true, });
-        // }
+        if (Inspector.IsVisible) {
+            Inspector.Hide();
+        } else {
+            Inspector.Show(AGAME.Scene, { embedMode: true, });
+        }
     }
 });

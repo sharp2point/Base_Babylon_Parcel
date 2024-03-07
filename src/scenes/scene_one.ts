@@ -1,9 +1,10 @@
 import { GameState } from "@/game_state/game_state";
 import { AGAME } from "@/game_state/main/state";
-import { addRun$, addShadowToBall, ballComposition, onRun$ } from "@/objects/ball";
-import { enemyCollideReaction } from "@/objects/enemy/enemy";
+import { addRun$, addShadowToBall, addVelocityBall, ballComposition, onRun$ } from "@/objects/ball";
+import { rocketDie } from "@/objects/bonus/effects/rocket";
+import { enemyCollideReaction, enemyDamageModelEffect } from "@/objects/enemy/enemy";
 import { initPoints, newPoints } from "@/objects/points/points";
-import { addPosition$, addShadowToShield, shildComposition } from "@/objects/shield";
+import { addPosition$, shildComposition } from "@/objects/shield";
 import { clampToBoxShieldPosition, isAllEnemiesDie } from "@/utils/utility";
 import {
     Color3, Color4, DirectionalLight, EventState, HavokPlugin,
@@ -42,29 +43,36 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
 
     //----------- EVENTS -------->   
     addSceneGameEvents();
-    (AGAME.Scene as Scene).onBeforeRenderObservable.add(() => {
+    AGAME.Scene.onBeforeRenderObservable.add(() => {
         ballJoinShield();
-        (AGAME.HVK as HavokPlugin).setTargetTransform(GameState.shieldBody().getPhysicsBody(), GameState.shieldNode().position, Quaternion.Identity());
+        AGAME.HVK.setTargetTransform(GameState.shieldBody().getPhysicsBody(), GameState.shieldNode().position, Quaternion.Identity());
     });
-    (AGAME.HVK as HavokPlugin).onCollisionObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
+    AGAME.HVK.onCollisionObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
         if (GameState.state.gameState === GameState.state.signals.GAME_RUN) {
             const collider = eventData.collider.transformNode;
             const agCollider = eventData.collidedAgainst.transformNode;
-            if (agCollider.name === "shield" || collider.name === "shield") {
-
-            } else if (agCollider.name.includes("enemy-bloc")) {
-
+            if (agCollider.name.includes("rocket")) {
+                if (collider.name.includes("enemy-bloc")) {
+                    enemyDamageModelEffect(collider as Mesh);
+                    rocketDie(agCollider as Mesh);
+                }
+            } else if (collider.name.includes("rocket")) {
+                if (agCollider.name.includes("enemy-bloc")) {
+                    enemyDamageModelEffect(agCollider as Mesh);
+                    rocketDie(collider as Mesh);
+                }
             }
         }
     });
-    (AGAME.HVK as HavokPlugin).onCollisionEndedObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
+    AGAME.HVK.onCollisionEndedObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
         if (GameState.state.gameState === GameState.state.signals.GAME_RUN && !GameState.state.isResetBall) {
             const collider = eventData.collider.transformNode;
             const agCollider = eventData.collidedAgainst.transformNode;
             if (agCollider.name === "ball" || collider.name === "ball") {
                 if (agCollider.name.includes("enemy-bloc")) {
+                    addVelocityBall();
                     enemyCollideReaction(agCollider as Mesh);
-                    newPoints("10", agCollider.position);
+
                     GameState.calculatePoints(agCollider as Mesh);
                     if (isAllEnemiesDie()) {
                         if (GameState.state.gameState !== GameState.state.signals.LEVEL_WIN) {
@@ -156,23 +164,23 @@ function createWorld(scene: Scene) {
 
     //---------- WALLS ------------->
     const left_wall = MeshBuilder.CreateBox("left-wall", {
-        width: 0.1, height: 2,
+        width: 0.1, height: 4,
         depth: GameState.gameBox().height, updatable: true
     }, scene);
-    left_wall.position = new Vector3(-GameState.gameBox().width / 2, 1, 0);
+    left_wall.position = new Vector3(-GameState.gameBox().width / 2, 2, 0);
     const wall_mt = new StandardMaterial(`wall-mt`, scene);
     wall_mt.diffuseColor = new Color3(0.3, 0.25, 0.35);
     wall_mt.alpha = 0.5;
     left_wall.material = wall_mt;
 
     const right_wall = left_wall.clone("right-wall", world_node, true, false);
-    right_wall.position = new Vector3(GameState.gameBox().width / 2, 1, 0);
+    right_wall.position = new Vector3(GameState.gameBox().width / 2, 2, 0);
 
     const up_wall = MeshBuilder.CreateBox("up-wall", {
         width: GameState.gameBox().width,
-        height: 2, depth: 0.1, updatable: true
+        height: 4, depth: 0.1, updatable: true
     }, scene);
-    up_wall.position = new Vector3(0, 1, GameState.gameBox().height / 2);
+    up_wall.position = new Vector3(0, 2, GameState.gameBox().height / 2);
     up_wall.material = wall_mt;
 
     ground.parent = world_node;
@@ -184,6 +192,8 @@ function createWorld(scene: Scene) {
     //--------------------------------------------->
     const phy_g = new PhysicsBody(ground, PhysicsMotionType.STATIC, false, scene);
     const shape_g = new PhysicsShapeConvexHull(ground, scene);
+    shape_g.filterMembershipMask = GameState.CldMasks().ground;
+    shape_g.filterCollideMask = GameState.CldMasks().groups.ground;
     shape_g.material = {
         restitution: GameState.state.physicsMaterial.ground.restitution,
         friction: GameState.state.physicsMaterial.ground.friction
@@ -192,6 +202,8 @@ function createWorld(scene: Scene) {
 
     const phy_rw = new PhysicsBody(right_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_rw = new PhysicsShapeConvexHull(right_wall, scene);
+    shape_rw.filterMembershipMask = GameState.CldMasks().ground;
+    shape_rw.filterCollideMask = GameState.CldMasks().groups.ground;;
     shape_rw.material = {
         restitution: GameState.state.physicsMaterial.wall.restitution,
         friction: GameState.state.physicsMaterial.wall.friction
@@ -200,6 +212,8 @@ function createWorld(scene: Scene) {
 
     const phy_lw = new PhysicsBody(left_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_lw = new PhysicsShapeConvexHull(left_wall, scene);
+    shape_lw.filterMembershipMask = GameState.CldMasks().ground;
+    shape_lw.filterCollideMask = GameState.CldMasks().groups.ground;
     shape_lw.material = {
         restitution: GameState.state.physicsMaterial.wall.restitution,
         friction: GameState.state.physicsMaterial.wall.friction
@@ -208,6 +222,8 @@ function createWorld(scene: Scene) {
 
     const phy_uw = new PhysicsBody(up_wall, PhysicsMotionType.STATIC, false, scene);
     const shape_uw = new PhysicsShapeConvexHull(up_wall, scene);
+    shape_uw.filterMembershipMask = GameState.CldMasks().ground;
+    shape_uw.filterCollideMask = GameState.CldMasks().groups.ground;;
     shape_uw.material = {
         restitution: GameState.state.physicsMaterial.wall.restitution,
         friction: GameState.state.physicsMaterial.wall.friction
@@ -232,7 +248,6 @@ function dragBoxLines() {
 }
 function addShadowsToObjects(generators: Array<ShadowGenerator>, scene: Scene) {
     addShadowToBall(generators, scene);
-    addShadowToShield(generators, scene);
 }
 //---------------------------------->
 function addSceneGameEvents() {

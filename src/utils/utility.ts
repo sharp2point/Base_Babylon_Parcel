@@ -5,7 +5,8 @@ export function clampToBoxShieldPosition(position: Vector3, shield: TransformNod
     try {
         const new_position = Vector3.Clamp(position,
             new Vector3(GameState.state.dragBox.left, shield.position.y, GameState.state.dragBox.down),
-            new Vector3(GameState.state.dragBox.rigth, shield.position.y, GameState.state.dragBox.up));
+            new Vector3(GameState.state.dragBox.rigth, shield.position.y, GameState.state.dragBox.up))
+            .add(new Vector3(0, 0, 0.6));
         const old_position = shield.position;
         shield.position = Vector3.Lerp(old_position, new_position, amount);
     } catch (err) {
@@ -30,38 +31,6 @@ export function gameObjectDispose(enemy: Mesh) {
 }
 export function isAllEnemiesDie() {
     return (GameState.EnemyNode()).getChildren().length > 0 ? false : true;
-}
-export function disposeEnemies() {
-    if (GameState.damageNodes().length > 0) {
-        GameState.damageNodes().forEach(tn => {
-            tn.getChildren().forEach(obj => {
-                gameObjectDispose(obj as Mesh);
-            })
-        })
-    }
-    if (GameState.EnemyNode()?.getChildren() && GameState.EnemyNode().getChildren().length > 0) {
-        GameState.EnemyNode().getChildren().forEach(obj => {
-            gameObjectDispose(obj as Mesh);
-        })
-    }
-
-    (GameState.scene() as Scene).getMeshesById("enemy-cube").forEach(m => {
-        m.dispose();
-    })
-}
-export function disposeBonus() {
-    GameState.Bonuses().forEach((bonus: Mesh) => {
-        if (bonus instanceof Mesh) {
-            bonus.dispose();
-        }
-    })
-}
-export function disposeEffects() {
-    GameState.Effects().forEach((effect: Mesh) => {
-        if (effect instanceof Mesh) {
-            effect.dispose();
-        }
-    })
 }
 export function debugPhysicsInfo(scene: Scene) {
     const pv = new PhysicsViewer();
@@ -120,4 +89,57 @@ export function cameraSettings(aspect: number) {
 }
 export function randomInt(min: number, max: number) {
     return Math.trunc(Scalar.RandomRange(min, max));
+}
+// dispose
+
+export function clearScene() {
+    disposeRoots();
+    disposeEnemies();
+    disposeBonus();
+    disposeEffects();
+}
+function disposeRoots() {
+    const roots = GameState.scene().getMeshesById("Clone of __root__.__root__");
+    roots.forEach((r) => {
+        r.dispose();
+    })
+    const tn = GameState.scene().getMeshesById("tn-enemies");
+    tn.forEach((r) => {
+        r.dispose();
+    });
+    if (GameState.state.gameObjects.enemyNodes) {
+        GameState.state.gameObjects.enemyNodes.dispose();
+    }
+}
+function disposeEnemies() {
+    if (GameState.damageNodes().length > 0) {
+        GameState.damageNodes().forEach(tn => {
+            tn.getChildren().forEach(obj => {
+                gameObjectDispose(obj as Mesh);
+            })
+        })
+    }
+    if (GameState.EnemyNode()?.getChildren() && GameState.EnemyNode().getChildren().length > 0) {
+        GameState.EnemyNode().getChildren().forEach(obj => {
+            gameObjectDispose(obj as Mesh);
+        })
+    }
+
+    (GameState.scene() as Scene).getMeshesById("enemy-cube").forEach(m => {
+        m.dispose();
+    })
+}
+function disposeBonus() {
+    GameState.Bonuses().forEach((bonus: Mesh) => {
+        if (bonus instanceof Mesh) {
+            bonus.dispose();
+        }
+    })
+}
+function disposeEffects() {
+    GameState.Effects().forEach((effect: Mesh) => {
+        if (effect instanceof Mesh) {
+            effect.dispose();
+        }
+    })
 }

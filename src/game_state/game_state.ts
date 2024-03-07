@@ -1,6 +1,6 @@
 import { createMap } from "@/level_builder/level_builder";
 import { resetBall } from "@/objects/ball";
-import { disposeBonus, disposeEffects, disposeEnemies } from "@/utils/utility";
+import { clearScene } from "@/utils/utility";
 import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
 import { Mesh, Observer, Scene, TransformNode, UniversalCamera } from "@babylonjs/core";
@@ -53,12 +53,28 @@ GameState.state = {
         bonuses: new Array<Mesh>(),
         effects: new Array<Mesh>()
     },
+    collideMask: {
+        shield: 0b00000001,
+        ball: 0b00000010,
+        enemy: 0b00000100,
+        enemyParts: 0b00001000,
+        rocket: 0b00010000,
+        ground: 0b00100000,
+        bombParts: 0b01000000,
+        groups: {
+            shield: 0b00000010,
+            ball: 0b00101101,
+            enemy: 0b01111110,
+            rocket: 0b00000100,
+            enemyParts: 0b00100110,
+            bombParts: 0b00100100,
+            ground: 0b01111111,
+        }
+    },
     physicsMaterial: {
-        ball: { mass: 10, restitution: 1, friction: 0.1 },
-        shield: { mass: 100, restitution: 0.5, friction: 0.1 },
-        ground: { mass: 1000, restitution: 0.0, friction: 1 },
-        wall: { mass: 1000, restitution: 0.5, friction: 0.0 },
-        enemy: { mass: 1000, restitution: 0.1, friction: 1 }
+        ground: { mass: 100000, restitution: 0.0, friction: 1 },
+        wall: { mass: 100000, restitution: 1, friction: 0.0 },
+        enemy: { mass: 300, restitution: 0.25, friction: 0.5 }
     },
     sizes: {
         gameBox: { width: 18, height: 40 },
@@ -93,6 +109,7 @@ GameState.IDBobject = () => GameState.state.indexDB;
 GameState.EnemyNode = (): TransformNode => GameState.state.gameObjects.enemyNodes;
 GameState.Bonuses = (): Array<Mesh> => GameState.state.gameObjects.bonuses;
 GameState.Effects = (): Array<Mesh> => GameState.state.gameObjects.effects;
+GameState.CldMasks = () => GameState.state.collideMask;
 //----------------------------------------------------------------------->
 
 GameState.changeGameState = (state: number) => {
@@ -155,9 +172,7 @@ GameState.resetScene = () => {
     renderTime(0);
     renderPoints(0);
     resetBall();
-    disposeEnemies();
-    disposeBonus();
-    disposeEffects();
+    clearScene();
     GameState.state.isResetBall = false;
     GameState.state.isBallStart = false;
 }

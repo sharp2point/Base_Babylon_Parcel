@@ -1,5 +1,5 @@
 import { GameState } from "@/game_state/game_state";
-import { HemisphericLight, Mesh, Scalar, TransformNode, Vector3 } from "@babylonjs/core";
+import { HemisphericLight, Mesh, Scalar, Tools, TransformNode, Vector3 } from "@babylonjs/core";
 import { addBonus, addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
 import { animationGLBBlock } from "./blocks";
 import { LevelMaps } from "./maps/maps_node";
@@ -23,7 +23,7 @@ export function createMap(light: HemisphericLight) {
 
 function createMapEnemy(level: number) {
     const enemy_map = LevelMaps[level];
-    GameState.state.gameObjects.enemyNodes = new TransformNode("enemies-node", GameState.scene());
+    const tn = new TransformNode("enemies-node", GameState.scene());
     const gap = GameState.state.sizes.enemy;
     const enemies = new Array<Mesh>();
     const deltaX = enemy_map[0].length / 2 - 0.5;
@@ -46,6 +46,7 @@ function createMapEnemy(level: number) {
                 if (emesh) {
                     addShadowToEnemy(GameState.state.gameObjects.shadow, name);
                     enemies.push(emesh);
+                    emesh.setParent(tn);
                 }
 
                 appendEnemyBonus(emesh);
@@ -54,6 +55,7 @@ function createMapEnemy(level: number) {
             }
         }
     }
+    GameState.state.gameObjects.enemyNodes = tn;
 
     return enemies;
 }
@@ -116,7 +118,7 @@ function appendEnemyBonus(enemy: Mesh) {
             break;
         }
         case 2: {
-            addBonus(enemy, 200, randomInt(5, 50));//coin
+            addBonus(enemy, 300, randomInt(5, 50));//coin
             break;
         }
         case 3: {
@@ -124,7 +126,7 @@ function appendEnemyBonus(enemy: Mesh) {
             break;
         }
         case 4: {
-            addBonus(enemy, 400, randomInt(1, 5));//time
+            addBonus(enemy, 100, randomInt(1, 5));//time
             break;
         }
         default: {

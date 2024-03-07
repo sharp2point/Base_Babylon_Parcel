@@ -3,10 +3,10 @@ import { GameState } from "@/game_state/game_state";
 import { AssetContainer, Color4, Mesh, Texture, ParticleSystem, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Tools, Vector3 } from "@babylonjs/core";
 
 const BOMBSTATE = {
-    mass: 5000,
+    mass: 100,
     restitution: 0.5,
     friction: 0.5,
-    deathTime: 3000
+    deathTime: 1000
 }
 
 export function bombEffect(position: Vector3) {
@@ -43,40 +43,39 @@ function addPhysics(parts: Array<Mesh>) {
         physics.shape = shape;
         physics.setMassProperties({ mass: BOMBSTATE.mass });
         shape.material = { restitution: BOMBSTATE.restitution, friction: BOMBSTATE.friction };
+        shape.filterMembershipMask = GameState.CldMasks().bombParts;
+        shape.filterCollideMask = GameState.CldMasks().groups.bombParts;
         return physics;
     });
 }
 function effect(physicsParts: Array<PhysicsBody>, impulsePosition: Vector3) {
     physicsParts.forEach((p: PhysicsBody, inx: number) => {
         const vec = new Vector3(
-            Math.sin(Tools.ToRadians(inx * 36)) * BOMBSTATE.mass * 20,
-            Tools.ToRadians(inx * 36) * BOMBSTATE.mass,
-            Math.cos(Tools.ToRadians(inx * 36)) * BOMBSTATE.mass * 20,
+            Math.sin(Tools.ToRadians(inx * 36)) * BOMBSTATE.mass * 5,
+            1,
+            Math.cos(Tools.ToRadians(inx * 36)) * BOMBSTATE.mass * 5,
         );
         p.applyImpulse(vec, impulsePosition);
     })
 }
 function bombParticles(part: Mesh) {
-    const prt = new ParticleSystem("ball-particle", 150, GameState.scene());
+    const prt = new ParticleSystem("ball-particle", 400, GameState.scene());
     prt.emitter = part;
     prt.particleTexture = new Texture("public/sprites/dirt_02.png");
     prt.maxEmitPower = 1;
     prt.minEmitPower = 0.1;
-    prt.emitRate = 100;
-    prt.color1 = new Color4(0.9, 0.1, 0.1, 0.5);
-    prt.color2 = new Color4(1, 0.6, 0, 0.9);
-    prt.colorDead = new Color4(0, 0, 0, 1);
+    prt.emitRate = 400;
+    prt.color1 = new Color4(0.15, 0.1, 0.1, 0.3);
+    prt.color2 = new Color4(0.2, 0.15, 0, 0.3);
+    prt.colorDead = new Color4(0, 0, 0.1, 0.3);
     prt.maxLifeTime = 1.0;
     prt.minLifeTime = 0.5;
     prt.minAngularSpeed = 0;
     prt.maxSize = 0.8;
-    prt.minSize = 0.1;
-    prt.maxEmitBox = new Vector3(0.2, 0.2, 0.2);
-    prt.minEmitBox = new Vector3(-0.2, -0.2, -0.2);
-    prt.updateSpeed = 0.05;
-    prt.direction1 = new Vector3(1, 0, 0);
-    prt.direction2 = new Vector3(0, 0, 1);
-    prt.gravity = new Vector3(0, 1, 0);
+    prt.minSize = 0.3;
+    prt.maxEmitBox = new Vector3(0.3, 0.3, 0.3);
+    prt.minEmitBox = new Vector3(-0.3, -0.3, -0.3);
+    prt.updateSpeed = 0.02;
     prt.disposeOnStop = true;
     return prt;
 }

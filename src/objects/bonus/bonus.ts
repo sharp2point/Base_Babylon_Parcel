@@ -2,7 +2,8 @@ import { GameState } from "@/game_state/game_state";
 import {
     MeshBuilder, Scene, StandardMaterial,
     Texture, Tools, Animation, Mesh,
-    Vector3
+    Vector3,
+    TransformNode
 } from "@babylonjs/core";
 import { bombEffect } from "./effects/bomb";
 import { rocketEffect } from "./effects/rocket";
@@ -43,6 +44,7 @@ export function bonus(type: number, options: { payload: number }, scene: Scene) 
     material.diffuseTexture = texture;
     material.emissiveTexture = texture;
     material.backFaceCulling = false;
+    
     plane.material = material;
     // plane.rotation.x = Tools.ToRadians(90);
     const meta = BONUSTYPE[type];
@@ -54,22 +56,16 @@ export function bonus(type: number, options: { payload: number }, scene: Scene) 
 function bombAction(bonus: Mesh) {
     actionAnimation(bonus);
     bombEffect(bonus.absolutePosition);
-    console.log("Bomb Action Run:", bonus["meta"].payload)
 }
 function rocketAction(bonus: Mesh) {
     actionAnimation(bonus);
-    rocketEffect(new Vector3(-5, 2, -20));
-    rocketEffect(new Vector3(0, 2, -20));
-    rocketEffect(new Vector3(5, 2, -20));
-    console.log("Rocket Action Run", bonus["meta"].payload)
+    rocketEffect(GameState.shieldNode().position.clone().add(new Vector3(0, 1, 0)));
 }
 function timeAction(bonus: Mesh) {
     actionAnimation(bonus);
-    console.log("Time Action Run", bonus["meta"].payload)
 }
 function coinAction(bonus: Mesh) {
     actionAnimation(bonus);
-    console.log("Coin Action Run", bonus["meta"].payload)
 }
 
 function actionAnimation(bonus: Mesh) {

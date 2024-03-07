@@ -2,6 +2,15 @@ import { GameState } from "@/game_state/game_state";
 import { AGAME } from "@/game_state/main/state";
 import { Color3, Color4, HavokPlugin, Light, Material, Mesh, MeshBuilder, Observable, ParticleSystem, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, PointLight, Quaternion, Scene, ShadowGenerator, SpotLight, StandardMaterial, Texture, Tools, TrailMesh, Vector3 } from "@babylonjs/core";
 
+const BALLSTATE = {
+    initImpulse: new Vector3(0, 0, 100),
+    initSpeed: new Vector3(0, 0, 150),
+    minSpeed: 15,
+    maxSpeed: 50,
+    mass: 10,
+    restitution: 0.5,
+    friction: 0.5
+}
 export function ballComposition(scene: Scene): Mesh {
     const ball = bodyBall(scene);
     const spot = ballSpot(ball, scene);
@@ -12,8 +21,8 @@ export function ballComposition(scene: Scene): Mesh {
         if (GameState.state.gameState === GameState.state.signals.GAME_RUN && !GameState.state.isResetBall) {
             spot.position = ball.absolutePosition.clone().add(new Vector3(0, 2.5, 0));
             if (GameState.state.isBallStart) {
-                clearBallVelocityY(ball.getPhysicsBody());
                 velocityControl();
+                clearBallVelocityY(ball.getPhysicsBody());
                 if (ball.position.z < GameState.state.dragBox.down) {
                     if (GameState.state.gameState !== GameState.state.signals.GAME_OTHER_BALL) {
                         GameState.changeGameState(GameState.state.signals.GAME_OTHER_BALL);
@@ -43,11 +52,13 @@ function appendMaterial(ball: Mesh, scene: Scene) {
 }
 function appendPhysicsBody(ball: Mesh, scene: Scene) {
     const physics = new PhysicsBody(ball, PhysicsMotionType.ANIMATED, false, scene);
-    physics.setMassProperties({ mass: GameState.state.physicsMaterial.ball.mass });
+    physics.setMassProperties({ mass: BALLSTATE.mass });
     const shape = new PhysicsShapeConvexHull(ball, scene);
+    shape.filterMembershipMask = GameState.CldMasks().ball;
+    shape.filterCollideMask = GameState.CldMasks().groups.ball;
     shape.material = {
-        restitution: GameState.state.physicsMaterial.ball.restitution,
-        friction: GameState.state.physicsMaterial.ball.friction
+        restitution: BALLSTATE.restitution,
+        friction: BALLSTATE.friction
     }
     physics.shape = shape;
     physics.setCollisionCallbackEnabled(true);
@@ -59,8 +70,8 @@ function clearBallVelocityY(ball_physics: PhysicsBody) {
 function ballPhysicsActivate() {
     const physics = GameState.ball().getPhysicsBody() as PhysicsBody
     physics.setMotionType(PhysicsMotionType.DYNAMIC)
-    physics.applyImpulse(new Vector3(0, 0, 200), GameState.ball().getAbsolutePosition());
-    physics.applyForce(new Vector3(0, 0, 2000), GameState.ball().getAbsolutePosition());
+    physics.applyImpulse(BALLSTATE.initImpulse, GameState.ball().getAbsolutePosition());
+    physics.applyForce(BALLSTATE.initSpeed, GameState.ball().getAbsolutePosition());
 }
 export function resetBall() {
     GameState.state.isResetBall = true;
@@ -72,11 +83,16 @@ export function resetBall() {
 function velocityControl() {
     const phy = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody;
     const length = phy.getLinearVelocity().length();
-    if (length < 15) {
-        phy.applyImpulse((phy.getLinearVelocity().multiply(new Vector3(1.5, 0, 1.5))), GameState.state.gameObjects.ball.getAbsolutePosition());
-    } else if (length > 80) {
-        phy.setLinearVelocity(phy.getLinearVelocity().multiply(new Vector3(1, 0, 1)));
+    if (length < BALLSTATE.minSpeed) {
+        phy.applyImpulse((phy.getLinearVelocity().multiply(new Vector3(1.1, 0, 1.1))), GameState.state.gameObjects.ball.getAbsolutePosition());
+    } else if (length > BALLSTATE.maxSpeed) {
+        phy.setLinearVelocity(phy.getLinearVelocity().multiply(new Vector3(0.75, 0, 0.75)));
     }
+}
+export function addVelocityBall() {
+    // const phy = GameState.state.gameObjects.ball.getPhysicsBody() as PhysicsBody;
+    // const normal = phy.getLinearVelocity().normalize().multiply(new Vector3(1, 0, 1));
+    // phy.applyImpulse((phy.getLinearVelocity().multiply(normal.multiplyByFloats(10, 0, 10))), GameState.state.gameObjects.ball.getAbsolutePosition());
 }
 function ballSpot(ball: Mesh, scene: Scene) {
     const ballSpot = new SpotLight("ball-spot", ball.position.clone().add(new Vector3(0, 1.5, 0)),
