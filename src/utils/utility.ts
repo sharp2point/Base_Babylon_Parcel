@@ -13,25 +13,8 @@ export function clampToBoxShieldPosition(position: Vector3, shield: TransformNod
         //console.error("CLAMP ERROR")
     }
 }
-export function gameObjectDispose(enemy: Mesh) {
-    enemy.isVisible = false;
-    const physics = enemy.getPhysicsBody();
-    if (physics) {
-        physics.shape.dispose();
-        physics.dispose();
-    }
-    enemy.getChildMeshes().forEach((el: Mesh) => {
-        if (el.name.includes("bonus")) {
-            el.parent = null;
-            el.position = enemy.absolutePosition.clone();
-            el["meta"].action(el);
-        }
-    });
-    enemy.dispose();
-}
-export function isAllEnemiesDie() {
-    return (GameState.EnemyNode()).getChildren().length > 0 ? false : true;
-}
+
+
 export function debugPhysicsInfo(scene: Scene) {
     const pv = new PhysicsViewer();
     const ball = scene.getMeshByName("ball");
@@ -90,8 +73,24 @@ export function cameraSettings(aspect: number) {
 export function randomInt(min: number, max: number) {
     return Math.trunc(Scalar.RandomRange(min, max));
 }
-// dispose
 
+// DISPOSE
+export function gameObjectDispose(enemy: Mesh) {
+    enemy.isVisible = false;
+    const physics = enemy.getPhysicsBody();
+    if (physics) {
+        physics.shape.dispose();
+        physics.dispose();
+    }
+    enemy.getChildMeshes().forEach((el: Mesh) => {
+        if (el.name.includes("bonus")) {
+            el.parent = null;
+            el.position = enemy.absolutePosition.clone();
+            el["meta"].action(el);
+        }
+    });
+    enemy.dispose();
+}
 export function clearScene() {
     disposeRoots();
     disposeEnemies();
@@ -143,3 +142,18 @@ function disposeEffects() {
         }
     })
 }
+// END GAME LEVEL
+
+function isAllEnemiesDie() {
+    return (GameState.EnemyNode()).getChildren().length > 0 ? false : true;
+}
+export function isLEVEL_WIN() {
+    if (isAllEnemiesDie()) {
+        if (GameState.state.gameState !== GameState.state.signals.LEVEL_WIN) {
+            GameState.changeGameState(GameState.state.signals.LEVEL_WIN);
+        }
+        GameState.state.enemyLight.setEnabled(false);
+    }
+}
+
+

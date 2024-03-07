@@ -3,13 +3,14 @@ import { resetBall } from "@/objects/ball";
 import { clearScene } from "@/utils/utility";
 import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
-import { Mesh, Observer, Scene, TransformNode, UniversalCamera } from "@babylonjs/core";
+import { HemisphericLight, Mesh, Observer, Scene, TransformNode, UniversalCamera } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
 import { showUILayout } from "@/ui/html/ui_components";
 import { getMaxProgressForLevel, saveResultIDB } from "@/DB/indexdb";
 import { GameResult } from "@/DB/sheme";
 import Scoreboard from "@/ui/html/scoreboard";
 import Progressboard from "@/ui/html/progressboard";
+import PlayControl from "@/ui/html/playcontrol";
 
 export const GameState = function _GameState() {
 };
@@ -29,7 +30,7 @@ GameState.state = {
     level: 0,
     levelTimeHandler: null,
     levelTime: 0,
-    enemyLight: null,
+    enemyLight: null as HemisphericLight,
     stopRunTimer: null,
     dragBox: {
         up: -5,
@@ -111,16 +112,14 @@ GameState.Bonuses = (): Array<Mesh> => GameState.state.gameObjects.bonuses;
 GameState.Effects = (): Array<Mesh> => GameState.state.gameObjects.effects;
 GameState.CldMasks = () => GameState.state.collideMask;
 //----------------------------------------------------------------------->
-
 GameState.changeGameState = (state: number) => {
     GameState.state.gameState = state;
     switch (GameState.gameState()) {
         case GameState.state.signals.MENU_OPEN: {
-            console.log("MENUOPEN");
             break;
         }
         case GameState.state.signals.GAME_RUN: {
-            console.log("GAMERUN");
+            GameState.state.enemyLight.setEnabled(true);
             GameState.resetScene();
             createMap(GameState.state.enemyLight);
             GameState.state.stopRunTimer = runTimer();
@@ -177,7 +176,6 @@ GameState.resetScene = () => {
     GameState.state.isBallStart = false;
 }
 //----------------------------------------------->
-
 GameState.calculatePoints = (enemy: Mesh) => {
     const meta = enemy["meta"];
     const key = GameState.state.level;
@@ -194,7 +192,8 @@ GameState.levelRun = (level: number) => { // level -> binding from spin menu
     GameState.state.level = level;
     GameState.playerProgress().set(level, 0);
     GameState.changeGameState(GameState.state.signals.GAME_RUN);
-    (UISTATE.UI.get("scoreboard") as Scoreboard).show = true;
+    (UISTATE.UI.get("levelMenu") as HTMLElement).style.visibility = "visible";
+    (UISTATE.UI.get("playControl") as PlayControl).exitEvent = GameState.menuRun;
     showUILayout(false);
     setTimeout(() => {
         (AGAME.Scene as Scene).attachControl();
@@ -205,7 +204,7 @@ GameState.menuRun = () => {
     AGAME.RenderLock = true;
     UISTATE.RenderLock = false;
     GameState.changeGameState(GameState.state.signals.MENU_OPEN);
-    (UISTATE.UI.get("scoreboard") as Scoreboard).show = false;
+    (UISTATE.UI.get("levelMenu") as HTMLElement).style.visibility = "hidden";
     showUILayout(true);
     getMaxProgressForLevel(GameState.state.level);
     setTimeout(() => {
@@ -214,9 +213,6 @@ GameState.menuRun = () => {
 }
 
 //---------------------------------------------------
-export function onRotateSpinMenu() {
-
-}
 export function runTimer() {
     let count = 60;
     let sec = 0;

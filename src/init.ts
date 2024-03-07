@@ -56,7 +56,6 @@ window.addEventListener('load', async () => {
 
         AGAME.Engine.runRenderLoop(() => {
             if (!AGAME.RenderLock && UISTATE.RenderLock) {
-
                 AGAME.Scene.render();
             } else if (!UISTATE.RenderLock && AGAME.RenderLock) {
                 UISTATE.Scene.render();

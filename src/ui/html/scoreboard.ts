@@ -12,7 +12,6 @@ export default class Scoreboard extends HTMLElement {
         if (!this._init) {
             this.shadowRoot.innerHTML = htmlRender();
             this.setAttribute("class", "scoreboard");
-            this.style.visibility = 'hidden';
             this._timer = this.shadowRoot.querySelector(".scoreboard-time span");
             this._score = this.shadowRoot.querySelector(".scoreboard-score span");
             this._init = true;
@@ -44,11 +43,7 @@ function htmlRender() {
     const style = `
             <style>
                 :host{
-                    position: absolute;
-                    top: 0;
-                    left: calc(100vw / 2 - 125px);
-                    width: 100vw;
-                    max-width: 250px;
+                    width: 250px;
                     display: flex;
                     flex-direction: row;
                     align-items: center;

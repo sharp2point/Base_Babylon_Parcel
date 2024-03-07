@@ -5,7 +5,7 @@ import { rocketDie } from "@/objects/bonus/effects/rocket";
 import { enemyCollideReaction, enemyDamageModelEffect } from "@/objects/enemy/enemy";
 import { initPoints, newPoints } from "@/objects/points/points";
 import { addPosition$, shildComposition } from "@/objects/shield";
-import { clampToBoxShieldPosition, isAllEnemiesDie } from "@/utils/utility";
+import { isLEVEL_WIN, clampToBoxShieldPosition } from "@/utils/utility";
 import {
     Color3, Color4, DirectionalLight, EventState, HavokPlugin,
     HemisphericLight, IBasePhysicsCollisionEvent, IPointerEvent, Mesh,
@@ -72,13 +72,8 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
                 if (agCollider.name.includes("enemy-bloc")) {
                     addVelocityBall();
                     enemyCollideReaction(agCollider as Mesh);
-
                     GameState.calculatePoints(agCollider as Mesh);
-                    if (isAllEnemiesDie()) {
-                        if (GameState.state.gameState !== GameState.state.signals.LEVEL_WIN) {
-                            GameState.changeGameState(GameState.state.signals.LEVEL_WIN);
-                        }
-                    }
+                    isLEVEL_WIN(); 
                 }
             }
         }

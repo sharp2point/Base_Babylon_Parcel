@@ -2,6 +2,7 @@ import { GameState } from "@/game_state/game_state";
 import { UISTATE } from "@/game_state/ui/state";
 import { teachAnimateSteps } from "@/teach/teach";
 import Upmenu from "./upmenu";
+import PlayControl from "./playcontrol";
 
 export function removePreloader() {
     const preloader: HTMLElement = document.querySelector(".preload-container");
@@ -18,13 +19,16 @@ export function removePreloader() {
 function uiHtmlComponents() {
     const uiPlace = document.querySelector("#ui-place") as HTMLElement;
     const upMenu = document.querySelector(".up-menu") as Upmenu;
+    const playControl = document.querySelector(".play-control") as PlayControl;
+    console.log("PC: ", playControl)
     UISTATE.UI.set("uiPlace", uiPlace);
     UISTATE.UI.set("header", document.querySelector(".header"));
     UISTATE.UI.set("footer", document.querySelector(".footer"));
     UISTATE.UI.set("progress", document.querySelector(".progress"));
     UISTATE.UI.set("scoreboard", document.querySelector(".scoreboard"));
+    UISTATE.UI.set("playControl", playControl);
+    UISTATE.UI.set("levelMenu", document.querySelector(".level-menu"));
     UISTATE.UI.set("upmenu", upMenu);
-
     preloader(uiPlace);
     appendEventListenerUpMenu(upMenu);
 }

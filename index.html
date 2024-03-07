@@ -8,6 +8,7 @@
     <script type="module" src="./src/ui/html/upmenu.ts" defer></script>
     <script type="module" src="./src/ui/html/description.ts" defer></script>
     <script type="module" src="./src/ui/html/scoreboard.ts" defer></script>
+    <script type="module" src="./src/ui/html/playcontrol.ts" defer></script>
     <script type="module" src="./src/ui/html/progressboard.ts" defer></script>
     <script type="module" src="./src/ui/html/copyright.ts" defer></script>
     <link rel="icon" href="./public/favicon.ico">
@@ -27,7 +28,11 @@
         </div>
     </div>
     <div id="teach-place"></div>
-    <nice2jm-scoreboard ></nice2jm-scoreboard>
+    <div class="level-menu">
+        <nice2jm-scoreboard ></nice2jm-scoreboard>
+        <nice2jm-play-control class="play-control"></nice2jm-play-control>
+    </div>
+    
     <script type="module" src="./src/ui/html/ui_components.ts"></script>
     <script type="module" src="./src/init.ts"></script>
 </body>

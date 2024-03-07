@@ -10,8 +10,9 @@ export async function initTeach(parent: HTMLElement) {
     UISTATE.PIXI = app;
     return app;
 }
-function addHandSprite(app: PIXI.Application) {
-    const hand = PIXI.Sprite.from("public/icons/hand.webp");
+async function addHandSprite(app: PIXI.Application) {
+    const handP = await PIXI.Assets.load("public/icons/hand.webp");
+    const hand = new PIXI.Sprite(handP);
     hand.width = 60;
     hand.height = 60;
     app.stage.addChild(hand);
@@ -21,8 +22,9 @@ function addHandSprite(app: PIXI.Application) {
 
     return hand;
 }
-function addCloseSprite(app: PIXI.Application) {
-    const close = PIXI.Sprite.from("public/icons/close.webp");
+async function addCloseSprite(app: PIXI.Application) {
+    const closeP = await PIXI.Assets.load("public/icons/close.webp");
+    const close = new PIXI.Sprite(closeP);
     close.width = 60;
     close.height = 60;
     app.stage.addChild(close);
@@ -45,8 +47,9 @@ function addCloseSprite(app: PIXI.Application) {
 
     return close;
 }
-function addTapSprite(app: PIXI.Application) {
-    const tap = PIXI.Sprite.from("public/icons/tap.webp");
+async function addTapSprite(app: PIXI.Application) {
+    const tapP = await PIXI.Assets.load("public/icons/tap.webp");
+    const tap = new PIXI.Sprite(tapP);
     tap.width = 50;
     tap.height = 50;
     app.stage.addChild(tap);
@@ -56,13 +59,13 @@ function addTapSprite(app: PIXI.Application) {
     tap.alpha = 0;
     return tap;
 }
-export function teachAnimateSteps(app: PIXI.Application) {
+export async function teachAnimateSteps(app: PIXI.Application) {
     showTeach(true);
     let step = 0;
     app.stage.removeChildren(0, app.stage.children.length);
-    const close = addCloseSprite(app);
-    const hand = addHandSprite(app);
-    const tap = addTapSprite(app);
+    const close = await addCloseSprite(app);
+    const hand = await addHandSprite(app);
+    const tap = await addTapSprite(app);
 
     app.ticker.start();
 

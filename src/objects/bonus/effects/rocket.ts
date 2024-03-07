@@ -61,7 +61,7 @@ function addPhysics(rocket: Mesh) {
     return physics;
 }
 function rocketParticles(part: Mesh) {
-    const prt = new ParticleSystem("rocket-particle", 800, GameState.scene());
+    const prt = new ParticleSystem("rocket-particle", 300, GameState.scene());
     prt.emitter = part;
     prt.particleTexture = new Texture("public/sprites/dirt_02.png");
     prt.maxEmitPower = 1;
@@ -69,15 +69,15 @@ function rocketParticles(part: Mesh) {
     prt.emitRate = 300;
     prt.color1 = new Color4(0.3, 0.1, 0.05, 0.1);
     prt.color2 = new Color4(0.7, 0.5, 0, 0.5);
-    prt.colorDead = new Color4(0, 0.1, 0, 0.3);
+    prt.colorDead = new Color4(0, 0.0, 0.1, 0.3);
     prt.maxLifeTime = 1.0;
     prt.minLifeTime = 0.5;
     prt.minAngularSpeed = 0;
-    prt.maxSize = 0.8;
-    prt.minSize = 0.4;
-    prt.maxEmitBox = new Vector3(0.2, 0.2, 0.2);
-    prt.minEmitBox = new Vector3(-0.2, -0.2, -0.2);
-    prt.updateSpeed = 0.08;
+    prt.maxSize = 1.1;
+    prt.minSize = 0.1;
+    prt.maxEmitBox = new Vector3(0.3, 0.3, 0.3);
+    prt.minEmitBox = new Vector3(-0.3, -0.3, -0.3);
+    prt.updateSpeed = 0.025;
     prt.direction1 = new Vector3(0, 0, 0);
     prt.direction2 = new Vector3(0, 0, 0);
     prt.gravity = new Vector3(0, 0, -1);
@@ -135,7 +135,7 @@ function explosion(position: Vector3) {
     setTimeout(() => {
         action.remove();
         parts.forEach((p) => p.dispose());
-    }, 1000);
+    }, 500);
 }
 function explodeParticles(part: Mesh) {
     const prt = new ParticleSystem("rocket-particle", 500, GameState.scene());
@@ -143,18 +143,17 @@ function explodeParticles(part: Mesh) {
     prt.particleTexture = new Texture("public/sprites/magic_02.png");
     prt.maxEmitPower = 1;
     prt.minEmitPower = 0.1;
-    prt.emitRate = 200;
+    prt.emitRate = 300;
     prt.color1 = new Color4(0.3, 0.1, 0.05, 0.1);
     prt.color2 = new Color4(0.7, 0.5, 0, 0.5);
     prt.colorDead = new Color4(0.1, 0.0, 0.5, 0.3);
     prt.maxLifeTime = 0.8;
     prt.minLifeTime = 0.2;
-    prt.minAngularSpeed = 1;
-    prt.maxSize = 0.6;
+    prt.maxSize = 0.9;
     prt.minSize = 0.1;
-    prt.maxEmitBox = new Vector3(0.3, 0.3, 0.3);
+    prt.maxEmitBox = new Vector3(0.1, 0.1, 0.1);
     prt.minEmitBox = new Vector3(-0.1, -0.1, -0.1);
-    prt.updateSpeed = 0.05;
+    prt.updateSpeed = 0.1;
     prt.direction1 = new Vector3(0, 0, 0);
     prt.direction2 = new Vector3(0, 0, 0);
     prt.gravity = new Vector3(0, -10, 0);

@@ -1,5 +1,5 @@
 import { GameState } from "@/game_state/game_state";
-import { HemisphericLight, Mesh, Scalar, Tools, TransformNode, Vector3 } from "@babylonjs/core";
+import { HemisphericLight, Mesh, Scalar, TransformNode, Vector3 } from "@babylonjs/core";
 import { addBonus, addShadowToEnemy, enemy } from "@/objects/enemy/enemy";
 import { animationGLBBlock } from "./blocks";
 import { LevelMaps } from "./maps/maps_node";

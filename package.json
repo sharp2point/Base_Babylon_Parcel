@@ -16,7 +16,7 @@
   },
   "@parcel/bundler-default": {
     "minBundles": 1,
-    "minBundleSize": 5000,
+    "minBundleSize": 2000,
     "maxParallelRequests": 20
   },
   "keywords": [],
