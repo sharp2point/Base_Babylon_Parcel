@@ -8,10 +8,10 @@ export const BuildsMap = {
 
     ],
     2: [
-        {
-            type: 200,
-            position: new Vector3(0, 0, 8),
-        }
+        // {
+        //     type: 200,
+        //     position: new Vector3(0, 0, 8),
+        // }
     ],
     3: [
         {

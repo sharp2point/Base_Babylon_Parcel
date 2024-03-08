@@ -153,6 +153,7 @@ export function isLEVEL_WIN() {
             GameState.changeGameState(GameState.state.signals.LEVEL_WIN);
         }
         GameState.state.enemyLight.setEnabled(false);
+        GameState.state.enemyLight.intensity = 0;
     }
 }
 
