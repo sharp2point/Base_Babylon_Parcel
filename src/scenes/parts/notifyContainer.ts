@@ -1,29 +1,26 @@
 import { GameState } from "@/game_state/game_state";
-import { Scene } from "@babylonjs/core";
+import { UISTATE } from "@/game_state/ui/state";
+import NotifyContainer from "@/ui/html/notifyContainer";
 
 
-export function gameNotify(state: number, options: {
-
-}, timeout: number) {
+export function gameNotify(state: number, options: {}, timeout: number) {
+    const notifyContainer = UISTATE.UI.get("notifyContainer") as NotifyContainer;
     switch (state) {
         case GameState.state.signals.LEVEL_WIN: {
-            const notifyContainer = notyfyContainer();
-            notifyContainer.appendChild(youWin2D());
-            document.body.appendChild(notifyContainer);
+            notifyContainer.setNotify = youWin2D();
             break;
         }
         case GameState.state.signals.GAME_OTHER_BALL: {
-            const notifyContainer = notyfyContainer();
-            notifyContainer.appendChild(gameOther2D());
-            document.body.appendChild(notifyContainer);
+            notifyContainer.setNotify = gameOther2D();
             break;
         }
     }
+    notifyContainer.show = true;
 
-    return new Promise((res, rej) => {
+    return new Promise((res) => {
         setTimeout(() => {
+            notifyContainer.show = false;
             res(null);
-            destroyNotify();
         }, timeout);
     });
 }
@@ -49,12 +46,4 @@ function gameOther2D() {
         res.innerHTML = `<p>Game Other</p>`;
     }
     return res;
-}
-const notyfyContainer = () => {
-    const notifyContainer = document.createElement('div');
-    notifyContainer.classList.add("notyfy-container");
-    return notifyContainer
-}
-const destroyNotify = () => {
-    document.body.removeChild(document.querySelector('.notyfy-container'));
 }

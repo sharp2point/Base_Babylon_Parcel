@@ -28,6 +28,7 @@ function uiHtmlComponents() {
     UISTATE.UI.set("scoreboard", document.querySelector(".scoreboard"));
     UISTATE.UI.set("playControl", playControl);
     UISTATE.UI.set("levelMenu", document.querySelector(".level-menu"));
+    UISTATE.UI.set("notifyContainer", document.querySelector(".notify-container"));
     UISTATE.UI.set("upmenu", upMenu);
     preloader(uiPlace);
     appendEventListenerUpMenu(upMenu);
