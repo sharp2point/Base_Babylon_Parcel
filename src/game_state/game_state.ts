@@ -193,7 +193,7 @@ GameState.levelRun = (level: number) => { // level -> binding from spin menu
     GameState.playerProgress().set(level, 0);
     GameState.changeGameState(GameState.state.signals.GAME_RUN);
     (UISTATE.UI.get("levelMenu") as HTMLElement).style.visibility = "visible";
-    (UISTATE.UI.get("playControl") as PlayControl).exitEvent = GameState.menuRun;
+    (UISTATE.UI.get("playControl") as PlayControl).exitEvent = onExitButtomMenu;
     showUILayout(false);
     setTimeout(() => {
         (AGAME.Scene as Scene).attachControl();
@@ -213,6 +213,7 @@ GameState.menuRun = () => {
 }
 
 //---------------------------------------------------
+
 export function runTimer() {
     let count = 60;
     let sec = 0;
@@ -232,6 +233,10 @@ function stopTimer(obser$: Observer<Scene>) {
     return () => {
         obser$.remove();
     }
+}
+function onExitButtomMenu() {
+    GameState.state.stopRunTimer();
+    GameState.menuRun();
 }
 const renderPoints = (points: number) => (UISTATE.UI.get("scoreboard") as Scoreboard).score = points;
 const renderTime = (seconds: number) => (UISTATE.UI.get("scoreboard") as Scoreboard).timer = seconds;
