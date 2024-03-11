@@ -1,4 +1,4 @@
-import { Engine, HavokPlugin, Vector3 } from "@babylonjs/core";
+import { Engine, HavokPlugin, HighlightLayer, Vector3 } from "@babylonjs/core";
 import * as havok from "@babylonjs/havok";
 import { Inspector } from "@babylonjs/inspector";
 import { ASSETS } from "./game_state/assets/state";
@@ -6,8 +6,8 @@ import { AGAME } from "./game_state/main/state";
 import { GameState } from "./game_state/game_state";
 import { UISTATE } from "./game_state/ui/state";
 import { getScreenAspect, getTypeUserDevice, loadAssets } from "./utils/clear_utils";
-import { loadBombEffectModel, loadBuildModel, loadDamageEnemyModel, loadEnemyModel, loadMenuItemModel, loadRocketEffectModel } from "./utils/loaderGlbFiles";
-import { cameraSettings, initBonusPlane, initMaterials } from "./utils/utility";
+import { loadBombEffectModel, loadBuildModel, loadDamageEnemyModel, loadEnemyModel, loadRocketEffectModel } from "./utils/loaderGlbFiles";
+import { cameraSettings, initMaterials, initModels } from "./utils/utility";
 import { openIndexDB } from "./DB/indexdb";
 
 async function initCore() {
@@ -34,8 +34,6 @@ window.addEventListener('load', async () => {
         sceneOne(AGAME.Gravity, AGAME.HVK);
         cameraSettings(AGAME.ScreenAspect);
         UIScene();
-        initMaterials(AGAME.Scene);
-        initBonusPlane(AGAME.Scene);
 
         Promise.all(
             [
@@ -47,11 +45,11 @@ window.addEventListener('load', async () => {
             ]
         ).then((res) => {
             console.log("Loading Models: ", res);
-
+            initModels(AGAME.Scene);
         }).catch((err) => {
             console.log("Error Models: ", err);
         })
-
+        initMaterials(AGAME.Scene);
         //-------------------------------------->
         openIndexDB();
         //--------------------------------------->

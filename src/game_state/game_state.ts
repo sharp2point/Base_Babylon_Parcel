@@ -44,6 +44,8 @@ GameState.state = {
         ball: null,
         shield_node: null,
         shield_body: null,
+        enemy: null as Mesh,
+        enemyDamage: null as Array<Mesh>,
         scene: null,
         shadow: null,
         physicsHelper: null,

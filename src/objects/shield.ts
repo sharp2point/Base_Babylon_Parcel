@@ -1,5 +1,5 @@
 import { GameState } from "@/game_state/game_state";
-import { Color3, HighlightLayer, Mesh, MeshBuilder, Observable, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Quaternion, Scene, ShadowGenerator, StandardMaterial, Tools, TransformNode, Vector3 } from "@babylonjs/core";
+import { Color3, GlowLayer, HighlightLayer, Mesh, MeshBuilder, Observable, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Quaternion, Scene, ShadowGenerator, StandardMaterial, Tools, TransformNode, Vector3 } from "@babylonjs/core";
 
 const SHIELDSTATE = {
     mass: 100,
@@ -38,6 +38,10 @@ function physicsShield(scene: Scene, parent: TransformNode) {
     //physics.disablePreStep = false;
     physics.setCollisionCallbackEnabled(true);
     physics.setCollisionEndedCallbackEnabled(true);
+    const glow = new GlowLayer("Shield-Glow", GameState.scene());
+    glow.addIncludedOnlyMesh(shield);
+    // glow.blurKernelSize = 100;
+    glow.intensity = 5;
     return shield;
 }
 function controlShieldPlane(scene: Scene, parent: TransformNode) {

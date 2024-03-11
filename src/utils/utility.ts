@@ -1,5 +1,6 @@
+import { ASSETS } from "@/game_state/assets/state";
 import { GameState } from "@/game_state/game_state";
-import { Texture, Mesh, PhysicsViewer, Scalar, Scene, Tools, TransformNode, UniversalCamera, Vector3, StandardMaterial, Color3, PBRMaterial, MeshBuilder } from "@babylonjs/core";
+import { Texture, Mesh, PhysicsViewer, Scalar, Scene, Tools, TransformNode, UniversalCamera, Vector3, StandardMaterial, Color3, PBRMaterial, MeshBuilder, AssetContainer } from "@babylonjs/core";
 
 export function clampToBoxShieldPosition(position: Vector3, shield: TransformNode, amount: number) {
     try {
@@ -263,13 +264,29 @@ function createEnemyMaterial(scene: Scene) {
 
 }
 //bonus plane
-export function initBonusPlane(scene: Scene) {
+export function initModels(scene: Scene) {
+    initEnemyModel(scene);
+    initBonusPlane(scene);
+    initDamageEnemyModel(scene);
+}
+function initBonusPlane(scene: Scene) {
     const plane = MeshBuilder.CreatePlane(`bonus-plane`, { size: 1.5 }, scene) as Mesh;
     plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
     plane.isEnabled(false);
     plane.isVisible = false;
     GameState.state.gameObjects.bonus = plane;
 }
-
-
-
+function initEnemyModel(scene: Scene) {
+    const inst = ASSETS.containers3D.get("cristal") as AssetContainer;
+    const inst_model = inst.instantiateModelsToScene((name) => name);
+    const model = Mesh.MergeMeshes(inst_model.rootNodes[0].getChildMeshes(), true, false, null, false, false);
+    model.isEnabled(false);
+    model.isVisible = false;
+    GameState.state.gameObjects.enemy = model;
+}
+function initDamageEnemyModel(scene: Scene) {
+    // const asset = ASSETS.containers3D.get("enemy_damage") as AssetContainer;
+    // const inst = asset.instantiateModelsToScene((name: string) => `enemy-damage-${name}`, true);
+    // const meshes = inst.rootNodes[0].getChildMeshes();
+    // GameState.state.gameObjects.enemyDamage = meshes as Array<Mesh>;
+}

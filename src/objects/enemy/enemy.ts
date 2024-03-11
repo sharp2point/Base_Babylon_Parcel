@@ -2,7 +2,7 @@ import { ASSETS } from "@/game_state/assets/state";
 import { GameState } from "@/game_state/game_state";
 import { appendParticles } from "@/utils/clear_utils";
 import { gameObjectDispose } from "@/utils/utility";
-import { AssetContainer, Color3, Color4, HighlightLayer, Mesh, MeshBuilder, PBRBaseMaterial, PBRMaterial, ParticleSystem, PhysicsBody, PhysicsHelper, PhysicsMotionType, PhysicsRadialImpulseFalloff, PhysicsShapeConvexHull, PointColor, PointLight, Scalar, Scene, ShadowGenerator, SolidParticle, SolidParticleSystem, StandardMaterial, Texture, Tools, TransformNode, Vector3, setAndStartTimer } from "@babylonjs/core";
+import { AssetContainer, Color3, Color4, GlowLayer, HighlightLayer, Mesh, MeshBuilder, PBRBaseMaterial, PBRMaterial, ParticleSystem, PhysicsBody, PhysicsHelper, PhysicsMotionType, PhysicsRadialImpulseFalloff, PhysicsShapeConvexHull, PointColor, PointLight, Scalar, Scene, ShadowGenerator, SolidParticle, SolidParticleSystem, StandardMaterial, Texture, Tools, TransformNode, Vector3, setAndStartTimer } from "@babylonjs/core";
 import { bonus } from "../bonus/bonus";
 import { newPoints } from "../points/points";
 
@@ -75,8 +75,8 @@ export function enemyCollideReaction(enemy: Mesh) {
     }
 }
 export function addBonus(enemy: Mesh, type: number, payload: number) {
-    const bn = bonus(type, { payload: payload, parent: enemy }, GameState.scene());   
-    bn.position = new Vector3(0,0,0);
+    const bn = bonus(type, { payload: payload, parent: enemy }, GameState.scene());
+    bn.position = new Vector3(0, 0, 0);
     GameState.Bonuses().push(bn);
 }
 //------------------------------------------------------------------->
@@ -121,15 +121,11 @@ function resetEnemy(enemy: Mesh, type: any) {
     return enemy;
 }
 function physicsEnemyFromModel(name: string, options: { size: number, position: Vector3 }, parent: TransformNode) {
-    const inst = ASSETS.containers3D.get("cristal") as AssetContainer;
-    const inst_model = inst.instantiateModelsToScene((name) => name);
-
-    const model = Mesh.MergeMeshes(inst_model.rootNodes[0].getChildMeshes(), true, false, null, false, false);
+    const model = GameState.state.gameObjects.enemy.clone(name, parent);
+    model.isEnabled(true);
+    model.isVisible = true;
     model.scaling = new Vector3(0.6, 0.6, 0.6);
     model.position = options.position;
-    model.parent = parent;
-    model.name = name;
-
     return model;
 }
 function appendPhysics(mesh: Mesh, options: {
@@ -155,37 +151,42 @@ const getMaterialByEnemyType = (mesh: Mesh): PBRMaterial => (GameState.scene() a
 const getMaterialByName = (name: string): PBRMaterial => (GameState.scene() as Scene).getMaterialByName(name) as PBRMaterial ?? null;
 //----------------------------------------------------------
 export function enemyDamageModelEffect(enemy: Mesh) {
-    const instanceModel = ASSETS.containers3D.get("enemy_damage").
-        instantiateModelsToScene((name: string) => `enemy-damage-${name}`, true);
-    const tn = new TransformNode(`tn-enemies`, GameState.scene())//GameState.enemyNodes();
+    const asset = ASSETS.containers3D.get("enemy_damage") as AssetContainer;
+    const inst = asset.instantiateModelsToScene((name: string) => `enemy-damage-${name}`, true);
+    const meshes = inst.rootNodes[0].getChildMeshes();
+
+    const tn = new TransformNode(`tn-enemies`, GameState.scene());
     GameState.damageNodes().push(tn);
-    const childs = instanceModel.rootNodes[0].getChildMeshes();
-
-    // const material_enemy = getMaterialByEnemyType(enemy) as PBRMaterial
-    // const color_enemy = material_enemy.albedoColor;
     const material = getMaterialByName('enemy-parts-mt') as PBRMaterial;
+    const hl = GameState.scene().getHighlightLayerByName("dmg-hl");
+    hl.blurHorizontalSize = 1;
+    hl.blurVerticalSize = 1;
+    hl.innerGlow = true;
+    hl.outerGlow = true;
 
-    childs.forEach((m: Mesh) => {
+    meshes.forEach((m: Mesh, inx) => {
         m.material = material;
         m.setParent(tn);
         tn.position = enemy.position.clone();
-        appendPhysics(m, {
+
+        const p = appendPhysics(m, {
             collideMask: GameState.CldMasks().enemyParts,
             collideGroup: GameState.CldMasks().groups.enemyParts,
             mass: 1, shape_material: {
-                restitution: 0.1, friction: 0.1
+                restitution: 0.1, friction: 0.5
             }
         });
-        //---------------------------------------
-        setAndStartTimer({
-            timeout: Scalar.RandomRange(3000, 7000),
-            contextObservable: GameState.scene().onBeforeRenderObservable,
-            onEnded: () => {
-                // prt.stop();
-                m.dispose();
-                tn.dispose();
-            }
-        });
+        p.applyImpulse(new Vector3(Math.sin(360 / 8 * inx), 1, Math.cos(360 / 8 * inx)).multiply(new Vector3(10, 0.1, 10)),
+            m.position.clone())
+    });
+
+    setAndStartTimer({
+        timeout: Scalar.RandomRange(3000, 7000),
+        contextObservable: GameState.scene().onBeforeRenderObservable,
+        onEnded: () => {
+            tn.getChildMeshes().forEach(m => m.dispose());
+            tn.dispose();
+        }
     });
     gameObjectDispose(enemy);
 }
