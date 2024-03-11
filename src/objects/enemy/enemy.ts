@@ -62,7 +62,6 @@ export function enemy(name: string, options: { type: number, position: Vector3, 
     })
     return enm;
 }
-
 export function addShadowToEnemy(generators: Array<ShadowGenerator>, name: string) {
     generators.forEach(generator => {
         generator.addShadowCaster(GameState.scene().getMeshByName(name), false);
@@ -158,11 +157,7 @@ export function enemyDamageModelEffect(enemy: Mesh) {
     const tn = new TransformNode(`tn-enemies`, GameState.scene());
     GameState.damageNodes().push(tn);
     const material = getMaterialByName('enemy-parts-mt') as PBRMaterial;
-    const hl = GameState.scene().getHighlightLayerByName("dmg-hl");
-    hl.blurHorizontalSize = 1;
-    hl.blurVerticalSize = 1;
-    hl.innerGlow = true;
-    hl.outerGlow = true;
+
 
     meshes.forEach((m: Mesh, inx) => {
         m.material = material;

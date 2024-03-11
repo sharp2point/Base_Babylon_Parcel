@@ -40,8 +40,7 @@ function physicsShield(scene: Scene, parent: TransformNode) {
     physics.setCollisionEndedCallbackEnabled(true);
     const glow = new GlowLayer("Shield-Glow", GameState.scene());
     glow.addIncludedOnlyMesh(shield);
-    // glow.blurKernelSize = 100;
-    glow.intensity = 5;
+    glow.intensity = 3;
     return shield;
 }
 function controlShieldPlane(scene: Scene, parent: TransformNode) {

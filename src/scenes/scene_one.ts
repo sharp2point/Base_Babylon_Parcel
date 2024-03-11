@@ -11,9 +11,10 @@ import {
     Color3, Color4, DirectionalLight, EventState, HavokPlugin,
     HemisphericLight, IBasePhysicsCollisionEvent, IPointerEvent, Mesh,
     MeshBuilder, PhysicsBody, PhysicsHelper, PhysicsMotionType, PhysicsShapeConvexHull,
-    PickingInfo, PointerEventTypes, Quaternion, Scene, ShadowGenerator,
+    PickingInfo, PointerEventTypes, Quaternion, Scalar, Scene, ShadowGenerator,
     SpotLight,
-    StandardMaterial, Tools, TransformNode, UniversalCamera, Vector3
+    StandardMaterial, Tools, TransformNode, UniversalCamera, Vector3,
+    setAndStartTimer
 } from "@babylonjs/core";
 
 
@@ -39,7 +40,7 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     dragBoxLines();
     addShadowsToObjects(shadowGenArray, scene);
     AGAME.Scene = scene;
-
+    let isBallWall = false;
     //--------- OBSERVER -------->
     addPosition$(() => { });
 
@@ -55,21 +56,21 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
             const agCollider = eventData.collidedAgainst.transformNode;
             if (agCollider.name.includes("rocket")) {
                 if (collider.name.includes("enemy-bloc")) {
-                    enemyDamageModelEffect(collider as Mesh);
-                    rocketDie(agCollider as Mesh);
+                    colliderBallBlockEvent(collider, agCollider);
                 }
             } else if (collider.name.includes("rocket")) {
                 if (agCollider.name.includes("enemy-bloc")) {
-                    enemyDamageModelEffect(agCollider as Mesh);
-                    rocketDie(collider as Mesh);
+                    colliderBallBlockEvent(agCollider, collider);
                 }
             }
+
+
         }
     });
     AGAME.HVK.onCollisionEndedObservable.add((eventData: IBasePhysicsCollisionEvent, eventState: EventState) => {
+        const collider = eventData.collider.transformNode;
+        const agCollider = eventData.collidedAgainst.transformNode;
         if (GameState.state.gameState === GameState.state.signals.GAME_RUN && !GameState.state.isResetBall) {
-            const collider = eventData.collider.transformNode;
-            const agCollider = eventData.collidedAgainst.transformNode;
             if (agCollider.name === "ball" || collider.name === "ball") {
                 if (agCollider.name.includes("enemy-bloc")) {
                     addVelocityBall();
@@ -78,6 +79,32 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
                     isLEVEL_WIN();
                 }
             }
+        }
+        if (!isBallWall && collider.name.includes("ball") && agCollider.name.includes("wall")) {
+            const ball = collider.physicsBody;
+            const ballLin = ball.getLinearVelocity().multiply(new Vector3(1, 0, 1)).normalize();
+            let wall = new Vector3(0, 0, 1);
+            if (agCollider.name.includes("left")) {
+                wall = new Vector3(0, 0, 1);
+            } else if (agCollider.name.includes("right")) {
+                wall = new Vector3(0, 0, 1);
+            } else if (agCollider.name.includes("up")) {
+                wall = new Vector3(1, 0, 0);
+            }
+            const normal = Vector3.Cross(ballLin, wall).normalize();
+            const angle = Vector3.GetAngleBetweenVectors(ballLin, wall, normal);
+
+            if (Math.ceil(Tools.ToDegrees(angle)) > 80 && Math.ceil(Tools.ToDegrees(angle)) < 100) {
+                console.log("Correct ball Angle")
+                ball.setLinearVelocity(ball.getAngularVelocity().clone().add(new Vector3(10, 0, 10)))
+            }
+
+            isBallWall = true;
+            setAndStartTimer({
+                timeout: 100,
+                contextObservable: GameState.scene().onBeforeRenderObservable,
+                onEnded: () => isBallWall = false,
+            });
         }
     });
 }
@@ -283,4 +310,10 @@ function ballJoinShield() {
             .setTargetTransform(GameState.shieldNode().position.clone()
                 .add(new Vector3(0, 0, 0.7)), Quaternion.Identity())
     }
+}
+//COLLIDER ---------------------
+function colliderBallBlockEvent(collider, agCollider) {
+    enemyDamageModelEffect(collider as Mesh);
+    rocketDie(agCollider as Mesh);
+    isLEVEL_WIN();
 }

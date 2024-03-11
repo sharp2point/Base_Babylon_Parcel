@@ -223,7 +223,7 @@ function createEnemyMaterial(scene: Scene) {
     const pbrprt = new PBRMaterial("enemy-parts-mt", GameState.scene());
     pbrprt.roughness = 0.9;
     pbrprt.metallic = 0.05;
-    pbrprt.albedoColor = new Color3(0.1, 0.05, 0.1);
+    pbrprt.albedoColor = new Color3(0.4, 0.2, 0.4);
     pbrprt.anisotropy.isEnabled = true;
     pbrprt.anisotropy.intensity = 0.5;
     pbrprt.anisotropy.direction.x = 0.5;
