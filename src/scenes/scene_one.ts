@@ -3,8 +3,9 @@ import { AGAME } from "@/game_state/main/state";
 import { addRun$, addShadowToBall, addVelocityBall, ballComposition, onRun$ } from "@/objects/ball";
 import { rocketDie } from "@/objects/bonus/effects/rocket";
 import { enemyCollideReaction, enemyDamageModelEffect } from "@/objects/enemy/enemy";
-import { initPoints, newPoints } from "@/objects/points/points";
+import { initPoints } from "@/objects/points/points";
 import { addPosition$, shildComposition } from "@/objects/shield";
+import { cameraController } from "@/utils/cameraController";
 import { isLEVEL_WIN, clampToBoxShieldPosition } from "@/utils/utility";
 import {
     Color3, Color4, DirectionalLight, EventState, HavokPlugin,
@@ -19,6 +20,7 @@ import {
 export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     const scene = initScene(gravity, physicsEngine);
     const camera = addCamera(scene);
+    cameraController(camera, scene);
 
     const [hemiLight, dirLight, shadowGenArray] = [...addLights(scene)];
 
@@ -73,7 +75,7 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
                     addVelocityBall();
                     enemyCollideReaction(agCollider as Mesh);
                     GameState.calculatePoints(agCollider as Mesh);
-                    isLEVEL_WIN(); 
+                    isLEVEL_WIN();
                 }
             }
         }

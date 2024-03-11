@@ -6,7 +6,7 @@ import {
     Tools, UniversalCamera, Vector3
 } from "@babylonjs/core";
 import { removePreloader } from "./html/ui_components";
-import { spinMenu2 } from "./spin2";
+import { spinMenu } from "./spin2";
 import { initTeach } from "@/teach/teach";
 
 export function UIScene() {
@@ -40,7 +40,7 @@ export function UIScene() {
 //------------------------------------------------------>
 function onReady(scene: Scene) {
     removePreloader().then(() => {
-        spinMenu2(scene);
+        spinMenu(scene);
         initTeach(document.querySelector("#teach-place"));
     });
 }

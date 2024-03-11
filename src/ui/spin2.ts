@@ -12,14 +12,15 @@ import {
     PointerEventTypes,
     Color4,
     ParticleSystem,
+    MeshBuilder,
 } from "@babylonjs/core";
 import { getMaxProgressForLevel } from "@/DB/indexdb";
 import { appendParticles } from "@/utils/clear_utils";
 
 const ITEM_MODELS = {
     border: null as Mesh,
-    center: null,
-    level: null,
+    center: null as Mesh,
+    level: null as Mesh,
     numbers: new Map<string, Mesh>()
 }
 export const SPINMENU = {
@@ -40,15 +41,15 @@ export const SPINMENU = {
     hoverParticles: null as ParticleSystem
 }
 
-export async function spinMenu2(scene: Scene) {
+export async function spinMenu(scene: Scene) {
     let isPointerDown = false;
     let initPointDown: Vector3 = null;
-
     SPINMENU.standardMaterial = new StandardMaterial("standard-item-mt", scene);
     SPINMENU.standardMaterial.diffuse = new Color3(0.2, 0.2, 0.2);
 
-    SPINMENU.nodeMenu = await buildMenu(SPINMENU.position, SPINMENU.radius, SPINMENU.count, scene) as TransformNode;
+    await fillItemModel(scene);
 
+    SPINMENU.nodeMenu = buildMenu(SPINMENU.position, SPINMENU.radius, SPINMENU.count, scene) as TransformNode;
     setMenuIndex(0, SPINMENU.nodeMenu, scene);
 
     scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
@@ -159,25 +160,11 @@ function appendAnimation(host: Mesh | TransformNode, scene: Scene) {
 function initGeometryItemFromModels(name: string, options: { index: number }, scene: Scene) {
     const tn = new TransformNode(`${name}-${options.index}`, scene);
 
-    const border = ITEM_MODELS.border.clone("border");
-    border.isVisible = true;
-    border.isEnabled(true);
-
-    const center = ITEM_MODELS.center.clone("center");
-    center.isVisible = true;
-    center.isEnabled(true);
-
-    const level = ITEM_MODELS.level.clone("level");
-    level.isVisible = true;
-    level.isEnabled(true);
-
-    const number = ITEM_MODELS.numbers.get(`number-${options.index}`).clone(`number-${options.index}`);
-    number.isVisible = true;
-    number.isEnabled(true);
-
-    const moveHandler = ITEM_MODELS.center.clone("moveHandler");
-    moveHandler.isVisible = true;
-    moveHandler.isEnabled(true);
+    const border = cloner(ITEM_MODELS.border, "border");
+    const center = cloner(ITEM_MODELS.center, "center");
+    const level = cloner(ITEM_MODELS.level, "level");
+    const number = cloner(ITEM_MODELS.numbers.get(`number-${options.index}`), `number-${options.index}`);
+    const moveHandler = cloner(ITEM_MODELS.center, "moveHandler");
 
     center.scaling = new Vector3(0.9, 0.2, 0.9);
     moveHandler.scaling = new Vector3(1.1, 0.1, 1.1);
@@ -208,67 +195,16 @@ function initGeometryItemFromModels(name: string, options: { index: number }, sc
     tn.position.y = 1;
     return tn;
 }
-async function loadItemGeometry(name: string, options: { index: number }, scene: Scene) {
-    return new Promise((resolve) => {
-        loadMenuItemModel(scene).then(() => {
-            const container: AssetContainer = ASSETS.containers3D.get("menu_item");
-            const instance = container.instantiateModelsToScene((name) => name);
-            const models = instance.rootNodes[0].getChildMeshes();
-
-            models.forEach((model: Mesh) => {
-                model.isVisible = false;
-                model.isEnabled(false);
-
-                switch (model.name) {
-                    case "Border": {
-                        ITEM_MODELS.border = model;
-                        break;
-                    }
-                    case "Center": {
-                        ITEM_MODELS.center = model;
-                        break;
-                    }
-                    case "Level": {
-                        ITEM_MODELS.level = model;
-                        break;
-                    }
-                    case "number-0":
-                    case "number-1":
-                    case "number-2":
-                    case "number-3":
-                    case "number-4":
-                    case "number-5":
-                    case "number-6":
-                    case "number-7":
-                    case "number-8":
-                    case "number-9": {
-                        ITEM_MODELS.numbers.set(model.name, model);
-                        break;
-                    }
-                    default: {
-                        console.log("switch default");
-                        break;
-                    }
-                }
-            });
-        }).then(() => {
-            const tn = initGeometryItemFromModels(name, { index: options.index }, scene);
-            tn.position = new Vector3(0, 14, 0);
-            resolve(tn);
-        })
-    });
-}
-async function menuItem(name: string, options: { index: number, angle: number }, scene: Scene) {
-    return new Promise<TransformNode>((resolve) => {
-        loadItemGeometry(name, { index: options.index }, scene).then((tn: TransformNode) => {
-            tn["meta"] = {
-                name: name,
-                index: options.index,
-                angle: options.angle
-            }
-            resolve(tn);
-        });
-    });
+function menuItem(name: string, options: { index: number, angle: number }, scene: Scene) {
+    const tn = initGeometryItemFromModels(name, { index: options.index }, scene);
+    tn.position = new Vector3(0, 4, 0);
+    tn["meta"] = {
+        name: name,
+        index: options.index,
+        angle: options.angle
+    }
+    // return Promise.resolve<TransformNode>(tn);
+    return tn;
 }
 function buildMenu(position: Vector3, radius: number, count: number, scene: Scene) {
     const tn = new TransformNode("menu-tn", scene);
@@ -277,28 +213,46 @@ function buildMenu(position: Vector3, radius: number, count: number, scene: Scen
     SPINMENU.angleDelta = SPINMENU.angle * 1.5;
 
     const promises = new Array<Promise<TransformNode>>();
+    const tns = new Array<TransformNode>();
 
     [...Array(count).keys()].forEach((val) => {
-        promises.push(menuItem(`item-${val}`, { index: val, angle: (SPINMENU.angle) * val + SPINMENU.angleDelta }, scene));
+        const tn = menuItem(`item-${val}`, { index: val, angle: (SPINMENU.angle) * val + SPINMENU.angleDelta }, scene);
+        //promises.push(tn);
+        tns.push(tn);
     });
 
-    return new Promise((resolve) => {
-        Promise.all(promises).then((res) => {
-            res.forEach((item: TransformNode, index) => {
-                SPINMENU.items.set(index, item);
-                item.scalingDeterminant = SPINMENU.scaleDeterminant;
-                item.setParent(tn);
-                setItemPosition(item as TransformNode, new Vector3(
-                    Math.cos(Tools.ToRadians(SPINMENU.angle * index)) * radius,
-                    0,
-                    Math.sin(Tools.ToRadians(SPINMENU.angle * index)) * radius,
-                ));
-            });
-            tn.rotation.y = Tools.ToRadians(SPINMENU.angleDelta);
-            tn.position = position;
-            resolve(tn);
-        });
-    })
+    tns.forEach((item: TransformNode, index) => {
+        SPINMENU.items.set(index, item);
+        item.scalingDeterminant = SPINMENU.scaleDeterminant;
+        item.setParent(tn);
+        setItemPosition(item as TransformNode, new Vector3(
+            Math.cos(Tools.ToRadians(SPINMENU.angle * index)) * radius,
+            0,
+            Math.sin(Tools.ToRadians(SPINMENU.angle * index)) * radius,
+        ));
+    });
+    tn.rotation.y = Tools.ToRadians(SPINMENU.angleDelta);
+    tn.position = position;
+    return tn;
+    // return new Promise((resolve) => {
+    //     Promise.all(promises).then((res) => {
+    //         console.log(res)
+    //         res.forEach((item: TransformNode, index) => {
+    //             SPINMENU.items.set(index, item);
+    //             item.scalingDeterminant = SPINMENU.scaleDeterminant;
+    //             item.setParent(tn);
+    //             setItemPosition(item as TransformNode, new Vector3(
+    //                 Math.cos(Tools.ToRadians(SPINMENU.angle * index)) * radius,
+    //                 0,
+    //                 Math.sin(Tools.ToRadians(SPINMENU.angle * index)) * radius,
+    //             ));
+    //         });
+    //         tn.rotation.y = Tools.ToRadians(SPINMENU.angleDelta);
+    //         tn.position = position;
+
+    //         resolve(tn);
+    //     });
+    // })
 
 }
 //-Rotate Menu ----------------------------------------
@@ -354,7 +308,6 @@ export function rotateToPrevPosition(menu: TransformNode, scene: Scene) {
     setMenuIndex(index, menu, scene)
 }
 //- Animations ------------------------------------------
-
 function rotateMenuAnimation(item: TransformNode, angle: number) {
     const startAngl = item.rotation.clone();
     const keys = [
@@ -405,4 +358,54 @@ function positionYItemAnimation(item: TransformNode) {
     anim.setKeys(keys);
     item.animations.push(anim);
     return anim;
+}
+//-ITEMMODEL --------------------------------------------
+async function fillItemModel(scene: Scene) {
+    const asset = await loadMenuItemModel(scene);
+    const instance = (asset as AssetContainer).instantiateModelsToScene((name) => name);
+    parseModel(instance.rootNodes[0].getChildMeshes());
+}
+function parseModel(models: Array<Mesh>) {
+    models.forEach((model: Mesh) => {
+        model.isVisible = false;
+        model.isEnabled(false);
+
+        switch (model.name) {
+            case "Border": {
+                ITEM_MODELS.border = model;
+                break;
+            }
+            case "Center": {
+                ITEM_MODELS.center = model;
+                break;
+            }
+            case "Level": {
+                ITEM_MODELS.level = model;
+                break;
+            }
+            case "number-0":
+            case "number-1":
+            case "number-2":
+            case "number-3":
+            case "number-4":
+            case "number-5":
+            case "number-6":
+            case "number-7":
+            case "number-8":
+            case "number-9": {
+                ITEM_MODELS.numbers.set(model.name, model);
+                break;
+            }
+            default: {
+                console.log("switch default");
+                break;
+            }
+        }
+    });
+}
+function cloner(mesh: Mesh, name: string) {
+    const clone = mesh.clone(name);
+    clone.isVisible = true;
+    clone.isEnabled(true);
+    return clone;
 }

@@ -31,13 +31,14 @@ window.addEventListener('load', async () => {
     initCore().then(async () => {
         const { UIScene } = await import("./ui/ui");
         const { sceneOne } = await import("./scenes/scene_one");
-        UIScene();
+
         sceneOne(AGAME.Gravity, AGAME.HVK);
         cameraSettings(AGAME.ScreenAspect);
+        createEnemyMaterial(AGAME.Scene);
+        UIScene();
 
         Promise.all(
-            [
-                loadMenuItemModel(AGAME.Scene),
+            [                
                 loadEnemyModel(AGAME.Scene),
                 loadBuildModel(AGAME.Scene),
                 loadDamageEnemyModel(AGAME.Scene),
@@ -46,10 +47,11 @@ window.addEventListener('load', async () => {
             ]
         ).then((res) => {
             console.log("Loading Models: ", res);
+
         }).catch((err) => {
             console.log("Error Models: ", err);
         })
-        createEnemyMaterial(AGAME.Scene);
+
         //-------------------------------------->
         openIndexDB();
         //--------------------------------------->

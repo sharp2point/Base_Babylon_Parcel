@@ -20,7 +20,6 @@ function uiHtmlComponents() {
     const uiPlace = document.querySelector("#ui-place") as HTMLElement;
     const upMenu = document.querySelector(".up-menu") as Upmenu;
     const playControl = document.querySelector(".play-control") as PlayControl;
-    console.log("PC: ", playControl)
     UISTATE.UI.set("uiPlace", uiPlace);
     UISTATE.UI.set("header", document.querySelector(".header"));
     UISTATE.UI.set("footer", document.querySelector(".footer"));
