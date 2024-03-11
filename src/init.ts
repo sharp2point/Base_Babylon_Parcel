@@ -7,8 +7,7 @@ import { GameState } from "./game_state/game_state";
 import { UISTATE } from "./game_state/ui/state";
 import { getScreenAspect, getTypeUserDevice, loadAssets } from "./utils/clear_utils";
 import { loadBombEffectModel, loadBuildModel, loadDamageEnemyModel, loadEnemyModel, loadMenuItemModel, loadRocketEffectModel } from "./utils/loaderGlbFiles";
-import { cameraSettings } from "./utils/utility";
-import { createEnemyMaterial } from "./objects/enemy/enemy";
+import { cameraSettings, initBonusPlane, initMaterials } from "./utils/utility";
 import { openIndexDB } from "./DB/indexdb";
 
 async function initCore() {
@@ -34,11 +33,12 @@ window.addEventListener('load', async () => {
 
         sceneOne(AGAME.Gravity, AGAME.HVK);
         cameraSettings(AGAME.ScreenAspect);
-        createEnemyMaterial(AGAME.Scene);
         UIScene();
+        initMaterials(AGAME.Scene);
+        initBonusPlane(AGAME.Scene);
 
         Promise.all(
-            [                
+            [
                 loadEnemyModel(AGAME.Scene),
                 loadBuildModel(AGAME.Scene),
                 loadDamageEnemyModel(AGAME.Scene),

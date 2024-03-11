@@ -51,6 +51,7 @@ GameState.state = {
         damageNodes: null,
         camera: null,
         points: null,
+        bonus: null as Mesh,
         bonuses: new Array<Mesh>(),
         effects: new Array<Mesh>()
     },

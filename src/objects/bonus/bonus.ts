@@ -7,6 +7,7 @@ import {
 } from "@babylonjs/core";
 import { bombEffect } from "./effects/bomb";
 import { rocketEffect } from "./effects/rocket";
+import { AGAME } from "@/game_state/main/state";
 
 const BONUSTYPE = {
     100: {
@@ -35,18 +36,13 @@ const BONUSTYPE = {
     }
 }
 
-export function bonus(type: number, options: { payload: number }, scene: Scene) {
-    const plane = MeshBuilder.CreatePlane(`bonus-${type}`, { size: 1 });
-    const texture = new Texture(BONUSTYPE[type].image, scene);
-    texture.hasAlpha = true;
 
-    const material = new StandardMaterial(`bonus-${type}-mt`, scene);
-    material.diffuseTexture = texture;
-    material.emissiveTexture = texture;
-    material.backFaceCulling = false;
-    
+export function bonus(type: number, options: { payload: number, parent: Mesh }, scene: Scene) {
+    const plane = (GameState.state.gameObjects.bonus as Mesh).clone(`bonus-${type}`, options.parent);
+    plane.isEnabled(true);
+    plane.isVisible = true;
+    const material = GameState.scene().getMaterialByName(`bonus-${BONUSTYPE[type].descript}-mt`);
     plane.material = material;
-    // plane.rotation.x = Tools.ToRadians(90);
     const meta = BONUSTYPE[type];
     meta.payload = options.payload;
     plane["meta"] = BONUSTYPE[type];

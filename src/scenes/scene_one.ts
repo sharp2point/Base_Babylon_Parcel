@@ -281,6 +281,6 @@ function ballJoinShield() {
         GameState.state.gameObjects.ball
             .getPhysicsBody()
             .setTargetTransform(GameState.shieldNode().position.clone()
-                .add(new Vector3(0, 0, 0.5)), Quaternion.Identity())
+                .add(new Vector3(0, 0, 0.7)), Quaternion.Identity())
     }
 }

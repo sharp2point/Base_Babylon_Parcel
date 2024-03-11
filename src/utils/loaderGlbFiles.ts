@@ -51,10 +51,8 @@ export function loadDamageEnemyModel(scene: Scene) {
 export function loadMenuItemModel(scene: Scene) {
   return new Promise((resolve) => {
     if (ASSETS.containers3D.has("menu_item")) {
-      console.log("HAS SPIN")
       resolve(ASSETS.containers3D.get("menu_item"));
     } else {
-      console.log("Load model SPIN")
       loadModel(`public/models/`, `menuItem.glb`, scene).then((container) => {
         ASSETS.containers3D.set("menu_item", container as AssetContainer);
         resolve(ASSETS.containers3D.get("menu_item"));

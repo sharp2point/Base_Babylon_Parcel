@@ -5,7 +5,7 @@ const SHIELDSTATE = {
     mass: 100,
     restitution: 0.5,
     friction: 1,
-    position: new Vector3(0, 0.3, -7)
+    position: new Vector3(0, 0.3, -9)
 }
 export function shildComposition(scene: Scene): [TransformNode, Mesh, Mesh] {
     const shield = new TransformNode("shield-transform-node", scene);
