@@ -161,6 +161,7 @@ export function isLEVEL_WIN() {
 export function initMaterials(scene: Scene) {
     createEnemyMaterial(scene);
     preloadBonusMaterial(scene);
+    initTextures(scene);
 }
 function preloadBonusMaterial(scene: Scene) {
     materialCreator("bomb", "public/sprites/bomb.png", scene);
@@ -261,6 +262,11 @@ function createEnemyMaterial(scene: Scene) {
     // pbr.iridescence.minimumThickness = 100; // in nanometers
     // pbr.iridescence.maximumThickness = 400; // in nanometers
     //-------------------------------------------
+
+}
+function initTextures(scene: Scene) {
+    const rocketPartickeTexture = new Texture("public/sprites/magic_02.png", scene);
+    rocketPartickeTexture.name = "rocket-txt";
 
 }
 //bonus plane

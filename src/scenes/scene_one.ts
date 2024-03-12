@@ -93,10 +93,11 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
             }
             const normal = Vector3.Cross(ballLin, wall).normalize();
             const angle = Vector3.GetAngleBetweenVectors(ballLin, wall, normal);
+            // console.log("Angle: ", angle);
 
             if (Math.ceil(Tools.ToDegrees(angle)) > 80 && Math.ceil(Tools.ToDegrees(angle)) < 100) {
                 console.log("Correct ball Angle")
-                ball.setLinearVelocity(ball.getAngularVelocity().clone().add(new Vector3(10, 0, 10)))
+                //ball.setLinearVelocity(ball.getAngularVelocity().clone().add(new Vector3(2, 0, 2)))
             }
 
             isBallWall = true;

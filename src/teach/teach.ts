@@ -6,13 +6,22 @@ export async function initTeach(parent: HTMLElement) {
     const app = new PIXI.Application();
     await app.init({ background: "#101010", backgroundAlpha: 0.5, resizeTo: window })
     parent.appendChild(app.canvas);
+    await preload();
+
     showTeach(false);
     UISTATE.PIXI = app;
     return app;
 }
+async function preload() {
+    const assets = [
+        { alias: 'hand', src: 'public/icons/hand.webp' },
+        { alias: 'close', src: 'public/icons/close.webp' },
+        { alias: 'tap', src: 'public/icons/tap.webp' },
+    ];
+    await PIXI.Assets.load(assets);
+}
 async function addHandSprite(app: PIXI.Application) {
-    const handP = await PIXI.Assets.load("public/icons/hand.webp");
-    const hand = new PIXI.Sprite(handP);
+    const hand = PIXI.Sprite.from('hand');
     hand.width = 60;
     hand.height = 60;
     app.stage.addChild(hand);
@@ -23,8 +32,7 @@ async function addHandSprite(app: PIXI.Application) {
     return hand;
 }
 async function addCloseSprite(app: PIXI.Application) {
-    const closeP = await PIXI.Assets.load("public/icons/close.webp");
-    const close = new PIXI.Sprite(closeP);
+    const close = PIXI.Sprite.from('close');
     close.width = 60;
     close.height = 60;
     app.stage.addChild(close);
@@ -48,8 +56,7 @@ async function addCloseSprite(app: PIXI.Application) {
     return close;
 }
 async function addTapSprite(app: PIXI.Application) {
-    const tapP = await PIXI.Assets.load("public/icons/tap.webp");
-    const tap = new PIXI.Sprite(tapP);
+    const tap = PIXI.Sprite.from('tap');
     tap.width = 50;
     tap.height = 50;
     app.stage.addChild(tap);
