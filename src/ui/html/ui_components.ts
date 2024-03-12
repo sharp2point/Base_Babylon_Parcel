@@ -3,6 +3,7 @@ import { UISTATE } from "@/game_state/ui/state";
 import { teachAnimateSteps } from "@/teach/teach";
 import Upmenu from "./upmenu";
 import PlayControl from "./playcontrol";
+import { Engine } from "@babylonjs/core";
 
 export function removePreloader() {
     const preloader: HTMLElement = document.querySelector(".preload-container");
@@ -78,6 +79,9 @@ function appendEventListenerUpMenu(menu: Upmenu) {
     menu.languageButton.addEventListener("click", () => {
         onLanguageClickEvent(menu.languageButton);
     });
+    menu.soundButton.addEventListener("click", () => {
+        onSoundClickEvent();
+    })
 }
 function onFullscreenClickEvent(image: HTMLImageElement) {
     if (document.fullscreenEnabled) {
@@ -107,6 +111,16 @@ function onLanguageClickEvent(image: HTMLImageElement) {
         GameState.state.lang = "ru";
         image.src = "public/icons/russian.png";
     }
+}
+function onSoundClickEvent() {
+    if (Engine.audioEngine.audioContext.state === "suspended") {
+        Engine.audioEngine.audioContext.resume();
+        console.log("AudioState: ", Engine.audioEngine.audioContext.state);
+    }
+    // if (Engine.audioEngine.unlocked) {
+    //     Engine.audioEngine.unlock();
+    //     console.log("Engine Unlock: ", Engine.audioEngine.audioContext.state)
+    // }
 }
 uiHtmlComponents();
 

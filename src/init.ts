@@ -7,7 +7,7 @@ import { GameState } from "./game_state/game_state";
 import { UISTATE } from "./game_state/ui/state";
 import { getScreenAspect, getTypeUserDevice, loadAssets } from "./utils/clear_utils";
 import { loadBombEffectModel, loadBuildModel, loadDamageEnemyModel, loadEnemyModel, loadRocketEffectModel } from "./utils/loaderGlbFiles";
-import { cameraSettings, initMaterials, initModels } from "./utils/utility";
+import { cameraSettings, initMaterials, initModels, preloadSounds } from "./utils/utility";
 import { openIndexDB } from "./DB/indexdb";
 
 async function initCore() {
@@ -50,6 +50,8 @@ window.addEventListener('load', async () => {
             console.log("Error Models: ", err);
         })
         initMaterials(AGAME.Scene);
+        preloadSounds(AGAME.Scene);
+        
         //-------------------------------------->
         openIndexDB();
         //--------------------------------------->

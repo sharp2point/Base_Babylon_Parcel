@@ -3,7 +3,7 @@ import { resetBall } from "@/objects/ball";
 import { clearScene } from "@/utils/utility";
 import { AGAME } from "./main/state";
 import { UISTATE } from "./ui/state";
-import { HemisphericLight, Mesh, Observer, Scene, TransformNode, UniversalCamera } from "@babylonjs/core";
+import { HemisphericLight, Mesh, Observer, Scene, Sound, TransformNode, UniversalCamera } from "@babylonjs/core";
 import { gameNotify } from "@/scenes/parts/notifyContainer";
 import { showUILayout } from "@/ui/html/ui_components";
 import { getMaxProgressForLevel, saveResultIDB } from "@/DB/indexdb";
@@ -79,6 +79,15 @@ GameState.state = {
         ground: { mass: 100000, restitution: 0.0, friction: 1 },
         wall: { mass: 100000, restitution: 1, friction: 0.0 },
         enemy: { mass: 300, restitution: 0.25, friction: 0.5 }
+    },
+    sounds: {
+        effects: {
+            rocketPath: null as Sound,
+            rocketExplode: null as Sound,
+            bomb:null as Sound,
+            ballWallHit:null as Sound,
+            ballEnemyHit:null as Sound,
+        },
     },
     sizes: {
         gameBox: { width: 18, height: 40 },

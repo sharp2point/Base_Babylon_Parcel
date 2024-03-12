@@ -1,5 +1,6 @@
 import { ASSETS } from "@/game_state/assets/state";
 import { GameState } from "@/game_state/game_state";
+import { playGameSound } from "@/utils/utility";
 import { AssetContainer, Color4, Mesh, Texture, ParticleSystem, PhysicsBody, PhysicsMotionType, PhysicsShapeConvexHull, Tools, Vector3 } from "@babylonjs/core";
 
 const BOMBSTATE = {
@@ -10,6 +11,7 @@ const BOMBSTATE = {
 }
 
 export function bombEffect(position: Vector3) {
+    playGameSound("bomb");
     const bomb = instantiateBomb() as Array<Mesh>;
     setPosition(bomb, position);
     const physics = addPhysics(bomb);
@@ -56,7 +58,7 @@ function effect(physicsParts: Array<PhysicsBody>, impulsePosition: Vector3) {
             Math.cos(Tools.ToRadians(inx * 36)) * BOMBSTATE.mass * 5,
         );
         p.applyImpulse(vec, impulsePosition);
-    })
+    });
 }
 function bombParticles(part: Mesh) {
     const prt = new ParticleSystem("ball-particle", 400, GameState.scene());

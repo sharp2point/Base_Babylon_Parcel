@@ -1,6 +1,6 @@
 import { ASSETS } from "@/game_state/assets/state";
 import { GameState } from "@/game_state/game_state";
-import { Texture, Mesh, PhysicsViewer, Scalar, Scene, Tools, TransformNode, UniversalCamera, Vector3, StandardMaterial, Color3, PBRMaterial, MeshBuilder, AssetContainer } from "@babylonjs/core";
+import { Texture, Mesh, PhysicsViewer, Scalar, Scene, Tools, TransformNode, UniversalCamera, Vector3, StandardMaterial, Color3, PBRMaterial, MeshBuilder, AssetContainer, Sound } from "@babylonjs/core";
 
 export function clampToBoxShieldPosition(position: Vector3, shield: TransformNode, amount: number) {
     try {
@@ -295,4 +295,41 @@ function initDamageEnemyModel(scene: Scene) {
     // const inst = asset.instantiateModelsToScene((name: string) => `enemy-damage-${name}`, true);
     // const meshes = inst.rootNodes[0].getChildMeshes();
     // GameState.state.gameObjects.enemyDamage = meshes as Array<Mesh>;
+}
+//SOUNDS --------
+export function preloadSounds(scene: Scene) {
+    GameState.state.sounds.effects.rocketPath = new Sound("rocketPath", "public/sound/rocket_path_2.mp3", scene, null,
+        { loop: false, autoplay: false, volume: 0.2 });
+    GameState.state.sounds.effects.rocketExplode = new Sound("rocketExplode", "public/sound/rocket_explode.mp3", scene, null,
+        { loop: false, autoplay: false });
+    GameState.state.sounds.effects.ballEnemyHit = new Sound("ballEnemyHit", "public/sound/ball_enemy_2.mp3", scene, null,
+        { loop: false, autoplay: false, volume: 0.1, playbackRate: 3 });
+    GameState.state.sounds.effects.ballWallHit = new Sound("ballWallHit", "public/sound/ball_wall_hit.mp3", scene, null,
+        { loop: false, autoplay: false, volume: 0.02, playbackRate: 3 });
+    GameState.state.sounds.effects.bomb = new Sound("rocketExplode", "public/sound/bomb.mp3", scene, null,
+        { loop: false, autoplay: false });
+}
+export function playGameSound(name: string) {
+    switch (name) {
+        case "bomb": {
+            GameState.state.sounds.effects.bomb.play();
+            break;
+        }
+        case "ball-wall": {
+            GameState.state.sounds.effects.ballWallHit.play();
+            break;
+        }
+        case "ball-enemy": {
+            GameState.state.sounds.effects.ballEnemyHit.play();
+            break;
+        }
+        case "rocket": {
+            GameState.state.sounds.effects.rocketPath.play();
+            break;
+        }
+        case "rocket-explode": {
+            GameState.state.sounds.effects.rocketExplode.play();
+            break;
+        }
+    }
 }

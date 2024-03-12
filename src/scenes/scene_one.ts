@@ -6,7 +6,7 @@ import { enemyCollideReaction, enemyDamageModelEffect } from "@/objects/enemy/en
 import { initPoints } from "@/objects/points/points";
 import { addPosition$, shildComposition } from "@/objects/shield";
 import { cameraController } from "@/utils/cameraController";
-import { isLEVEL_WIN, clampToBoxShieldPosition } from "@/utils/utility";
+import { isLEVEL_WIN, clampToBoxShieldPosition, playGameSound } from "@/utils/utility";
 import {
     Color3, Color4, DirectionalLight, EventState, HavokPlugin,
     HemisphericLight, IBasePhysicsCollisionEvent, IPointerEvent, Mesh,
@@ -57,13 +57,20 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
             if (agCollider.name.includes("rocket")) {
                 if (collider.name.includes("enemy-bloc")) {
                     colliderBallBlockEvent(collider, agCollider);
+                    playGameSound("rocket-explode");
                 }
             } else if (collider.name.includes("rocket")) {
                 if (agCollider.name.includes("enemy-bloc")) {
                     colliderBallBlockEvent(agCollider, collider);
+                    playGameSound("rocket-explode");
                 }
             }
-
+            if (collider.name.includes("ball") && agCollider.name.includes("wall")) {
+                playGameSound("ball-wall");
+            }
+            if (collider.name.includes("ball") && agCollider.name.includes("enemy-bloc")) {
+                playGameSound("ball-enemy");
+            }
 
         }
     });

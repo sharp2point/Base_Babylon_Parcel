@@ -114,7 +114,7 @@ function appendEnemyBonus(enemy: Mesh) {
     const rnd = Math.trunc(Scalar.RandomRange(0, 5));
     switch (rnd) {
         case 1: {
-            addBonus(enemy, 300, 1);//bomb
+            addBonus(enemy, 100, 1);//bomb
             break;
         }
         case 2: {
@@ -126,7 +126,7 @@ function appendEnemyBonus(enemy: Mesh) {
             break;
         }
         case 4: {
-            addBonus(enemy, 300, randomInt(1, 5));//time
+            addBonus(enemy, 100, randomInt(1, 5));//time
             break;
         }
         default: {

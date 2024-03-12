@@ -2,6 +2,7 @@ import { ASSETS } from "@/game_state/assets/state";
 import { GameState } from "@/game_state/game_state";
 import { AGAME } from "@/game_state/main/state";
 import { enemyDamageModelEffect } from "@/objects/enemy/enemy";
+import { playGameSound } from "@/utils/utility";
 import { AssetContainer, Texture, Vector3, Mesh, ParticleSystem, Color4, PhysicsBody, PhysicsShapeConvexHull, PhysicsMotionType, Tools, IBasePhysicsCollisionEvent, EventState, AbstractMesh, SolidParticleSystem, MeshBuilder, StandardMaterial, Color3, SolidParticle, Scalar, Vector2, SubEmitter, SubEmitterType } from "@babylonjs/core";
 import { } from "pixi.js";
 
@@ -29,6 +30,7 @@ export function rocketEffect(position: Vector3) {
         const physics = addPhysics(rocket);
         rocketDispose(rocket, ROCKETSTATE.deathTime);
         effect(physics, rocket.position.clone());
+        playGameSound("rocket");
     }, ROCKETSTATE.startDelay);
 
 }
@@ -86,6 +88,7 @@ function rocketDispose(rocket: Mesh, time: number) {
     setTimeout(() => {
         if (rocket.position.z > 10) {
             rocketDie(rocket);
+            playGameSound("rocket-explode");
         }
     }, time);
 }

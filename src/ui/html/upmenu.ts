@@ -1,27 +1,33 @@
 export default class Upmenu extends HTMLElement {
-    _root = null;
-    _fullscreen_button = null;
-    _teach_button = null;
-    _lang_button = null;
+    private root = null;
+    private fullscreen_button = null;
+    private teach_button = null;
+    private lang_button = null;
+    private sound_button = null;
+
     constructor() {
         super();
-        this._root = this.attachShadow({ mode: 'open' });
+        this.root = this.attachShadow({ mode: 'open' });
     }
     connectedCallback() {
-        this._root.innerHTML = renderHTML();
+        this.root.innerHTML = renderHTML();
         this.setAttribute("class", "up-menu");
-        this._fullscreen_button = this._root.querySelector(".fullscreen-button");
-        this._teach_button = this._root.querySelector(".teach-button");
-        this._lang_button = this._root.querySelector(".language-button");
+        this.fullscreen_button = this.root.querySelector(".fullscreen-button");
+        this.teach_button = this.root.querySelector(".teach-button");
+        this.lang_button = this.root.querySelector(".language-button");
+        this.sound_button = this.root.querySelector(".sound-button");
     }
     get fullscreenButton() {
-        return this._fullscreen_button;
+        return this.fullscreen_button;
     }
     get teachButton() {
-        return this._teach_button;
+        return this.teach_button;
     }
     get languageButton() {
-        return this._lang_button;
+        return this.lang_button;
+    }
+    get soundButton() {
+        return this.sound_button;
     }
 }
 customElements.define("nice2jm-upmenu", Upmenu);
@@ -31,6 +37,7 @@ function renderHTML() {
         <img class="fullscreen-button" data-button="fullscreen" src="./public/icons/fullscreen.png">
         <img class="teach-button" data-button="teach" src="./public/icons/education.png">
         <img class="language-button" data-button="lang" src="./public/icons/russian.png">
+        <img class="sound-button" data-button="teach" src="./public/icons/sound.png">
     `;
     const style = `
         <style>

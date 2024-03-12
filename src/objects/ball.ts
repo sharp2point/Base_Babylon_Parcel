@@ -19,7 +19,7 @@ export function ballComposition(scene: Scene): Mesh {
 
     ball.onBeforeRenderObservable.add(() => {
         if (GameState.state.gameState === GameState.state.signals.GAME_RUN && !GameState.state.isResetBall) {
-            spot.position = ball.absolutePosition.clone().add(new Vector3(0, 2.5, 0));
+            spot.position = ball.absolutePosition.clone().add(new Vector3(0, 1.5, 0));
             if (GameState.state.isBallStart) {
                 velocityControl();
                 clearBallVelocityY(ball.getPhysicsBody());
@@ -35,7 +35,7 @@ export function ballComposition(scene: Scene): Mesh {
 }
 function bodyBall(scene: Scene): Mesh {
     const ball = MeshBuilder.CreateSphere("ball", { diameter: GameState.state.sizes.ball, segments: 32, updatable: false }, scene);
-    ball.position = new Vector3(0, 0.2, GameState.state.dragBox.up+2);
+    ball.position = new Vector3(0, 0.2, GameState.state.dragBox.up + 2);
     ball.receiveShadows = true;
     appendMaterial(ball, scene);
     appendPhysicsBody(ball, scene);

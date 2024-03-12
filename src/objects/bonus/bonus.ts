@@ -8,6 +8,7 @@ import {
 import { bombEffect } from "./effects/bomb";
 import { rocketEffect } from "./effects/rocket";
 import { AGAME } from "@/game_state/main/state";
+import { playGameSound } from "@/utils/utility";
 
 const BONUSTYPE = {
     100: {
@@ -51,7 +52,7 @@ export function bonus(type: number, options: { payload: number, parent: Mesh }, 
 
 function bombAction(bonus: Mesh) {
     actionAnimation(bonus);
-    bombEffect(bonus.absolutePosition);
+    bombEffect(bonus.absolutePosition);    
 }
 function rocketAction(bonus: Mesh) {
     actionAnimation(bonus);
