@@ -9,7 +9,7 @@ import { randomInt } from "../utils/utility";
 
 // 311045 --> count_height: 3,type: 110,angle: 45
 
-export function createMap(light: HemisphericLight) {
+export function createMap() {
     // Enemy Map -------------------------------------
     const enemies = createMapEnemy(GameState.state.level);
     //--- Builds --------------------------------------
@@ -17,17 +17,19 @@ export function createMap(light: HemisphericLight) {
     //--- Enemy Position ------------------------------
     const posEnemies = createPositionEnemy(GameState.state.level)
     // Shadow ----------------------
-    light.includedOnlyMeshes = [...enemies, ...builds, ...posEnemies];
+    GameState.state.enemyLight.includedOnlyMeshes = [...enemies, ...builds, ...posEnemies];
 };
 //-----------------------------------------------------
 
 function createMapEnemy(level: number) {
     const enemy_map = LevelMaps[level];
-    const tn = new TransformNode("enemies-node", GameState.scene());
-    const gap = GameState.state.sizes.enemy;
     const enemies = new Array<Mesh>();
+    const gap = GameState.state.sizes.enemy + 0.01;
     const deltaX = enemy_map[0].length / 2 - 0.5;
     const deltaZ = -18;
+
+    const tn = new TransformNode("enemies-node", GameState.scene());
+
     for (let i = 0; i < enemy_map.length; i++) {
         for (let j = 0; j < enemy_map[i].length; j++) {
             const name = `enemy-bloc-${j + 9 * i}`;

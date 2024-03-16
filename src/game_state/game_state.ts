@@ -81,12 +81,14 @@ GameState.state = {
         enemy: { mass: 300, restitution: 0.25, friction: 0.5 }
     },
     sounds: {
+        stateSystem: false,
+        stateGame: true,
         effects: {
             rocketPath: null as Sound,
             rocketExplode: null as Sound,
-            bomb:null as Sound,
-            ballWallHit:null as Sound,
-            ballEnemyHit:null as Sound,
+            bomb: null as Sound,
+            ballWallHit: null as Sound,
+            ballEnemyHit: null as Sound,
         },
     },
     sizes: {
@@ -123,6 +125,8 @@ GameState.EnemyNode = (): TransformNode => GameState.state.gameObjects.enemyNode
 GameState.Bonuses = (): Array<Mesh> => GameState.state.gameObjects.bonuses;
 GameState.Effects = (): Array<Mesh> => GameState.state.gameObjects.effects;
 GameState.CldMasks = () => GameState.state.collideMask;
+GameState.lang = () => GameState.state.lang;
+GameState.sound = () => GameState.state.sounds;
 //----------------------------------------------------------------------->
 GameState.changeGameState = (state: number) => {
     GameState.state.gameState = state;
@@ -133,7 +137,6 @@ GameState.changeGameState = (state: number) => {
         case GameState.state.signals.GAME_RUN: {
             GameState.state.enemyLight.setEnabled(true);
             GameState.resetScene();
-            createMap(GameState.state.enemyLight);
             GameState.state.stopRunTimer = runTimer();
             break;
         }
@@ -186,6 +189,7 @@ GameState.resetScene = () => {
     clearScene();
     GameState.state.isResetBall = false;
     GameState.state.isBallStart = false;
+    createMap();
 }
 //----------------------------------------------->
 GameState.calculatePoints = (enemy: Mesh) => {

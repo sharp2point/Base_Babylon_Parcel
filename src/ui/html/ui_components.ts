@@ -4,6 +4,7 @@ import { teachAnimateSteps } from "@/teach/teach";
 import Upmenu from "./upmenu";
 import PlayControl from "./playcontrol";
 import { Engine } from "@babylonjs/core";
+import PlayerSettings from "./playerSettings";
 
 export function removePreloader() {
     const preloader: HTMLElement = document.querySelector(".preload-container");
@@ -21,6 +22,9 @@ function uiHtmlComponents() {
     const uiPlace = document.querySelector("#ui-place") as HTMLElement;
     const upMenu = document.querySelector(".up-menu") as Upmenu;
     const playControl = document.querySelector(".play-control") as PlayControl;
+    const playerSettings = document.querySelector(".player-settings") as PlayerSettings;
+    playerSettings.setSoundEvent(onSystemSoundEvent);
+    //------------------------------------------------------------------------//
     UISTATE.UI.set("uiPlace", uiPlace);
     UISTATE.UI.set("header", document.querySelector(".header"));
     UISTATE.UI.set("footer", document.querySelector(".footer"));
@@ -30,6 +34,7 @@ function uiHtmlComponents() {
     UISTATE.UI.set("levelMenu", document.querySelector(".level-menu"));
     UISTATE.UI.set("notifyContainer", document.querySelector(".notify-container"));
     UISTATE.UI.set("upmenu", upMenu);
+    UISTATE.UI.set("playerSettings", playControl);
     preloader(uiPlace);
     appendEventListenerUpMenu(upMenu);
 }
@@ -113,14 +118,20 @@ function onLanguageClickEvent(image: HTMLImageElement) {
     }
 }
 function onSoundClickEvent() {
-    if (Engine.audioEngine.audioContext.state === "suspended") {
-        Engine.audioEngine.audioContext.resume();
-        console.log("AudioState: ", Engine.audioEngine.audioContext.state);
-    }
+    // if (Engine.audioEngine.audioContext.state === "suspended") {
+    //     Engine.audioEngine.audioContext.resume();
+    //     console.log("AudioState: ", Engine.audioEngine.audioContext.state);
+    // }
     // if (Engine.audioEngine.unlocked) {
     //     Engine.audioEngine.unlock();
     //     console.log("Engine Unlock: ", Engine.audioEngine.audioContext.state)
     // }
 }
+function onSystemSoundEvent(state: boolean) {
+    if (Engine.audioEngine.audioContext.state === "suspended") {
+        Engine.audioEngine.audioContext.resume();
+        GameState.sound().stateSystem = state;
+        console.log("System Sound: ", state);
+    }
+}
 uiHtmlComponents();
-
