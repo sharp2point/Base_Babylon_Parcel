@@ -38,9 +38,11 @@ if (!customElements.get("nice2jm-player-settings")) {
 }
 function renderTemplate() {
     const header = STRINGS.playerSettingsMenu.header.ru;
+    const question = STRINGS.playerSettingsMenu.question.ru;
     const html = `
         <div class="menu">
             <h1>${header}</h1>
+            <p>${question}</p>
             <button class="sound-on"></button>
         </div>
     `;
@@ -48,7 +50,7 @@ function renderTemplate() {
         <style>
             :host{
                 width: 100vw;
-                height: 100vh;
+                min-height: 100vh;
                 border-radius: 1rem;
                 background: rgba(50,50,50,0.8);
                 position:absolute;
@@ -68,18 +70,18 @@ function renderTemplate() {
                 border-radius: 1rem;
                 box-shadow: 0 0 5px 3px rgba(0,0,0,0.8);
                 background: rgba(250,250,250,0.8);
-                font: 200 1rem Arial;
+                font: 200 1.2rem Arial;
                 color: rgb(100,100,100);
             }
-            .h1{
-                display: block;
-                height: 1.1rem;
+            h1{
+                font-size:1.7rem;
+                color: rgb(50,50,50);
             }
             .sound-on{
-                width:50px;
+                width:120px;
                 height:50px;
                 border: none;
-                border-radius:50%;
+                border-radius:1rem;
                 box-shadow:0 0 3px 2px rgba(100,100,100,0.3);
                 background-image: url("public/icons/sound-off.png");
                 background-position:center center;

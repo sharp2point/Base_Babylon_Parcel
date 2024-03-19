@@ -22,8 +22,8 @@ function uiHtmlComponents() {
     const uiPlace = document.querySelector("#ui-place") as HTMLElement;
     const upMenu = document.querySelector(".up-menu") as Upmenu;
     const playControl = document.querySelector(".play-control") as PlayControl;
-    const playerSettings = document.querySelector(".player-settings") as PlayerSettings;
-    playerSettings.setSoundEvent(onSystemSoundEvent);
+    // const playerSettings = document.querySelector(".player-settings") as PlayerSettings;
+    // playerSettings.setSoundEvent(onSystemSoundEvent);
     //------------------------------------------------------------------------//
     UISTATE.UI.set("uiPlace", uiPlace);
     UISTATE.UI.set("header", document.querySelector(".header"));
@@ -34,7 +34,7 @@ function uiHtmlComponents() {
     UISTATE.UI.set("levelMenu", document.querySelector(".level-menu"));
     UISTATE.UI.set("notifyContainer", document.querySelector(".notify-container"));
     UISTATE.UI.set("upmenu", upMenu);
-    UISTATE.UI.set("playerSettings", playControl);
+    // UISTATE.UI.set("playerSettings", playControl);
     preloader(uiPlace);
     appendEventListenerUpMenu(upMenu);
 }

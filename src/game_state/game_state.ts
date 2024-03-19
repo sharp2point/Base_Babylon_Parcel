@@ -16,7 +16,7 @@ export const GameState = function _GameState() {
 };
 GameState.state = {
     isFullScreen: false,
-    lang: "ru",
+    lang: "en",
     indexDB: {
         db: null as IDBDatabase,
         name: "NovaArcanoid",
@@ -213,7 +213,7 @@ GameState.levelRun = (level: number) => { // level -> binding from spin menu
     showUILayout(false);
     setTimeout(() => {
         (AGAME.Scene as Scene).attachControl();
-    }, 600);
+    }, 1000);
 }
 GameState.menuRun = () => {
     (AGAME.Scene as Scene).detachControl();
@@ -225,7 +225,7 @@ GameState.menuRun = () => {
     getMaxProgressForLevel(GameState.state.level);
     setTimeout(() => {
         (UISTATE.Scene as Scene).attachControl();
-    }, 600);
+    }, 1000);
 }
 
 //---------------------------------------------------

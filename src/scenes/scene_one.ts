@@ -41,6 +41,10 @@ export function sceneOne(gravity: Vector3, physicsEngine: HavokPlugin) {
     addShadowsToObjects(shadowGenArray, scene);
     AGAME.Scene = scene;
     let isBallWall = false;
+    scene.detachControl();
+    setTimeout(() => {
+        scene.attachControl();
+    }, 1000);
     //--------- OBSERVER -------->
     addPosition$(() => { });
 

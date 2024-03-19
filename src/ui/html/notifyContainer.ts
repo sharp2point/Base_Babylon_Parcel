@@ -38,7 +38,7 @@ function renderTemplate() {
                 display:flex;
                 align-items:center;
                 justify-content:center;
-                background: rgba(100,100,100,0.5);
+                background: rgba(100,100,100,0.9);
             }
             .notify-place{
                 display:flex;
@@ -46,10 +46,17 @@ function renderTemplate() {
                 justify-content:center;
                 width:300px;
                 height:300px;
-                background:rgba(150,150,150,0.7);
-                border: 5px solid rgba(50,50,50,0.5);
-                border-radius:1rem;
-                box-shadow: 0 0 10px 10px rgba(20,20,20,0.3);
+                background:rgba(150,150,150,0.0);
+                border: 0px solid rgba(50,50,50,0.5);
+            }
+            .notify-win{
+                width:100wv;
+                height:100vh;
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                background-position: center center;
+                background-repeat: no-repeat;
             }
         </style>
     `;

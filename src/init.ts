@@ -1,12 +1,12 @@
 import { Engine, HavokPlugin, HighlightLayer, Vector3 } from "@babylonjs/core";
 import * as havok from "@babylonjs/havok";
-// import { Inspector } from "@babylonjs/inspector";
+import { Inspector } from "@babylonjs/inspector";
 import { ASSETS } from "./game_state/assets/state";
 import { AGAME } from "./game_state/main/state";
 import { GameState } from "./game_state/game_state";
 import { UISTATE } from "./game_state/ui/state";
 import { getScreenAspect, getTypeUserDevice, loadAssets } from "./utils/clear_utils";
-import { loadBombEffectModel, loadBuildModel, loadDamageEnemyModel, loadEnemyModel, loadRocketEffectModel } from "./utils/loaderGlbFiles";
+import { loadArcanoidModel, loadBombEffectModel, loadBuildModel, loadDamageEnemyModel, loadEnemyModel, loadHeaderModel, loadRocketEffectModel } from "./utils/loaderGlbFiles";
 import { cameraSettings, initMaterials, initModels, preloadSounds } from "./utils/utility";
 import { openIndexDB } from "./DB/indexdb";
 
@@ -37,6 +37,8 @@ window.addEventListener('load', async () => {
 
         Promise.all(
             [
+                loadHeaderModel(UISTATE.Scene),
+                loadArcanoidModel(UISTATE.Scene),
                 loadEnemyModel(AGAME.Scene),
                 loadBuildModel(AGAME.Scene),
                 loadDamageEnemyModel(AGAME.Scene),
@@ -51,7 +53,7 @@ window.addEventListener('load', async () => {
         })
         initMaterials(AGAME.Scene);
         preloadSounds(AGAME.Scene);
-        
+
         //-------------------------------------->
         openIndexDB();
         //--------------------------------------->
@@ -75,11 +77,11 @@ window.addEventListener('resize', () => {
     }
 });
 window.addEventListener("keydown", (ev) => {
-    // if (ev.key === 'i' && ev.altKey) {
-    //     if (Inspector.IsVisible) {
-    //         Inspector.Hide();
-    //     } else {
-    //         Inspector.Show(AGAME.Scene, { embedMode: true, });
-    //     }
-    // }
+    if (ev.key === 'i' && ev.altKey) {
+        if (Inspector.IsVisible) {
+            Inspector.Hide();
+        } else {
+            Inspector.Show(AGAME.Scene, { embedMode: true, });
+        }
+    }
 });

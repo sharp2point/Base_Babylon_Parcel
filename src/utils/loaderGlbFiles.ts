@@ -32,6 +32,22 @@ function instateMesh(nameMesh: string, assetContainer: AssetContainer) {
   return mesh;
 }
 //---------------------------------------------------------------------->
+export function loadHeaderModel(scene: Scene) {
+  return new Promise((resolve) => {
+    loadModel(`public/models/`, `header.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("header", container as AssetContainer);
+      resolve(true);
+    });
+  });
+}
+export function loadArcanoidModel(scene: Scene) {
+  return new Promise((resolve) => {
+    loadModel(`public/models/`, `arcanoid.glb`, scene).then((container) => {
+      ASSETS.containers3D.set("arcanoid", container as AssetContainer);
+      resolve(true);
+    });
+  });
+}
 export function loadEnemyModel(scene: Scene) {
   return new Promise((resolve) => {
     loadModel(`public/models/`, `cristal_one.glb`, scene).then((container) => {

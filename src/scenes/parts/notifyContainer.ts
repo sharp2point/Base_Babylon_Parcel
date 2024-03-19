@@ -28,7 +28,8 @@ export function gameNotify(state: number, options: {}, timeout: number) {
 
 function youWin2D() {
     const win = document.createElement('div');
-    win.classList.add("notify-win");
+    win.setAttribute("class", "notify-win");
+
     if (GameState.state.lang === "ru") {
         win.innerHTML = `<p>Уровень Пройден!</p>`;
     } else if (GameState.state.lang === "ru") {
