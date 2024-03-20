@@ -29,10 +29,7 @@ export function UIScene() {
     spot.specular = new Color3(1, 1, 1);
     spot.intensity = 0.9;
 
-    const spot2 = new SpotLight("spot-2", new Vector3(0, 15, -55), new Vector3(0, -20, 20), Tools.ToRadians(70), 20, scene);
-    spot2.diffuse = new Color3(1, 0.5, 0.5);
-    spot2.specular = new Color3(1, 1, 1);
-    spot2.intensity = 0.7;
+
 
     sceneBuilder(scene);
 
@@ -48,17 +45,26 @@ function onReady(scene: Scene) {
         spinMenu(scene);
 
         const materiala = new StandardMaterial("arcanoid-mt", UISTATE.Scene);
-        materiala.diffuseColor = new Color3(0.3, 0.3, 0.35);
+        materiala.diffuseColor = new Color3(0.9, 0.9, 0.9);
+        materiala.diffuseTexture = new Texture("public/images/t_ru/t_dif.webp");
+        materiala.bumpTexture = new Texture("public/images/t_ru/t_n.webp");
+        materiala.specularColor = new Color3(0.7, 0.7, 0.6);
+        materiala.ambientColor = new Color3(0.01, 0.02, 0.1);
+        materiala.specularPower = 1;
 
         const materialh = new StandardMaterial("header-mt", UISTATE.Scene);
-        materialh.diffuseColor = new Color3(0.3, 0.2, 0.2);
+        materialh.diffuseColor = new Color3(0.3, 0.2, 0.2);       
+        materialh.diffuseTexture = new Texture("public/images/t_ru/t_dif.webp");
+        materialh.bumpTexture = new Texture("public/images/t_ru/t_n.webp");
+        materialh.specularPower = 0;
 
-        const tnh = loadHeaderParts("header", materialh, { scale: 3.5, position: new Vector3(0, 10, 0), rotateX: 20 });
-        const tna = loadHeaderParts("arcanoid", materiala, { scale: 0.8, position: new Vector3(0, 10, 2), rotateX: 20 });
+        const tnh = loadHeaderParts("header", materialh, { scale: 2.3, position: new Vector3(0, 10, 0), rotateX: 50 });
+        const tna = loadHeaderParts("arcanoid", materiala, { scale: 1, position: new Vector3(0, 10, 2), rotateX: 50 });
 
         const light = new HemisphericLight("ui-light", new Vector3(0, 10, 10), UISTATE.Scene);
-        light.diffuse = new Color3(0.8, 0.8, 0.8);
+        light.diffuse = new Color3(1, 1, 1);
         light.specular = new Color3(0, 0, 0);
+        light.intensityMode = 1;
         light.intensity = 0.5;
         light.includedOnlyMeshes = [...tnh.getChildMeshes(), ...tna.getChildMeshes()];
         //initTeach(document.querySelector("#teach-place"));
@@ -92,6 +98,14 @@ function loadHeaderParts(assetName: string, material: StandardMaterial, options:
     models.forEach(m => {
         if (GameState.lang() === 'ru') {
             langSelector('ru', m as Mesh);
+            if (m.name.includes("t")) {
+                console.log(m.name);
+                // const material = new StandardMaterial("fort", UISTATE.Scene);
+                // material.diffuseColor = new Color3(1, 0, 0);
+                // material.diffuseTexture = new Texture("public/images/t_ru/t_dif.png");
+                // material.bumpTexture = new Texture("public/images/t_ru/t_n.png");
+                // m.material = material;
+            }
         } else if (GameState.lang() === 'en') {
             langSelector('en', m as Mesh);
         }

@@ -8,7 +8,7 @@ import { UISTATE } from "./game_state/ui/state";
 import { getScreenAspect, getTypeUserDevice, loadAssets } from "./utils/clear_utils";
 import { loadArcanoidModel, loadBombEffectModel, loadBuildModel, loadDamageEnemyModel, loadEnemyModel, loadHeaderModel, loadRocketEffectModel } from "./utils/loaderGlbFiles";
 import { cameraSettings, initMaterials, initModels, preloadSounds } from "./utils/utility";
-import { openIndexDB } from "./DB/indexdb";
+import { openIndexDB, openUPIndexDB } from "./DB/indexdb";
 
 async function initCore() {
     const physics = await havok.default();
@@ -56,6 +56,7 @@ window.addEventListener('load', async () => {
 
         //-------------------------------------->
         openIndexDB();
+        openUPIndexDB();
         //--------------------------------------->
 
         AGAME.Engine.runRenderLoop(() => {

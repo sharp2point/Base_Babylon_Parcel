@@ -11,12 +11,13 @@ import { GameResult } from "@/DB/sheme";
 import Scoreboard from "@/ui/html/scoreboard";
 import Progressboard from "@/ui/html/progressboard";
 import PlayControl from "@/ui/html/playcontrol";
+import { setCheckBoxState } from "@/ui/spin2";
 
 export const GameState = function _GameState() {
 };
 GameState.state = {
     isFullScreen: false,
-    lang: "en",
+    lang: "ru", // "ru" || "en"
     indexDB: {
         db: null as IDBDatabase,
         name: "NovaArcanoid",
@@ -150,7 +151,8 @@ GameState.changeGameState = (state: number) => {
                 isWin: false,
                 score: GameState.playerProgress().get(GameState.state.level),
                 time: GameState.state.levelTime,
-            })
+            });
+            setCheckBoxState(false);
             gameNotify(GameState.state.signals.GAME_OTHER_BALL, {
 
             }, 3000).then(() => {
@@ -171,6 +173,7 @@ GameState.changeGameState = (state: number) => {
                 score: GameState.playerProgress().get(GameState.state.level),
                 time: GameState.state.levelTime,
             });
+            setCheckBoxState(true);
             gameNotify(GameState.state.signals.LEVEL_WIN, {
 
             }, 3000).then(() => {

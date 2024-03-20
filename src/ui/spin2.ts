@@ -13,15 +13,23 @@ import {
     Color4,
     ParticleSystem,
     MeshBuilder,
+    HemisphericLight,
 } from "@babylonjs/core";
-import { getMaxProgressForLevel } from "@/DB/indexdb";
+import { getMaxProgressForLevel, getStateLevel, getUPResultsIDB, saveUPResultIDB } from "@/DB/indexdb";
 import { appendParticles } from "@/utils/clear_utils";
+import { UISTATE } from "@/game_state/ui/state";
 
 const ITEM_MODELS = {
     border: null as Mesh,
     center: null as Mesh,
-    level: null as Mesh,
-    numbers: new Map<string, Mesh>()
+    levelEn: null as Mesh,
+    levelRu: null as Mesh,
+    numbers: new Map<string, Mesh>(),
+    partsRu: new Map<string, Mesh>(),
+    partsEn: new Map<string, Mesh>(),
+    checkBox: null as Mesh,
+    checkOk: null as Mesh,
+    checkErr: null as Mesh,
 }
 export const SPINMENU = {
     nodeMenu: null,
@@ -38,7 +46,13 @@ export const SPINMENU = {
     isLeaveMenu: true,
     hoverMaterial: null,
     standardMaterial: null,
-    hoverParticles: null as ParticleSystem
+    hoverParticles: null as ParticleSystem,
+    checkBox: {
+        state: false,
+        position: new Vector3(-3, 9, 4),
+        okModel: null as Mesh,
+        errModel: null as Mesh,
+    }
 }
 
 export async function spinMenu(scene: Scene) {
@@ -52,6 +66,23 @@ export async function spinMenu(scene: Scene) {
     SPINMENU.nodeMenu = buildMenu(SPINMENU.position, SPINMENU.radius, SPINMENU.count, scene) as TransformNode;
     setMenuIndex(0, SPINMENU.nodeMenu, scene);
 
+    //---- CheckBox --------------
+    checkBox(SPINMENU.checkBox.position, scene);
+    const res = await getUPResultsIDB();
+    if (!res) {
+        saveUPResultIDB({ level: 0 });
+        getStateLevel(0).then(res => {
+            setCheckBoxState(res);
+        })
+    } else {
+        getStateLevel(res.level).then(res => {
+            setCheckBoxState(res);
+        })
+    }
+    //---- Part ------------------
+
+
+    //---- Events ----------------
     scene.onPointerDown = (evt: IPointerEvent, pickInfo: PickingInfo, type: PointerEventTypes) => {
         const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
         if (pic.pickedMesh.name.includes("moveHandler")) {
@@ -72,10 +103,13 @@ export async function spinMenu(scene: Scene) {
 
             if (Math.abs(delta) > 5) {
                 if (delta > 0) {
-                    rotateToNextPosition(SPINMENU.nodeMenu, scene)
+                    rotateToNextPosition(SPINMENU.nodeMenu, scene);
                 } else {
-                    rotateToPrevPosition(SPINMENU.nodeMenu, scene)
+                    rotateToPrevPosition(SPINMENU.nodeMenu, scene);
                 }
+                getStateLevel(SPINMENU.focusItem["meta"].index).then(res => {
+                    setCheckBoxState(res);
+                })
                 isPointerDown = false;
             }
         }
@@ -92,14 +126,15 @@ function hoverItemAction(scene: Scene) {
     const pic = scene.pick(scene.pointerX, scene.pointerY, () => true);
     if (pic.pickedMesh) {
         if (pic.pickedMesh.name === "moveHandler") {
+            const border = SPINMENU.focusItem.getChildMeshes().filter(m => m.name === "border")[0] as Mesh;
             const center = SPINMENU.focusItem.getChildMeshes().filter(m => m.name === "center")[0] as Mesh;
+            border.rotation.x += Tools.ToRadians(30);
             if (!SPINMENU.isFocusItemHover) {
                 SPINMENU.isFocusItemHover = true;
                 SPINMENU.isLeaveMenu = false;
-                // center.material = SPINMENU.hoverMaterial;
                 SPINMENU.hoverParticles = appendParticles(`${SPINMENU.focusItem.name}-particles`, center, {
                     color1: new Color4(0.4, 0.4, 0.1, 0.5), color2: new Color4(0.5, 0.3, 0.3, 0.3), color3: new Color4(0.9, 0.2, 0.2, 1),
-                    capacity: 3000, emitRate: 1000, max_size: 0.9, updateSpeed: 0.05, emmitBox: new Vector3(3, 0, 3),
+                    capacity: 1000, emitRate: 200, max_size: 0.9, updateSpeed: 0.05, emmitBox: new Vector3(3, 0, 3),
                     lifeTime: 5, gravityY: 1, isLocal: true, sphere: {
                         radius: 3.5, range: 1,
                     }
@@ -108,11 +143,13 @@ function hoverItemAction(scene: Scene) {
             }
         } else {
             if (!SPINMENU.isLeaveMenu) {
+                const border = SPINMENU.focusItem.getChildMeshes().filter(m => m.name === "border")[0] as Mesh;
                 const center = SPINMENU.focusItem.getChildMeshes().filter(m => m.name === "center")[0] as Mesh;
                 SPINMENU.hoverParticles.stop();
                 //center.material = SPINMENU.standardMaterial;
                 SPINMENU.isFocusItemHover = false;
                 SPINMENU.isLeaveMenu = true;
+                // border.rotation.x -= Tools.ToRadians(30);
             }
         }
     }
@@ -121,13 +158,17 @@ function setItemPosition(item: Mesh | TransformNode, position: Vector3) {
     item.position = position
     return item;
 }
-function setItemMaterial(item: Mesh, options: { diffuse: Color3, alpha?: number }, scene: Scene) {
+function setItemMaterial(item: Mesh, options: { diffuse: Color3, alpha?: number, simple: boolean }, scene: Scene) {
     const material = new StandardMaterial("cil-mt", scene);
     material.diffuseColor = options.diffuse;
-    material.specularColor = new Color3(0.3, 0.4, 1);
+    material.specularColor = new Color3(0.3, 0.4, 0.6);
     material.ambientColor = new Color3(0.01, 0.02, 0.1);
+    if (!options.simple) {
+        material.diffuseTexture = new Texture("public/images/t_ru/t_dif.webp");
+        material.bumpTexture = new Texture("public/images/t_ru/t_n.webp");
+    }
     material.roughness = 0;
-    material.specularPower = 0.5;
+    material.specularPower = 1;
     material.twoSidedLighting = true;
 
     //material.backFaceCulling = true;
@@ -162,7 +203,7 @@ function initGeometryItemFromModels(name: string, options: { index: number }, sc
 
     const border = cloner(ITEM_MODELS.border, "border");
     const center = cloner(ITEM_MODELS.center, "center");
-    const level = cloner(ITEM_MODELS.level, "level");
+    const level = GameState.lang() === "ru" ? cloner(ITEM_MODELS.levelRu, "level") : cloner(ITEM_MODELS.levelEn, "level");
     const number = cloner(ITEM_MODELS.numbers.get(`number-${options.index}`), `number-${options.index}`);
     const moveHandler = cloner(ITEM_MODELS.center, "moveHandler");
 
@@ -185,11 +226,11 @@ function initGeometryItemFromModels(name: string, options: { index: number }, sc
     number.setParent(tn);
     moveHandler.setParent(tn);
 
-    setItemMaterial(border, { diffuse: new Color3(0.5, 0.3, 0.2) }, scene);
-    setItemMaterial(center, { diffuse: new Color3(0.2, 0.2, 0.2), alpha: 0.1 }, scene);
-    setItemMaterial(level, { diffuse: new Color3(0.9, 0.9, 0.9) }, scene);
-    setItemMaterial(number, { diffuse: new Color3(0.7, 0.7, 0.7) }, scene);
-    setItemMaterial(moveHandler, { diffuse: new Color3(0.1, 0.01, 0.01), alpha: 0.0 }, scene);
+    setItemMaterial(border, { diffuse: new Color3(0.5, 0.3, 0.2), simple: false }, scene);
+    setItemMaterial(center, { diffuse: new Color3(0.2, 0.2, 0.2), alpha: 0.1, simple: true }, scene);
+    setItemMaterial(level, { diffuse: new Color3(0.9, 0.9, 0.9), simple: true }, scene);
+    setItemMaterial(number, { diffuse: new Color3(0.7, 0.7, 0.7), simple: true }, scene);
+    setItemMaterial(moveHandler, { diffuse: new Color3(0.1, 0.01, 0.01), alpha: 0.0, simple: true }, scene);
 
     tn.scalingDeterminant = 1.5;
     tn.position.y = 1;
@@ -216,7 +257,8 @@ function buildMenu(position: Vector3, radius: number, count: number, scene: Scen
     const tns = new Array<TransformNode>();
 
     [...Array(count).keys()].forEach((val) => {
-        const tn = menuItem(`item-${val}`, { index: val, angle: (SPINMENU.angle) * val + SPINMENU.angleDelta }, scene);
+
+        const tn = menuItem(`item-${val}`, { index: val, angle: (SPINMENU.angle) * (val) + SPINMENU.angleDelta }, scene);
         //promises.push(tn);
         tns.push(tn);
     });
@@ -226,34 +268,14 @@ function buildMenu(position: Vector3, radius: number, count: number, scene: Scen
         item.scalingDeterminant = SPINMENU.scaleDeterminant;
         item.setParent(tn);
         setItemPosition(item as TransformNode, new Vector3(
-            Math.cos(Tools.ToRadians(SPINMENU.angle * index)) * radius,
+            Math.cos(Tools.ToRadians(SPINMENU.angle * (index))) * radius,
             0,
-            Math.sin(Tools.ToRadians(SPINMENU.angle * index)) * radius,
+            Math.sin(Tools.ToRadians(SPINMENU.angle * (index))) * radius,
         ));
     });
     tn.rotation.y = Tools.ToRadians(SPINMENU.angleDelta);
     tn.position = position;
     return tn;
-    // return new Promise((resolve) => {
-    //     Promise.all(promises).then((res) => {
-    //         console.log(res)
-    //         res.forEach((item: TransformNode, index) => {
-    //             SPINMENU.items.set(index, item);
-    //             item.scalingDeterminant = SPINMENU.scaleDeterminant;
-    //             item.setParent(tn);
-    //             setItemPosition(item as TransformNode, new Vector3(
-    //                 Math.cos(Tools.ToRadians(SPINMENU.angle * index)) * radius,
-    //                 0,
-    //                 Math.sin(Tools.ToRadians(SPINMENU.angle * index)) * radius,
-    //             ));
-    //         });
-    //         tn.rotation.y = Tools.ToRadians(SPINMENU.angleDelta);
-    //         tn.position = position;
-
-    //         resolve(tn);
-    //     });
-    // })
-
 }
 //-Rotate Menu ----------------------------------------
 function setMenuIndex(index: number, menu: TransformNode, scene: Scene) {
@@ -268,9 +290,11 @@ function setMenuIndex(index: number, menu: TransformNode, scene: Scene) {
         //390 -> 90, 90 -> 390
         if (preItem["meta"].angle === 390 && item["meta"].angle === 90) {
             menu.rotation.y = Tools.ToRadians(30);
+            console.log("Prev")
         }
         if (preItem["meta"].angle === 90 && item["meta"].angle === 390) {
             menu.rotation.y = Tools.ToRadians(450);
+            console.log("Next")
         }
     }
 
@@ -369,6 +393,13 @@ function parseModel(models: Array<Mesh>) {
     models.forEach((model: Mesh) => {
         model.isVisible = false;
         model.isEnabled(false);
+        if (model.name.includes("part")) {
+            if (model.name.includes("ru")) {
+                ITEM_MODELS.partsRu.set(model.name, model);
+            } else if (model.name.includes("en")) {
+                ITEM_MODELS.partsEn.set(model.name, model);
+            }
+        }
 
         switch (model.name) {
             case "Border": {
@@ -379,8 +410,12 @@ function parseModel(models: Array<Mesh>) {
                 ITEM_MODELS.center = model;
                 break;
             }
-            case "Level": {
-                ITEM_MODELS.level = model;
+            case "Level_en": {
+                ITEM_MODELS.levelEn = model;
+                break;
+            }
+            case "Level_ru": {
+                ITEM_MODELS.levelRu = model;
                 break;
             }
             case "number-0":
@@ -396,6 +431,18 @@ function parseModel(models: Array<Mesh>) {
                 ITEM_MODELS.numbers.set(model.name, model);
                 break;
             }
+            case "CheckBox": {
+                ITEM_MODELS.checkBox = model;
+                break;
+            }
+            case "Ok": {
+                ITEM_MODELS.checkOk = model;
+                break;
+            }
+            case "Error": {
+                ITEM_MODELS.checkErr = model;
+                break;
+            }
             default: {
                 console.log("switch default");
                 break;
@@ -408,4 +455,51 @@ function cloner(mesh: Mesh, name: string) {
     clone.isVisible = true;
     clone.isEnabled(true);
     return clone;
+}
+function checkBox(position: Vector3, scene: Scene) {
+    const tn = new TransformNode("checkBox-tn", scene);
+    const checkBox = cloner(ITEM_MODELS.checkBox, "checkBox");
+    SPINMENU.checkBox.okModel = cloner(ITEM_MODELS.checkOk, "checkOk");
+    SPINMENU.checkBox.errModel = cloner(ITEM_MODELS.checkErr, "checkErr");
+    checkBox.setParent(tn);
+    SPINMENU.checkBox.okModel.setParent(tn);
+    SPINMENU.checkBox.errModel.setParent(tn);
+    tn.scalingDeterminant = 0.5;
+    tn.position = position;
+    tn.rotation.x = Tools.ToRadians(60);
+    tn.rotation.z = Tools.ToRadians(-5);
+
+    const material = new StandardMaterial("checkBox-mt", scene);
+    material.diffuseColor = new Color3(0.9, 0.9, 0.9);
+    material.diffuseTexture = new Texture("public/images/t_ru/t_dif.webp");
+    material.bumpTexture = new Texture("public/images/t_ru/t_n.webp");
+    material.specularColor = new Color3(0.3, 0.4, 0.6);
+    material.ambientColor = new Color3(0.01, 0.02, 0.1);
+    material.specularPower = 1;
+    checkBox.material = material;
+
+    const materialOk = new StandardMaterial("checkBoxOk-mt", scene);
+    materialOk.diffuseColor = new Color3(0.1, 0.9, 0.1);
+    SPINMENU.checkBox.okModel.material = materialOk;
+
+    const materialErr = new StandardMaterial("checkBoxErr-mt", scene);
+    materialErr.diffuseColor = new Color3(0.9, 0.1, 0.1);
+    SPINMENU.checkBox.errModel.material = materialErr;
+
+    const light = new HemisphericLight("ui-checkBox-light", new Vector3(0, 10, 10), scene);
+    light.diffuse = new Color3(1, 1, 1);
+    light.specular = new Color3(0, 0, 0);
+    light.intensityMode = 1;
+    light.intensity = 0.5;
+    light.includedOnlyMeshes = [checkBox, SPINMENU.checkBox.okModel, SPINMENU.checkBox.errModel];
+    setCheckBoxState(SPINMENU.checkBox.state);
+}
+export function setCheckBoxState(state: boolean) {
+    if (state) {
+        SPINMENU.checkBox.okModel.isVisible = true;
+        SPINMENU.checkBox.errModel.isVisible = false;
+    } else {
+        SPINMENU.checkBox.okModel.isVisible = false;
+        SPINMENU.checkBox.errModel.isVisible = true;
+    }
 }

@@ -6,3 +6,6 @@ export type GameResult = {
     score: number,
     time: number,
 }
+export type UserState = {
+    level: number,
+}

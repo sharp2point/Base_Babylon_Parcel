@@ -43,7 +43,7 @@ function htmlRender() {
     const style = `
             <style>
                 :host{
-                    width: 250px;
+                    width: 230px;
                     display: flex;
                     flex-direction: row;
                     align-items: center;
@@ -66,7 +66,7 @@ function htmlRender() {
                 }
 
                 .scoreboard-view span {
-                    font: bold 2.5rem "Impact";
+                    font: bold 2.3rem "Impact";
                 }
 
                 .scoreboard-score {
